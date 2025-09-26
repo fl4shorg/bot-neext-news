@@ -1304,6 +1304,124 @@ Seu ID foi salvo com segurança em nosso sistema!`;
         }
         break;
 
+        case "play": {
+            try {
+                // Verifica se foi fornecido um termo de busca
+                if (!args.length) {
+                    await reply(sock, from, `❌ Por favor, forneça o nome da música.\n\nExemplo: \`${prefix}play 7 minutos naruto\``);
+                    break;
+                }
+
+                const query = args.join(' ');
+                
+                await reagirMensagem(sock, message, "⏳");
+                await reply(sock, from, `🎵 Buscando "${query}" no YouTube, aguarde...`);
+
+                // Chama a API do YouTube
+                const apiUrl = `https://api.nekolabs.my.id/downloader/youtube/play/v1?q=${encodeURIComponent(query)}`;
+                const response = await axios.get(apiUrl, {
+                    timeout: 30000,
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    }
+                });
+
+                if (!response.data || !response.data.status || !response.data.result) {
+                    await reagirMensagem(sock, message, "❌");
+                    await reply(sock, from, "❌ Não foi possível encontrar esta música. Tente outro termo de busca.");
+                    break;
+                }
+
+                const result = response.data.result;
+                const metadata = result.metadata;
+                const downloadUrl = result.downloadUrl;
+
+                if (!downloadUrl) {
+                    await reagirMensagem(sock, message, "❌");
+                    await reply(sock, from, "❌ Link de download não encontrado para esta música.");
+                    break;
+                }
+
+                // Baixa o áudio
+                const audioResponse = await axios({
+                    method: 'GET',
+                    url: downloadUrl,
+                    responseType: 'arraybuffer',
+                    timeout: 60000
+                });
+
+                const audioBuffer = Buffer.from(audioResponse.data);
+
+                // Baixa a thumbnail se existir
+                let thumbnailBuffer = null;
+                if (metadata.cover) {
+                    try {
+                        const thumbnailResponse = await axios({
+                            method: 'GET',
+                            url: metadata.cover,
+                            responseType: 'arraybuffer',
+                            timeout: 10000
+                        });
+                        thumbnailBuffer = Buffer.from(thumbnailResponse.data);
+                    } catch (err) {
+                        console.log("❌ Erro ao baixar thumbnail:", err.message);
+                    }
+                }
+
+                // Prepara a caption com informações da música
+                const caption = `🎵 *Música encontrada!*
+
+📝 **Título:** ${metadata.title}
+👤 **Canal:** ${metadata.channel}
+⏱️ **Duração:** ${metadata.duration}
+🔗 **URL:** ${metadata.url}
+
+🎧 **Enviado com selo Nubank**
+© NEEXT LTDA`;
+
+                // Envia o áudio com thumbnail e informações usando o selo do Nubank
+                await sock.sendMessage(from, {
+                    audio: audioBuffer,
+                    mimetype: 'audio/mp4',
+                    fileName: `${metadata.title}.mp3`,
+                    caption: caption,
+                    jpegThumbnail: thumbnailBuffer,
+                    contextInfo: {
+                        forwardingScore: 100000,
+                        isForwarded: true,
+                        forwardedNewsletterMessageInfo: {
+                            newsletterJid: "120363289739581116@newsletter",
+                            newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
+                        },
+                        externalAdReply: {
+                            title: `🎵 ${metadata.title}`,
+                            body: `🎬 ${metadata.channel} • ⏱️ ${metadata.duration}`,
+                            thumbnailUrl: metadata.cover || "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
+                            mediaType: 2,
+                            sourceUrl: metadata.url,
+                            showAdAttribution: true
+                        }
+                    }
+                }, { quoted: selonubank });
+
+                await reagirMensagem(sock, message, "✅");
+                console.log(`✅ Música enviada: ${metadata.title} - ${metadata.channel}`);
+
+            } catch (error) {
+                console.error("❌ Erro no comando play:", error);
+                await reagirMensagem(sock, message, "❌");
+                
+                if (error.code === 'ENOTFOUND' || error.code === 'ETIMEDOUT') {
+                    await reply(sock, from, "❌ Erro de conexão. Verifique sua internet e tente novamente.");
+                } else if (error.response?.status === 404) {
+                    await reply(sock, from, "❌ Música não encontrada. Tente um termo de busca diferente.");
+                } else {
+                    await reply(sock, from, "❌ Erro ao baixar música. Tente novamente mais tarde.");
+                }
+            }
+        }
+        break;
+
         case "menu": {
             try {
                 // Definir variáveis básicas primeiro
