@@ -689,12 +689,23 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             await reagirMensagem(sock, message, "⏳");
 
             try {
-                // Faz requisição para API BRAT
+                // Volta para a API original que funcionava
                 const apiUrl = `https://api.ypnk.dpdns.org/api/image/brat?text=${encodeURIComponent(text)}`;
-                console.log(`🔗 Chamando API: ${apiUrl}`);
-                const response = await axios.get(apiUrl, { responseType: 'arraybuffer' });
+                console.log(`🔗 Chamando API BRAT: ${apiUrl}`);
 
-                if (!response.data) {
+                const response = await axios.get(apiUrl, { 
+                    responseType: 'arraybuffer',
+                    timeout: 20000,
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                        'Accept': 'image/png, image/jpeg, image/webp, */*',
+                        'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
+                        'Referer': 'https://api.ypnk.dpdns.org/',
+                        'Connection': 'keep-alive'
+                    }
+                });
+
+                if (!response.data || response.data.length === 0) {
                     throw new Error('API retornou dados vazios');
                 }
 
@@ -711,7 +722,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                         data: Buffer.from(response.data) 
                     }, 
                     { 
-                        packname: "© NEEXT LTDA\n🐦‍🔥 Instagram: @neet.tk", 
+                        packname: "© NEEXT LTDA", 
                         author: `NEEXT BOT - ${dataHora}`, 
                         categories: ["🎨", "💚", "🔥"] 
                     }
@@ -745,9 +756,27 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 console.log('✅ Figurinha BRAT criada e enviada com sucesso!');
 
             } catch (error) {
-                console.error('❌ Erro ao gerar BRAT:', error.message);
+                console.error('❌ Erro detalhado ao gerar BRAT:', error);
+
+                // Tratamento de erro melhorado
+                let errorMessage = '❌ Erro ao gerar imagem BRAT.';
+
+                if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+                    errorMessage += ' API indisponível no momento.';
+                } else if (error.code === 'ETIMEDOUT') {
+                    errorMessage += ' Timeout na requisição.';
+                } else if (error.response?.status === 404) {
+                    errorMessage += ' Serviço temporariamente fora do ar.';
+                } else if (error.response?.status === 429) {
+                    errorMessage += ' Limite de requisições atingido.';
+                } else if (error.response?.status >= 500) {
+                    errorMessage += ' Erro interno do servidor.';
+                } else {
+                    errorMessage += ' Tente novamente em alguns segundos.';
+                }
+
                 await sock.sendMessage(from, { 
-                    text: '❌ Erro ao gerar imagem BRAT. Tente novamente!' 
+                    text: errorMessage 
                 }, { quoted: message });
                 await reagirMensagem(sock, message, "❌");
             }
@@ -1313,7 +1342,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 }
 
                 const query = args.join(' ');
-                
+
                 await reagirMensagem(sock, message, "⏳");
                 await reply(sock, from, `🎵 Buscando "${query}" no YouTube, aguarde...`);
 
@@ -1410,7 +1439,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             } catch (error) {
                 console.error("❌ Erro no comando play:", error);
                 await reagirMensagem(sock, message, "❌");
-                
+
                 if (error.code === 'ENOTFOUND' || error.code === 'ETIMEDOUT') {
                     await reply(sock, from, "❌ Erro de conexão. Verifique sua internet e tente novamente.");
                 } else if (error.response?.status === 404) {
