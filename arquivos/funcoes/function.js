@@ -134,7 +134,7 @@ function contarComandos() {
     const comandos = [
         'ping', 'hora', 'dono', 'marca', 'recado', 's', 'hermitwhite', 'prefixo',
         'antilink', 'brat', 'pinterest', 'rename', 'akinator', 'resetaki', 'instagram',
-        'ig', 'menu', 'status' // incluindo todos os comandos
+        'ig', 'menu', 'status', 'play' // incluindo todos os comandos
     ];
     return comandos.length;
 }

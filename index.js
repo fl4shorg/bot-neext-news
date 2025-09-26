@@ -101,10 +101,10 @@ class AkinatorCloudflareBypass {
         for (let attempt = 1; attempt <= retries; attempt++) {
             try {
                 console.log(`🧞‍♂️ Tentando conectar ao Akinator (tentativa ${attempt}/${retries})...`);
-                
+
                 // Configura cloudscraper para contornar Cloudflare
                 const userAgent = this.getRandomUserAgent();
-                
+
                 // Cria instância do Akinator
                 const aki = new Aki({ 
                     region: region, 
@@ -129,18 +129,18 @@ class AkinatorCloudflareBypass {
 
                 // Aguarda um pouco antes de tentar
                 await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
-                
+
                 await aki.start();
                 console.log(`✅ Conectado ao Akinator com sucesso! Região: ${region}`);
                 return aki;
-                
+
             } catch (error) {
                 console.error(`❌ Tentativa ${attempt} falhou:`, error.message);
-                
+
                 if (attempt === retries) {
                     throw new Error(`Falha após ${retries} tentativas. Akinator temporariamente indisponível.`);
                 }
-                
+
                 // Aguarda mais tempo a cada tentativa
                 await new Promise(resolve => setTimeout(resolve, 5000 * attempt));
             }
@@ -262,7 +262,7 @@ async function reagirMensagem(sock, normalized, emoji = "🤖") {
 // Detecta links na mensagem
 function detectarLinks(texto) {
     if (!texto) return false;
-    const linkRegex = /((https?:\/\/)|(www\.))[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)|wa\.me\/|whatsapp\.com\/|t\.me\/|chat\.whatsapp\.com\/|instagram\.com\/|facebook\.com\/|twitter\.com\/|tiktok\.com\/|youtube\.com\/|discord\.gg\//i;
+    const linkRegex = /((https?:\/\/)|(www\.))[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)|wa.me\/|whatsapp.com\/|t.me\/|chat.whatsapp.com\/|instagram.com\/|facebook.com\/|twitter.com\/|tiktok.com\/|youtube.com\/|discord.gg\//i;
     return linkRegex.test(texto);
 }
 
@@ -317,7 +317,7 @@ async function banirUsuario(sock, groupId, userId) {
             console.log(`⚠️ Bot não é admin no grupo ${groupId} - não pode banir`);
             return { success: false, reason: "bot_nao_admin" };
         }
-        
+
         console.log(`⚔️ Tentando banir usuário ${userId} do grupo ${groupId}`);
         await sock.groupParticipantsUpdate(groupId, [userId], "remove");
         console.log(`✅ Usuário ${userId} banido com sucesso!`);
@@ -337,43 +337,43 @@ async function processarAntilink(sock, normalized) {
         const from = normalized.key.remoteJid;
         const sender = normalized.key.participant || from;
         const text = getMessageText(normalized.message);
-        
+
         // Só funciona em grupos
         if (!from.endsWith('@g.us') && !from.endsWith('@lid')) return false;
-        
+
         // Carrega configuração do antilink
         const antilinkData = carregarAntilink();
         if (!antilinkData[from]) return false; // Grupo não tem antilink ativo
-        
+
         // Verifica se tem links
         if (!detectarLinks(text)) return false;
-        
+
         // Não remove se for o dono
         if (isDono(sender)) {
             await reply(sock, from, "🛡️ Dono detectado com link, mas não será removido!");
             return false;
         }
-        
+
         // Não remove se for admin
         const ehAdmin = await isAdmin(sock, from, sender);
         if (ehAdmin) {
             await reply(sock, from, "👮‍♂️ Admin detectado com link, mas não será removido!");
             return false;
         }
-        
+
         // Remove a mensagem
         const removido = await removerMensagem(sock, normalized.key);
-        
+
         if (removido) {
             const senderNumber = sender.split('@')[0];
             console.log(`🚫 Mensagem com link removida de ${senderNumber}`);
-            
+
             // Aguarda um pouco antes de tentar banir
             await new Promise(resolve => setTimeout(resolve, 1000));
-            
+
             // Tenta banir o usuário
             const resultadoBan = await banirUsuario(sock, from, sender);
-            
+
             if (resultadoBan.success) {
                 await reagirMensagem(sock, normalized, "⚔️");
                 await reply(sock, from, `⚔️ *ANTILINK - USUÁRIO BANIDO!*\n\n@${senderNumber} foi removido do grupo por enviar link!\n\n🚫 Links não são permitidos aqui.\n⚡ Ação: Delete + Ban automático`, [sender]);
@@ -391,12 +391,12 @@ async function processarAntilink(sock, normalized) {
                     default:
                         motivo = "Erro técnico no banimento";
                 }
-                
+
                 await reply(sock, from, `🚫 *ANTILINK ATIVO*\n\n@${senderNumber} sua mensagem foi deletada por conter link!\n\n⚠️ **Não foi possível banir:** ${motivo}\n💡 **Solução:** Torne o bot admin do grupo`, [sender]);
                 console.log(`⚠️ FALHA: Não foi possível banir ${senderNumber} - ${motivo}`);
             }
         }
-        
+
         return true;
     } catch (err) {
         console.error("❌ Erro no processamento antilink:", err);
@@ -462,14 +462,14 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 contextInfo: contextAnuncio
             });
             break;
-            
+
             case 'dono':
     // garante que 'sender' está definido no escopo correto
     const sender = message.key.participant || from;
     await reply(sock, from, "🛡️ Esse é o dono do bot!", [sender]);
     break;
-    
-    
+
+
 
         case "status":
             const statusText = args.join(" ").trim();
@@ -505,33 +505,33 @@ async function handleCommand(sock, message, command, args, from, quoted) {
         case "recado":
             await sock.sendMessage(from, { text: "📌 Bot está ativo e conectado!" }, { quoted: message });
             break;
-            
+
         case "antilink": {
             // Só funciona em grupos
             if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
                 await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
                 break;
             }
-            
+
             const sender = message.key.participant || from;
-            
+
             // Verifica se é admin ou dono
             const ehAdmin = await isAdmin(sock, from, sender);
             const ehDono = isDono(sender);
-            
+
             if (!ehAdmin && !ehDono) {
                 await reply(sock, from, "❌ Apenas admins podem usar este comando.");
                 break;
             }
-            
+
             const antilinkData = carregarAntilink();
             const acao = args[0]?.toLowerCase();
-            
+
             if (acao === "on" || acao === "ativar" || acao === "1") {
                 antilinkData[from] = true;
                 salvarAntilink(antilinkData);
                 await reagirMensagem(sock, message, "✅");
-                await reply(sock, from, "✅ *ANTILINK ATIVADO*\n\n⚔️ Links serão removidos e usuário será BANIDO\n🛡️ Admins e dono são protegidos\n🚫 Ação dupla: Delete + Ban");
+                await reply(sock, from, "✅ *ANTILINK ATIVADO*\n\n⚔️ Links serão removidos e usuário será BANIDO\n🛡️ Admins e dono são protegidos\n🚫 Ação dupla: Delete + Ban automático");
             } 
             else if (acao === "off" || acao === "desativar" || acao === "0") {
                 delete antilinkData[from];
@@ -551,7 +551,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 // Obtém hora atual para metadados
                 const agora = new Date();
                 const dataHora = `${agora.toLocaleDateString('pt-BR')} ${agora.toLocaleTimeString('pt-BR')}`;
-                
+
                 // Tenta detectar mídia de diferentes formas
                 let mediaMessage = null;
 
@@ -563,12 +563,12 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     if (quotedMsg.viewOnceMessage) quotedMsg = quotedMsg.viewOnceMessage.message;
                     if (quotedMsg.viewOnceMessageV2) quotedMsg = quotedMsg.viewOnceMessageV2.message;
                     if (quotedMsg.viewOnceMessageV2Extension) quotedMsg = quotedMsg.viewOnceMessageV2Extension.message;
-                    
+
                     if (quotedMsg.imageMessage || quotedMsg.videoMessage) {
                         mediaMessage = quotedMsg;
                     }
                 }
-                
+
                 // 2. Se não tem quotada, verifica se a própria mensagem tem mídia (enviada diretamente)
                 if (!mediaMessage && (message.message.imageMessage || message.message.videoMessage)) {
                     mediaMessage = message.message;
@@ -599,12 +599,12 @@ async function handleCommand(sock, message, command, args, from, quoted) {
 
                 // Faz download da mídia - CORRIGIDO para usar o nó específico
                 const mediaNode = isImage ? mediaMessage.imageMessage : mediaMessage.videoMessage;
-                
+
                 // Verifica se o mediaNode tem as chaves necessárias para download (incluindo Buffer/string vazios)
                 const hasValidMediaKey = mediaNode.mediaKey && 
                     !(Buffer.isBuffer(mediaNode.mediaKey) && mediaNode.mediaKey.length === 0) && 
                     !(typeof mediaNode.mediaKey === 'string' && mediaNode.mediaKey.length === 0);
-                    
+
                 const hasValidPath = mediaNode.directPath || mediaNode.url;
 
                 if (!hasValidMediaKey || !hasValidPath) {
@@ -666,7 +666,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
 
                 // Reage com sucesso
                 await reagirMensagem(sock, message, "✅");
-                
+
                 console.log("✅ Figurinha NEEXT criada e enviada com sucesso!");
 
             } catch (err) {
@@ -693,7 +693,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 const apiUrl = `https://api.ypnk.dpdns.org/api/image/brat?text=${encodeURIComponent(text)}`;
                 console.log(`🔗 Chamando API: ${apiUrl}`);
                 const response = await axios.get(apiUrl, { responseType: 'arraybuffer' });
-                
+
                 if (!response.data) {
                     throw new Error('API retornou dados vazios');
                 }
@@ -767,7 +767,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             try {
                 // Busca imagens no Pinterest
                 const results = await pinterest(query);
-                
+
                 if (!results || results.length === 0) {
                     await reagirMensagem(sock, message, "❌");
                     await sock.sendMessage(from, { 
@@ -785,7 +785,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 // Envia cada imagem encontrada
                 for (let i = 0; i < imagesToSend.length; i++) {
                     const result = imagesToSend[i];
-                    
+
                     // Prepara a legenda da imagem
                     const caption = `📌 *Pinterest Search Result ${i + 1}*\n\n` +
                                   `👤 *Por:* ${result.fullname || result.upload_by || 'Anônimo'}\n` +
@@ -860,7 +860,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 // Parse dos argumentos (packname | author) fornecidos pelo usuário
                 const fullText = args.join(' ');
                 const [userPackname, userAuthor] = fullText.split('|').map(s => s.trim());
-                
+
                 if (!userPackname || !userAuthor) {
                     await reagirMensagem(sock, message, "❌");
                     await sock.sendMessage(from, {
@@ -894,7 +894,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
 
                 // Detecta se é animada de forma mais precisa
                 let isAnimated = false;
-                
+
                 // Primeiro verifica se está marcada como animada no metadado
                 if (quotedMsg.stickerMessage.isAnimated === true) {
                     isAnimated = true;
@@ -974,7 +974,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 await reagirMensagem(sock, message, "⏳");
 
                 const dateAKI = moment.tz('America/Sao_Paulo').format('DD');
-                
+
                 try {
                     const bypass = new AkinatorCloudflareBypass();
                     let aki;
@@ -1004,7 +1004,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
 
                     await reply(sock, from, `🧞‍♂️ *𝐀𝐊𝐈𝐍𝐀𝐓𝐎𝐑 𝐐𝐔𝐄𝐒𝐓𝐈𝐎𝐍𝐒:*\n• Questão: *${aki.question}*`);
                     await reagirMensagem(sock, message, "🧞‍♂️");
-                    
+
                 } catch (err) {
                     console.error("❌ Erro ao iniciar Akinator:", err);
                     await reagirMensagem(sock, message, "❌");
@@ -1066,7 +1066,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 }
 
                 const url = args[0];
-                
+
                 // Verifica se é um link válido do Instagram
                 if (!url.includes('instagram.com') && !url.includes('instagr.am')) {
                     await reply(sock, from, "❌ Link inválido! Use um link do Instagram.");
@@ -1078,7 +1078,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
 
                 // Chama a API do Instagram
                 const result = await igdl(url);
-                
+
                 if (!result.status || !result.data || result.data.length === 0) {
                     await reagirMensagem(sock, message, "❌");
                     await reply(sock, from, "❌ Não foi possível baixar este vídeo. Verifique se o link está correto e se o post é público.");
@@ -1086,7 +1086,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 }
 
                 const videoData = result.data[0];
-                
+
                 if (!videoData.url) {
                     await reagirMensagem(sock, message, "❌");
                     await reply(sock, from, "❌ Vídeo não encontrado neste post.");
@@ -1144,7 +1144,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 }, { quoted: selinho2 });
 
                 await reagirMensagem(sock, message, "✅");
-                
+
             } catch (error) {
                 console.error("❌ Erro no comando Instagram:", error);
                 await reagirMensagem(sock, message, "❌");
@@ -1198,7 +1198,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 const numero = args[args.length - 3];
                 const idade = args[args.length - 4];
                 const nome = args.slice(0, args.length - 4).join(' ');
-                
+
                 // Validações básicas
                 if (!nome || !idade || !numero || !instagram || !email) {
                     await reply(sock, from, "❌ Todos os campos são obrigatórios. Use o comando sem argumentos para ver as instruções.");
@@ -1247,7 +1247,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 if (result.status === 'success' && result.id) {
                     // Sucesso - reagir com ✅ e enviar mensagem
                     await reagirMensagem(sock, message, "✅");
-                    
+
                     const successMessage = `🎉 *ID CRIADO COM SUCESSO!*
 
 🆔 **Seu ID:** \`${result.id}\`
@@ -1292,7 +1292,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             } catch (error) {
                 console.error("❌ Erro no comando hermitwhite:", error);
                 await reagirMensagem(sock, message, "❌");
-                
+
                 if (error.code === 'ENOTFOUND' || error.code === 'ETIMEDOUT') {
                     await reply(sock, from, "❌ Erro de conexão com o servidor NEEXT. Verifique sua internet e tente novamente.");
                 } else if (error.response?.status === 429) {
@@ -1309,18 +1309,18 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 // Definir variáveis básicas primeiro
                 const sender = message.key.participant || from;
                 const senderName = message.pushName || "Usuário";
-                
+
                 // Obter saudação baseada no horário
                 const saudacao = obterSaudacao();
-                
+
                 // Obter informações do bot
                 const totalComandos = contarComandos();
                 const totalGrupos = await contarGrupos(sock);
-                
+
                 // Buscar versão do Baileys do package.json
                 const packageJson = require('./package.json');
                 const versaoBaileys = packageJson.dependencies['@whiskeysockets/baileys'];
-                
+
                 // Reagir à mensagem
                 await reagirMensagem(sock, message, "📋");
 
@@ -1351,7 +1351,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 };
 
                 // Montar o menu
-                const menuText = `╭──〔 𖦹∘̥⃟⸽⃟ INFORMAÇÕES 〕──⪩
+                const menuText = `╭──〔 𖦹∘̥⸽⃟ INFORMAÇÕES 〕──⪩
 │ 𖦹∘̥⸽🎯⃟ Prefixo: 「 ${prefix} 」
 │ 𖦹∘̥⸽📊⃟ Total de Comandos: ${totalComandos}
 │ 𖦹∘̥⸽🤖⃟ Nome do Bot: ${nomeDoBot}
@@ -1428,7 +1428,7 @@ async function responderPalavrasChave(sock, text, from, normalized) {
         await reply(sock, from, `🤖 Olá! Meu prefixo é: ${prefix}`);
         return true;
     }
-    
+
     if (msg === "ola") {
         await reagirMensagem(sock, normalized, "👋");
         await reply(sock, from, "Olá! Como posso ajudar?");
@@ -1446,20 +1446,20 @@ async function processarRespostaAkinator(sock, text, from, normalized) {
     try {
         // Só funciona em grupos
         if (!from.endsWith('@g.us') && !from.endsWith('@lid')) return false;
-        
+
         // Verifica se há um jogo ativo neste grupo
         const gameData = akinator.find(game => game.id === from);
         if (!gameData || gameData.finish === 1 || !gameData.aki) return false;
-        
+
         const sender = normalized.key.participant || from;
-        
+
         // Verifica se é a pessoa que iniciou o jogo
         if (gameData.jogador !== sender) return false;
-        
+
         // Normaliza a resposta do usuário
         const resposta = text.toLowerCase().trim();
         let answer = null;
-        
+
         // Mapeia as respostas para os valores aceitos pela API do Akinator
         switch (resposta) {
             case 'sim':
@@ -1491,30 +1491,30 @@ async function processarRespostaAkinator(sock, text, from, normalized) {
             default:
                 return false; // Não é uma resposta válida
         }
-        
+
         await reagirMensagem(sock, normalized, "⏳");
-        
+
         try {
             const aki = gameData.aki;
-            
+
             // Envia a resposta para o Akinator
             await aki.step(answer);
             gameData.step++;
-            
+
             // Verifica se o Akinator tem uma resposta/personagem (progresso > 80 ou mais de 78 perguntas)
             if (aki.progress >= 80 || aki.currentStep >= 78) {
                 await aki.win();
-                
+
                 if (aki.answers && aki.answers.length > 0) {
                     const personagem = aki.answers[0];
-                    
+
                     // Marca o jogo como finalizado
                     gameData.finish = 1;
                     salvarAkinator();
-                    
+
                     // Envia a resposta do Akinator com imagem se disponível
                     const imagemPersonagem = personagem.absolute_picture_path || personagem.picture_path;
-                    
+
                     if (imagemPersonagem && imagemPersonagem !== 'none') {
                         await sock.sendMessage(from, {
                             image: { url: imagemPersonagem },
@@ -1548,14 +1548,14 @@ async function processarRespostaAkinator(sock, text, from, normalized) {
                                               `✨ O Akinator descobriu em ${aki.currentStep} perguntas!\n` +
                                               `🎉 Parabéns! Digite *.akinator* para jogar novamente.`);
                     }
-                    
+
                     await reagirMensagem(sock, normalized, "🎉");
-                    
+
                     // Remove o jogo da lista
                     const gameIndex = akinator.indexOf(gameData);
                     akinator.splice(gameIndex, 1);
                     salvarAkinator();
-                    
+
                 } else {
                     await reply(sock, from, "🧞‍♂️ O Akinator não conseguiu descobrir desta vez! Digite *.resetaki* para tentar novamente.");
                     gameData.finish = 1;
@@ -1565,14 +1565,14 @@ async function processarRespostaAkinator(sock, text, from, normalized) {
                 // Continua o jogo com a próxima pergunta
                 await reply(sock, from, `🧞‍♂️ *AKINATOR QUESTIONS:*\n• Questão ${aki.currentStep + 1}: *${aki.question}*\n\n💭 *Progresso:* ${Math.round(aki.progress)}%`);
                 await reagirMensagem(sock, normalized, "🧞‍♂️");
-                
+
                 salvarAkinator();
             }
         } catch (akinatorError) {
             console.error("❌ Erro na API do Akinator:", akinatorError);
             await reagirMensagem(sock, normalized, "❌");
             await reply(sock, from, "❌ Erro na conexão com o Akinator. Digite *.resetaki* para reiniciar o jogo.");
-            
+
             // Remove o jogo da lista em caso de erro
             const gameIndex = akinator.findIndex(game => game.id === from);
             if (gameIndex !== -1) {
@@ -1580,9 +1580,9 @@ async function processarRespostaAkinator(sock, text, from, normalized) {
                 salvarAkinator();
             }
         }
-        
+
         return true;
-        
+
     } catch (err) {
         console.error("❌ Erro ao processar resposta do Akinator:", err);
         await reagirMensagem(sock, normalized, "❌");
@@ -1645,7 +1645,7 @@ function setupListeners(sock) {
                     const quotedMsg = normalized.message.extendedTextMessage?.contextInfo?.quotedMessage;
                     const hasQuotedMedia = quotedMsg && (quotedMsg.imageMessage || quotedMsg.videoMessage);
                     const hasDirectMedia = normalized.message.imageMessage || normalized.message.videoMessage;
-                    
+
                     if (hasQuotedMedia || hasDirectMedia) {
                         await handleCommand(sock, normalized, "s", [], from, quoted);
                     } else {
