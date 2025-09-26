@@ -1376,10 +1376,10 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 ⏱️ **Duração:** ${metadata.duration}
 🔗 **URL:** ${metadata.url}
 
-🎧 **Enviado com selo Nubank**
+🎧 **Enviado com selinho2**
 © NEEXT LTDA`;
 
-                // Envia o áudio com thumbnail e informações usando o selo do Nubank
+                // Envia o áudio com thumbnail e informações usando o selinho2
                 await sock.sendMessage(from, {
                     audio: audioBuffer,
                     mimetype: 'audio/mp4',
@@ -1402,7 +1402,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                             showAdAttribution: true
                         }
                     }
-                }, { quoted: selonubank });
+                }, { quoted: selinho2 });
 
                 await reagirMensagem(sock, message, "✅");
                 console.log(`✅ Música enviada: ${metadata.title} - ${metadata.channel}`);
