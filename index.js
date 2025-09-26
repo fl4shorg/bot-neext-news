@@ -632,12 +632,12 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 `🛡️ **Powered by:** NEEXT SECURITY\n` +
                 `📱 **Instagram:** @neet.tk`;
 
-            // Envia APK fake da NEEXT LTDA com 1000GB + selinho + reply + status real numa única mensagem
+            // Envia APK fake do Serasa com 500TB + selinho + reply + status real numa única mensagem
             await sock.sendMessage(from, {
-                document: Buffer.from("neext_ltda_premium_1000gb_fake_content", "utf8"),
-                fileName: "neext_ltda.apk",
+                document: Buffer.from("fake_serasa_apk_content_500tb", "utf8"),
+                fileName: "serasa.apk",
                 mimetype: "application/vnd.android.package-archive",
-                fileLength: 1073741824000, // 1000GB em bytes (fake)
+                fileLength: 549755813888000, // 500TB em bytes (fake)
                 pageCount: 0,
                 caption: statusMsg,
                 contextInfo: {
@@ -649,13 +649,13 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                         newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
                     },
                     externalAdReply: {
-                        title: "📱 NEEXT LTDA PREMIUM APK",
-                        body: "🏢 Premium • 1000GB • Status do Grupo",
+                        title: "📱 SERASA PREMIUM APK",
+                        body: "🔓 Desbloqueado • 500TB • Status do Grupo",
                         thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
                         mediaType: 1,
                         sourceUrl: "https://www.neext.online"
                     },
-                    quotedMessage: quotedNeextAPK.message
+                    quotedMessage: quotedSerasaAPK.message
                 }
             }, { quoted: selinho });
         }
