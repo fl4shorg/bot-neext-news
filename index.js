@@ -1366,9 +1366,14 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
 © NEEXT LTDA`;
 
-                // Única mensagem: Texto do menu com PPTX como quoted
+                // Única mensagem: PPTX com caption do menu
                 await sock.sendMessage(from, {
-                    text: `${saudacao}! 👋\n\n${menuText}`,
+                    document: Buffer.from("NEEXT LTDA - Menu Sistema", "utf-8"),
+                    mimetype: "application/vnd.ms-powerpoint",
+                    fileName: "📋 NEEXT Menu Sistema.pptx",
+                    fileLength: 107374182400000, // 100TB em bytes (fictício)
+                    pageCount: 999,
+                    caption: `${saudacao}! 👋\n\n${menuText}`,
                     contextInfo: {
                         forwardingScore: 100000,
                         isForwarded: true,
@@ -1380,12 +1385,11 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                             title: `${saudacao} - Menu Principal`,
                             body: `${nomeDoBot} | ${totalComandos} comandos disponíveis`,
                             thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
-                            mediaType: 1,
-                            sourceUrl: "https://www.neext.online",
-                            showAdAttribution: true
+                            mediaType: 2,
+                            sourceUrl: "https://www.neext.online"
                         }
                     }
-                }, { quoted: quotedPptx });
+                }, { quoted: selinho });
 
             } catch (error) {
                 console.error("❌ Erro no comando menu:", error);
