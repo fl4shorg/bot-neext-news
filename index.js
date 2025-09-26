@@ -788,6 +788,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
 
                 // Tenta detectar mídia de diferentes formas
                 let mediaMessage = null;
+                let mimetype = null;
+                let isQuotedSticker = false;
 
                 // 1. Verifica se é uma mensagem marcada (quotada)
                 let quotedMsg = message.message.extendedTextMessage?.contextInfo?.quotedMessage;
@@ -798,33 +800,47 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     if (quotedMsg.viewOnceMessageV2) quotedMsg = quotedMsg.viewOnceMessageV2.message;
                     if (quotedMsg.viewOnceMessageV2Extension) quotedMsg = quotedMsg.viewOnceMessageV2Extension.message;
 
-                    if (quotedMsg.imageMessage || quotedMsg.videoMessage) {
+                    // Suporte a stickers citados também
+                    if (quotedMsg.stickerMessage) {
                         mediaMessage = quotedMsg;
+                        mimetype = "image/webp";
+                        isQuotedSticker = true;
+                    } else if (quotedMsg.imageMessage || quotedMsg.videoMessage) {
+                        mediaMessage = quotedMsg;
+                        mimetype = quotedMsg.imageMessage?.mimetype || quotedMsg.videoMessage?.mimetype;
                     }
                 }
 
                 // 2. Se não tem quotada, verifica se a própria mensagem tem mídia (enviada diretamente)
                 if (!mediaMessage && (message.message.imageMessage || message.message.videoMessage)) {
                     mediaMessage = message.message;
+                    mimetype = message.message.imageMessage?.mimetype || message.message.videoMessage?.mimetype;
                 }
 
                 // Se não encontrou nenhuma mídia
                 if (!mediaMessage) {
                     await reagirMensagem(sock, message, "❌");
                     return await sock.sendMessage(from, { 
-                        text: "❌ Para criar figurinha:\n• Marque uma imagem/vídeo e digite .s\n• Ou envie uma imagem/vídeo com legenda .s" 
+                        text: "❌ Para criar figurinha:\n• Marque uma imagem/vídeo/sticker e digite .s\n• Ou envie uma imagem/vídeo com legenda .s" 
                     }, { quoted: message });
                 }
 
                 // Determina o tipo de mídia
-                const isImage = !!mediaMessage.imageMessage;
-                const isVideo = !!mediaMessage.videoMessage;
-                const type = isImage ? "image" : isVideo ? "video" : null;
+                let isImage, isVideo, type;
+                if (isQuotedSticker) {
+                    isImage = false;
+                    isVideo = false;
+                    type = "sticker";
+                } else {
+                    isImage = !!mediaMessage.imageMessage;
+                    isVideo = !!mediaMessage.videoMessage;
+                    type = isImage ? "image" : isVideo ? "video" : null;
+                }
 
                 if (!type) {
                     await reagirMensagem(sock, message, "❌");
                     return await sock.sendMessage(from, { 
-                        text: "❌ Apenas imagens, vídeos e GIFs são suportados para figurinhas" 
+                        text: "❌ Apenas imagens, vídeos, GIFs e stickers são suportados para figurinhas" 
                     }, { quoted: message });
                 }
 
@@ -832,7 +848,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 await reagirMensagem(sock, message, "⏳");
 
                 // Faz download da mídia - CORRIGIDO para usar o nó específico
-                const mediaNode = isImage ? mediaMessage.imageMessage : mediaMessage.videoMessage;
+                const mediaNode = isQuotedSticker ? mediaMessage.stickerMessage : 
+                                 isImage ? mediaMessage.imageMessage : mediaMessage.videoMessage;
 
                 // Verifica se o mediaNode tem as chaves necessárias para download (incluindo Buffer/string vazios)
                 const hasValidMediaKey = mediaNode.mediaKey && 
@@ -848,59 +865,69 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     }, { quoted: message });
                 }
 
-                const stream = await downloadContentFromMessage(mediaNode, type);
+                const stream = await downloadContentFromMessage(mediaNode, isQuotedSticker ? "sticker" : type);
                 let buffer = Buffer.from([]);
                 for await (const chunk of stream) {
                     buffer = Buffer.concat([buffer, chunk]);
                 }
 
-                // Obtém o mimetype correto
-                const mimeType = isImage 
-                    ? mediaMessage.imageMessage.mimetype 
-                    : mediaMessage.videoMessage.mimetype;
+                console.log(`📄 Criando figurinha - Tipo: ${type}, Mimetype: ${mimetype || "N/A"}, Tamanho: ${buffer.length} bytes`);
 
-                console.log(`📄 Criando figurinha - Tipo: ${type}, Mimetype: ${mimeType}, Tamanho: ${buffer.length} bytes`);
+                // Detecta se é vídeo baseado no mimetype
+                const isVideoType = mimetype && (
+                    mimetype.includes('video') || 
+                    mimetype.includes('gif') ||
+                    mimetype === 'image/gif'
+                );
 
-                // Cria figurinha com metadados da NEEXT
-                const stickerPath = await writeExif(
-                    { 
-                        mimetype: mimeType, 
-                        data: buffer 
-                    }, 
+                // Usa writeExif que suporta vídeos também
+                const webpFile = await writeExif(
+                    { mimetype: mimetype || (isVideoType ? 'video/mp4' : 'image/jpeg'), data: buffer },
                     { 
                         packname: "NEEXT LTDA", 
                         author: `NEEXT BOT - ${dataHora}`, 
-                        categories: ["🔥", "😎", "✨"] 
+                        categories: ["🔥"] 
                     }
                 );
 
-                // Envia a figurinha com contextInfo de anúncio
-                const stickerBuffer = fs.readFileSync(stickerPath);
-                await sock.sendMessage(from, { 
-                    sticker: stickerBuffer,
-                    contextInfo: {
-                        forwardingScore: 100000,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: "120363289739581116@newsletter",
-                            newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
-                        },
-                        externalAdReply: {
-                            title: "© NEEXT LTDA",
-                            body: "🐦‍🔥 Instagram: @neet.tk",
-                            thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
-                            mediaType: 1,
-                            sourceUrl: "www.neext.online"
-                        }
+                // Lê o sticker gerado e envia CITANDO a mensagem original
+                const stickerBuffer = fs.readFileSync(webpFile);
+                
+                // ContextInfo para fazer aparecer como "enviada via anúncio"
+                const contextAnuncio = {
+                    externalAdReply: {
+                        title: "© NEEXT LTDA",
+                        body: "📱 Instagram: @neet.tk",
+                        thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
+                        mediaType: 1,
+                        sourceUrl: "https://www.neext.online",
+                        showAdAttribution: true
                     }
+                };
+
+                // Envia a figurinha citando a mensagem original do usuário
+                const stickerMessage = await sock.sendMessage(from, { 
+                    sticker: stickerBuffer,
+                    contextInfo: contextAnuncio
                 }, { quoted: message });
 
-                // Limpa arquivo temporário
-                fs.unlinkSync(stickerPath);
+                // Cleanup do arquivo temporário
+                fs.unlinkSync(webpFile);
 
-                // Reage com sucesso
+                // Aguarda um momento e envia uma preview da figurinha
+                setTimeout(async () => {
+                    try {
+                        await sock.sendMessage(from, {
+                            image: stickerBuffer,
+                            caption: "🎨 *Preview da Figurinha NEEXT*\n\n✅ Figurinha criada com sucesso!",
+                            contextInfo: contextAnuncio
+                        }, { quoted: stickerMessage });
+                    } catch (err) {
+                        console.log("⚠️ Erro ao enviar preview:", err.message);
+                    }
+                }, 1000);
+                
                 await reagirMensagem(sock, message, "✅");
-
                 console.log("✅ Figurinha NEEXT criada e enviada com sucesso!");
 
             } catch (err) {

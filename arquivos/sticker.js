@@ -10,37 +10,70 @@ function getRandomFile(ext) {
     return path.join(tmpdir(), `${Crypto.randomBytes(6).readUIntLE(0, 6).toString(36)}${ext}`);
 }
 
-// Converte Buffer para WebP
-async function bufferToWebp(buffer, isVideo = false) {
-    const input = getRandomFile(isVideo ? ".mp4" : ".jpg");
+// Converte Buffer para WebP preservando transparência
+async function bufferToWebp(buffer, isVideo = false, mimetype = null) {
+    // Detecta extensão correta baseada no mimetype para preservar transparência
+    let inputExt;
+    if (isVideo) {
+        inputExt = ".mp4";
+    } else if (mimetype) {
+        if (mimetype.includes('png')) inputExt = ".png";
+        else if (mimetype.includes('webp')) inputExt = ".webp";
+        else if (mimetype.includes('gif')) inputExt = ".gif";
+        else inputExt = ".jpg";
+    } else {
+        inputExt = ".jpg";
+    }
+
+    const input = getRandomFile(inputExt);
     const output = getRandomFile(".webp");
 
     fs.writeFileSync(input, buffer);
 
     await new Promise((resolve, reject) => {
         const ffmpegCommand = ff(input)
-            .on("error", reject)
+            .on("error", (err) => {
+                // Cleanup input file on error
+                if (fs.existsSync(input)) fs.unlinkSync(input);
+                reject(err);
+            })
             .on("end", () => resolve());
 
-        // Para vídeos, adicionar tempo máximo de 3 segundos ANTES das opções (compatibilidade WhatsApp)
         if (isVideo) {
-            ffmpegCommand.duration(3);
+            // Para vídeos: máximo 6 segundos, 512px, preserva transparência
+            ffmpegCommand
+                .duration(6)
+                .addOutputOptions([
+                    "-vcodec", "libwebp",
+                    "-vf", "fps=15,scale=512:512:force_original_aspect_ratio=decrease,format=rgba,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=0x00000000,setsar=1",
+                    "-loop", "0",
+                    "-preset", "default",
+                    "-an",
+                    "-vsync", "0",
+                    "-q:v", "80",
+                    "-lossless", "0"
+                ]);
+        } else {
+            // Para imagens: 512px, preserva transparência, sem fps
+            ffmpegCommand
+                .addOutputOptions([
+                    "-vcodec", "libwebp",
+                    "-vf", "scale=512:512:force_original_aspect_ratio=decrease,format=rgba,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=0x00000000,setsar=1",
+                    "-loop", "0",
+                    "-preset", "default",
+                    "-an",
+                    "-vsync", "0",
+                    "-q:v", "90"
+                ]);
         }
 
         ffmpegCommand
-            .addOutputOptions([
-                "-vcodec", "libwebp",
-                "-vf", "scale='min(320,iw)':'min(320,ih)':force_original_aspect_ratio=decrease,fps=15,pad=320:320:-1:-1:color=white@0.0",
-                "-loop", "0",
-                "-preset", "default",
-                "-an",
-                "-vsync", "0"
-            ])
             .toFormat("webp")
             .save(output);
     });
 
-    fs.unlinkSync(input);
+    // Cleanup input file
+    if (fs.existsSync(input)) fs.unlinkSync(input);
     return output;
 }
 
@@ -71,7 +104,7 @@ async function writeExif(media, metadata) {
         mimetype === 'image/gif'
     );
     
-    const webpFile = await bufferToWebp(data, isVideo);
+    const webpFile = await bufferToWebp(data, isVideo, mimetype);
     const img = new webp.Image();
     await img.load(webpFile);
 
