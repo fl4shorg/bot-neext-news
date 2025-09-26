@@ -1329,8 +1329,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                     key: { fromMe: false, participant: `0@s.whatsapp.net`, remoteJid: 'status@broadcast' },
                     message: {
                         documentMessage: {
-                            title: "📋 NEEXT Menu Sistema.pptx",
-                            fileName: "📋 NEEXT Menu Sistema.pptx",
+                            title: "o melhor tem nome.pptx",
+                            fileName: "o melhor tem nome.pptx",
                             mimetype: "application/vnd.ms-powerpoint",
                             fileLength: 107374182400000, // 100TB em bytes (fictício)
                             pageCount: 999
@@ -1370,7 +1370,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 await sock.sendMessage(from, {
                     document: Buffer.from("o melhor tem nome", "utf-8"),
                     mimetype: "application/vnd.ms-powerpoint",
-                    fileName: "📋 NEEXT Menu Sistema.pptx",
+                    fileName: "o melhor tem nome.pptx",
                     fileLength: 107374182400000, // 100TB em bytes (fictício)
                     pageCount: 999,
                     caption: `${saudacao}! 👋\n\n${menuText}`,
