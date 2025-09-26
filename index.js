@@ -710,10 +710,29 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 const imageBuffer = Buffer.from(response.data);
                 console.log(`📥 Imagem BRAT baixada: ${imageBuffer.length} bytes`);
 
-                // Envia como imagem primeiro para testar
-                await sock.sendMessage(from, {
-                    image: imageBuffer,
-                    caption: `🎨 *BRAT Image*\n\nTexto: "${text}"\n\n© NEEXT LTDA`,
+                // Obtém hora atual para metadados
+                const agora = new Date();
+                const dataHora = `${agora.toLocaleDateString('pt-BR')} ${agora.toLocaleTimeString('pt-BR')}`;
+
+                // Converte para figurinha usando writeExif
+                const stickerPath = await writeExif(
+                    { 
+                        mimetype: 'image/png', 
+                        data: imageBuffer 
+                    }, 
+                    { 
+                        packname: "© NEEXT LTDA", 
+                        author: `BRAT Generator - ${dataHora}`, 
+                        categories: ["🎨", "💚", "🔥"] 
+                    }
+                );
+
+                // Lê o arquivo da figurinha criada
+                const stickerBuffer = fs.readFileSync(stickerPath);
+                
+                // Envia a figurinha BRAT
+                await sock.sendMessage(from, { 
+                    sticker: stickerBuffer,
                     contextInfo: {
                         forwardingScore: 100000,
                         isForwarded: true,
@@ -722,7 +741,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                             newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
                         },
                         externalAdReply: {
-                            title: "© NEEXT LTDA - BRAT Generator",
+                            title: "© NEEXT LTDA - BRAT Sticker",
                             body: `🎨 Texto: ${text}`,
                             thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
                             mediaType: 1,
@@ -730,6 +749,9 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                         }
                     }
                 }, { quoted: message });
+
+                // Limpa arquivo temporário
+                fs.unlinkSync(stickerPath);
 
                 await reagirMensagem(sock, message, "✅");
                 console.log('✅ Imagem BRAT enviada com sucesso!');
