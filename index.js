@@ -710,48 +710,9 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 const imageBuffer = Buffer.from(response.data);
                 console.log(`📥 Imagem BRAT baixada: ${imageBuffer.length} bytes`);
 
-                // Obtém hora atual para metadados
-                const agora = new Date();
-                const dataHora = `${agora.toLocaleDateString('pt-BR')} ${agora.toLocaleTimeString('pt-BR')}`;
-
-                // Converte para figurinha usando writeExif
-                const stickerPath = await writeExif(
-                    { 
-                        mimetype: 'image/png', 
-                        data: imageBuffer 
-                    }, 
-                    { 
-                        packname: "© NEEXT LTDA", 
-                        author: `BRAT Generator - ${dataHora}`, 
-                        categories: ["🎨", "💚", "🔥"] 
-                    }
-                );
-
-                // Lê o arquivo da figurinha criada
-                const stickerBuffer = fs.readFileSync(stickerPath);
-                
-                // Envia a figurinha BRAT
-                await sock.sendMessage(from, { 
-                    sticker: stickerBuffer,
-                    contextInfo: {
-                        forwardingScore: 100000,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: "120363289739581116@newsletter",
-                            newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
-                        },
-                        externalAdReply: {
-                            title: "© NEEXT LTDA - BRAT Sticker",
-                            body: `🎨 Texto: ${text}`,
-                            thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
-                            mediaType: 1,
-                            sourceUrl: "www.neext.online"
-                        }
-                    }
-                }, { quoted: message });
-
-                // Limpa arquivo temporário
-                fs.unlinkSync(stickerPath);
+                // Usa a função createSticker que já funciona no bot
+                const { createSticker } = require("./arquivos/sticker.js");
+                await createSticker(imageBuffer, sock, from, false);
 
                 await reagirMensagem(sock, message, "✅");
                 console.log('✅ Imagem BRAT enviada com sucesso!');
