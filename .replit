@@ -28,3 +28,7 @@ args = "node main.js"
 [deployment]
 deploymentTarget = "vm"
 run = ["node", "main.js"]
+
+[nix]
+channel = "stable-25_05"
+packages = ["ffmpeg"]
