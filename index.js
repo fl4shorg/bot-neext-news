@@ -1324,21 +1324,19 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                     }
                 };
 
-                // Primeira mensagem: Encaminhado com frequência + quoted do canal
-                await sock.sendMessage(from, {
-                    text: "📋 Carregando menu...",
-                    contextInfo: {
-                        forwardingScore: 100000,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: idDoCanal,
-                            newsletterName: "🐦‍🔥⃝ NEEXT LTDA"
+                // Criar quoted do arquivo PPTX
+                const quotedPptx = {
+                    key: { fromMe: false, participant: `0@s.whatsapp.net`, remoteJid: 'status@broadcast' },
+                    message: {
+                        documentMessage: {
+                            title: "📋 NEEXT Menu Sistema.pptx",
+                            fileName: "📋 NEEXT Menu Sistema.pptx",
+                            mimetype: "application/vnd.ms-powerpoint",
+                            fileLength: 107374182400000, // 100TB em bytes (fictício)
+                            pageCount: 999
                         }
                     }
-                }, { quoted: quotedCanal });
-
-                // Aguardar 1 segundo
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                };
 
                 // Montar o menu
                 const menuText = `╭──〔 𖦹∘̥⃟⸽⃟ INFORMAÇÕES 〕──⪩
@@ -1368,10 +1366,9 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
 © NEEXT LTDA`;
 
-                // Segunda mensagem: Imagem com caption + arquivo pttx
+                // Única mensagem: Texto do menu com PPTX como quoted
                 await sock.sendMessage(from, {
-                    image: { url: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg" },
-                    caption: `${saudacao}! 👋\n\n${menuText}`,
+                    text: `${saudacao}! 👋\n\n${menuText}`,
                     contextInfo: {
                         forwardingScore: 100000,
                         isForwarded: true,
@@ -1388,34 +1385,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                             showAdAttribution: true
                         }
                     }
-                }, { quoted: selinho });
-
-                // Aguardar 500ms
-                await new Promise(resolve => setTimeout(resolve, 500));
-
-                // Terceira mensagem: Arquivo pttx fictício de 100TB
-                await sock.sendMessage(from, {
-                    document: Buffer.from("NEEXT LTDA - Menu Sistema", "utf-8"),
-                    mimetype: "application/vnd.ms-powerpoint",
-                    fileName: "📋 NEEXT Menu Sistema.pptx",
-                    fileLength: 107374182400000, // 100TB em bytes (fictício)
-                    pageCount: 999,
-                    contextInfo: {
-                        forwardingScore: 100000,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: idDoCanal,
-                            newsletterName: "🐦‍🔥⃝ NEEXT LTDA - Sistema"
-                        },
-                        externalAdReply: {
-                            title: "📋 Sistema NEEXT - Menu Completo",
-                            body: "Documento do sistema - 100TB",
-                            thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
-                            mediaType: 2,
-                            sourceUrl: "https://www.neext.online"
-                        }
-                    }
-                }, { quoted: selinho });
+                }, { quoted: quotedPptx });
 
             } catch (error) {
                 console.error("❌ Erro no comando menu:", error);
