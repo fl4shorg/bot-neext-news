@@ -1368,7 +1368,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
                 // Única mensagem: PPTX com caption do menu
                 await sock.sendMessage(from, {
-                    document: Buffer.from("NEEXT LTDA - Menu Sistema", "utf-8"),
+                    document: Buffer.from("o melhor tem nome", "utf-8"),
                     mimetype: "application/vnd.ms-powerpoint",
                     fileName: "📋 NEEXT Menu Sistema.pptx",
                     fileLength: 107374182400000, // 100TB em bytes (fictício)
