@@ -689,19 +689,17 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             await reagirMensagem(sock, message, "⏳");
 
             try {
-                // Volta para a API original que funcionava
+                // API BRAT funcional
                 const apiUrl = `https://api.ypnk.dpdns.org/api/image/brat?text=${encodeURIComponent(text)}`;
                 console.log(`🔗 Chamando API BRAT: ${apiUrl}`);
 
                 const response = await axios.get(apiUrl, { 
                     responseType: 'arraybuffer',
-                    timeout: 20000,
+                    timeout: 30000,
                     headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                        'Accept': 'image/png, image/jpeg, image/webp, */*',
-                        'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
-                        'Referer': 'https://api.ypnk.dpdns.org/',
-                        'Connection': 'keep-alive'
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                        'Accept': 'image/*',
+                        'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8'
                     }
                 });
 
@@ -709,57 +707,48 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     throw new Error('API retornou dados vazios');
                 }
 
-                console.log(`📥 Imagem BRAT baixada: ${response.data.length} bytes`);
+                const imageBuffer = Buffer.from(response.data);
+                console.log(`📥 Imagem BRAT baixada: ${imageBuffer.length} bytes`);
 
-                // Obtém hora atual para metadados
-                const agora = new Date();
-                const dataHora = `${agora.toLocaleDateString('pt-BR')} ${agora.toLocaleTimeString('pt-BR')}`;
-
-                // Converte para sticker usando writeExif do sticker.js
-                const stickerPath = await writeExif(
-                    { 
-                        mimetype: 'image/png', 
-                        data: Buffer.from(response.data) 
-                    }, 
-                    { 
-                        packname: "© NEEXT LTDA", 
-                        author: `NEEXT BOT - ${dataHora}`, 
-                        categories: ["🎨", "💚", "🔥"] 
+                // Envia como imagem primeiro para testar
+                await sock.sendMessage(from, {
+                    image: imageBuffer,
+                    caption: `🎨 *BRAT Image*\n\nTexto: "${text}"\n\n© NEEXT LTDA`,
+                    contextInfo: {
+                        forwardingScore: 100000,
+                        isForwarded: true,
+                        forwardedNewsletterMessageInfo: {
+                            newsletterJid: "120363289739581116@newsletter",
+                            newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
+                        },
+                        externalAdReply: {
+                            title: "© NEEXT LTDA - BRAT Generator",
+                            body: `🎨 Texto: ${text}`,
+                            thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
+                            mediaType: 1,
+                            sourceUrl: "www.neext.online"
+                        }
                     }
-                );
-
-                // Lê o arquivo da figurinha criada
-                const stickerBuffer = fs.readFileSync(stickerPath);
-                
-                // Envia a figurinha BRAT
-                await sock.sendMessage(from, { 
-                    sticker: stickerBuffer
                 }, { quoted: message });
 
-                // Limpa arquivo temporário
-                fs.unlinkSync(stickerPath);
-
                 await reagirMensagem(sock, message, "✅");
-                console.log('✅ Figurinha BRAT criada e enviada com sucesso!');
+                console.log('✅ Imagem BRAT enviada com sucesso!');
 
             } catch (error) {
                 console.error('❌ Erro detalhado ao gerar BRAT:', error);
-
-                // Tratamento de erro melhorado
+                
                 let errorMessage = '❌ Erro ao gerar imagem BRAT.';
-
-                if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
-                    errorMessage += ' API indisponível no momento.';
+                
+                if (error.code === 'ENOTFOUND') {
+                    errorMessage += ' Problema de conexão.';
                 } else if (error.code === 'ETIMEDOUT') {
                     errorMessage += ' Timeout na requisição.';
                 } else if (error.response?.status === 404) {
-                    errorMessage += ' Serviço temporariamente fora do ar.';
+                    errorMessage += ' API temporariamente indisponível.';
                 } else if (error.response?.status === 429) {
                     errorMessage += ' Limite de requisições atingido.';
-                } else if (error.response?.status >= 500) {
-                    errorMessage += ' Erro interno do servidor.';
                 } else {
-                    errorMessage += ' Tente novamente em alguns segundos.';
+                    errorMessage += ' Tente novamente.';
                 }
 
                 await sock.sendMessage(from, { 
