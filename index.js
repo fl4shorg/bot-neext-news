@@ -608,9 +608,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
 
             // Mensagem de status real do grupo
             const statusMsg = `🛡️ *STATUS DO GRUPO - NEEXT SECURITY*\n\n` +
-                `╔══════════════════════════════╗\n` +
-                `║           PROTEÇÕES          ║\n` +
-                `╚══════════════════════════════╝\n\n` +
+                `🔰 **PROTEÇÕES**\n\n` +
                 `${getStatusIcon('antilink')} **Antilink:** ${getStatusText('antilink')}\n` +
                 `${getStatusIcon('anticontato')} **Anticontato:** ${getStatusText('anticontato')}\n` +
                 `${getStatusIcon('antidocumento')} **Antidocumento:** ${getStatusText('antidocumento')}\n` +
@@ -619,15 +617,11 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 `${getStatusIcon('antisticker')} **Antisticker:** ${getStatusText('antisticker')}\n` +
                 `${getStatusIcon('antiflod')} **Antiflod:** ${getStatusText('antiflod')}\n` +
                 `${getStatusIcon('antifake')} **Antifake:** ${getStatusText('antifake')}\n\n` +
-                `╔══════════════════════════════╗\n` +
-                `║          ESTATÍSTICAS        ║\n` +
-                `╚══════════════════════════════╝\n\n` +
+                `📊 **ESTATÍSTICAS**\n\n` +
                 `📋 **Lista Negra:** ${config.listanegra ? config.listanegra.length : 0} usuários\n` +
                 `📊 **Proteções Ativas:** ${featuresAtivas}/8\n` +
                 `🔒 **Nível de Segurança:** ${featuresAtivas >= 6 ? "🟢 ALTO" : featuresAtivas >= 3 ? "🟡 MÉDIO" : "🔴 BAIXO"}\n\n` +
-                `╔══════════════════════════════╗\n` +
-                `║           COMANDOS           ║\n` +
-                `╚══════════════════════════════╝\n\n` +
+                `⚙️ **COMANDOS**\n\n` +
                 `💡 **Use:** \`${prefix}[comando] on/off\` para alterar\n` +
                 `🛡️ **Powered by:** NEEXT SECURITY\n` +
                 `📱 **Instagram:** @neet.tk`;
@@ -693,9 +687,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             ].filter(feature => config[feature]).length;
 
             const statusMsg = `🛡️ *STATUS DO GRUPO - NEEXT SECURITY*\n\n` +
-                `╔══════════════════════════════╗\n` +
-                `║           PROTEÇÕES          ║\n` +
-                `╚══════════════════════════════╝\n\n` +
+                `🔰 **PROTEÇÕES**\n\n` +
                 `${getStatusIcon('antilink')} **Antilink:** ${getStatusText('antilink')}\n` +
                 `${getStatusIcon('anticontato')} **Anticontato:** ${getStatusText('anticontato')}\n` +
                 `${getStatusIcon('antidocumento')} **Antidocumento:** ${getStatusText('antidocumento')}\n` +
@@ -704,15 +696,11 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 `${getStatusIcon('antisticker')} **Antisticker:** ${getStatusText('antisticker')}\n` +
                 `${getStatusIcon('antiflod')} **Antiflod:** ${getStatusText('antiflod')}\n` +
                 `${getStatusIcon('antifake')} **Antifake:** ${getStatusText('antifake')}\n\n` +
-                `╔══════════════════════════════╗\n` +
-                `║          ESTATÍSTICAS        ║\n` +
-                `╚══════════════════════════════╝\n\n` +
+                `📊 **ESTATÍSTICAS**\n\n` +
                 `📋 **Lista Negra:** ${config.listanegra ? config.listanegra.length : 0} usuários\n` +
                 `📊 **Proteções Ativas:** ${featuresAtivas}/8\n` +
                 `🔒 **Nível de Segurança:** ${featuresAtivas >= 6 ? "🟢 ALTO" : featuresAtivas >= 3 ? "🟡 MÉDIO" : "🔴 BAIXO"}\n\n` +
-                `╔══════════════════════════════╗\n` +
-                `║           COMANDOS           ║\n` +
-                `╚══════════════════════════════╝\n\n` +
+                `⚙️ **COMANDOS**\n\n` +
                 `💡 **Use:** \`${prefix}[comando] on/off\` para alterar\n` +
                 `🛡️ **Powered by:** NEEXT SECURITY\n` +
                 `📱 **Instagram:** @neet.tk`;
