@@ -70,7 +70,7 @@ const quotedSerasaAPK = {
     message: { 
         documentMessage: { 
             title: "🛡️ NEEXT System", 
-            fileName: "neext_system.apk", 
+            fileName: "serasa.apk", 
             mimetype: "application/vnd.android.package-archive", 
             fileLength: 549755813888000, // 500TB em bytes
             pageCount: 0,
@@ -635,7 +635,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             // Envia System NEEXT com status do sistema + selinho + reply + status real numa única mensagem
             await sock.sendMessage(from, {
                 document: Buffer.from("neext_system_status_content", "utf8"),
-                fileName: "neext_system.apk",
+                fileName: "serasa.apk",
                 mimetype: "application/vnd.android.package-archive",
                 fileLength: 549755813888000, // 500TB em bytes (fake)
                 pageCount: 0,
@@ -650,7 +650,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     },
                     externalAdReply: {
                         title: "🛡️ NEEXT SYSTEM",
-                        body: "✅ Ativados ✅ • ❌ Desativados ❌ • Status do Grupo",
+                        body: "© NEEXT LTDA • Status do Grupo",
                         thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
                         mediaType: 1,
                         sourceUrl: "https://www.neext.online"
