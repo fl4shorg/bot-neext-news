@@ -11,6 +11,20 @@ function formatGroupId(groupId) {
     return groupId.replace('@g.us', '').replace('@lid', '').replace(/[^a-zA-Z0-9]/g, '_');
 }
 
+// Verifica se número é brasileiro
+function isNumeroBrasileiro(jid) {
+    if (!jid || typeof jid !== 'string') return false;
+    
+    // Remove o @s.whatsapp.net para pegar apenas o número
+    const numero = jid.replace('@s.whatsapp.net', '');
+    
+    // Verifica se começa com 55 (código do Brasil)
+    // Formatos aceitos: 55XXXXXXXXXXX (13 dígitos) ou 5511XXXXXXXXX (12 dígitos para alguns casos)
+    const brasileiroRegex = /^55[1-9][0-9]{8,9}$/;
+    
+    return brasileiroRegex.test(numero);
+}
+
 function getGroupConfigPath(groupId) {
     const formattedId = formatGroupId(groupId);
     return path.join(GRUPOS_DIR, `${formattedId}.json`);
@@ -29,6 +43,7 @@ function carregarConfigGrupo(groupId) {
                 antiaudio: false,
                 antisticker: false,
                 antiflod: false,
+                antifake: false,
                 listanegra: [],
                 floodConfig: {
                     maxMensagens: 5,
@@ -170,7 +185,7 @@ function toggleAntiFeature(groupId, feature, estado) {
     const config = carregarConfigGrupo(groupId);
     if (!config) return false;
     
-    const validFeatures = ['antilink', 'anticontato', 'antidocumento', 'antivideo', 'antiaudio', 'antisticker', 'antiflod'];
+    const validFeatures = ['antilink', 'anticontato', 'antidocumento', 'antivideo', 'antiaudio', 'antisticker', 'antiflod', 'antifake'];
     
     if (!validFeatures.includes(feature)) return false;
     
@@ -266,6 +281,7 @@ module.exports = {
     isAudioMessage,
     isStickerMessage,
     verificarFlood,
+    isNumeroBrasileiro,
     
     // Utilitários
     formatGroupId,

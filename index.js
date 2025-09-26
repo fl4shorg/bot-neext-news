@@ -399,34 +399,53 @@ async function processarAntiSpam(sock, normalized) {
     }
 }
 
-// Auto-ban para lista negra quando usuário entra no grupo
+// Auto-ban para lista negra e antifake quando usuário entra no grupo
 async function processarListaNegra(sock, participants, groupId, action) {
     try {
         if (action !== 'add') return;
         
+        const config = antiSpam.carregarConfigGrupo(groupId);
+        if (!config) return;
+        
         for (const participant of participants) {
+            const participantNumber = participant.split('@')[0];
+            let motivo = '';
+            let shouldBan = false;
+            
+            // Verifica lista negra
             if (antiSpam.isUsuarioListaNegra(participant, groupId)) {
-                const participantNumber = participant.split('@')[0];
+                motivo = 'Lista Negra';
+                shouldBan = true;
                 console.log(`📋 Usuário da lista negra detectado: ${participantNumber}`);
-                
+            }
+            
+            // Verifica antifake (números não brasileiros)
+            if (config.antifake && !antiSpam.isNumeroBrasileiro(participant)) {
+                motivo = motivo ? `${motivo} + Antifake` : 'Antifake (não brasileiro)';
+                shouldBan = true;
+                console.log(`🇧🇷 Usuário não brasileiro detectado: ${participantNumber}`);
+            }
+            
+            if (shouldBan) {
                 // Aguarda um pouco antes de banir
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 
                 const resultadoBan = await banirUsuario(sock, groupId, participant);
                 
                 if (resultadoBan.success) {
+                    const emoji = motivo.includes('Lista Negra') ? '📋' : '🇧🇷';
                     await sock.sendMessage(groupId, {
-                        text: `⚔️ *LISTA NEGRA - USUÁRIO BANIDO!*\n\n@${participantNumber} foi removido automaticamente!\n\n📋 Usuário estava na lista negra\n⚡ Ação: Ban automático`,
+                        text: `⚔️ *${emoji} ${motivo.toUpperCase()} - USUÁRIO BANIDO!*\n\n@${participantNumber} foi removido automaticamente!\n\n🚫 Motivo: ${motivo}\n⚡ Ação: Ban automático`,
                         mentions: [participant]
                     });
-                    console.log(`⚔️ LISTA NEGRA: ${participantNumber} banido automaticamente do grupo ${groupId}`);
+                    console.log(`⚔️ ${motivo.toUpperCase()}: ${participantNumber} banido automaticamente do grupo ${groupId}`);
                 } else {
-                    console.log(`⚠️ LISTA NEGRA: Não foi possível banir ${participantNumber} - ${resultadoBan.reason}`);
+                    console.log(`⚠️ ${motivo.toUpperCase()}: Não foi possível banir ${participantNumber} - ${resultadoBan.reason}`);
                 }
             }
         }
     } catch (err) {
-        console.error("❌ Erro no processamento de lista negra:", err);
+        console.error("❌ Erro no processamento de lista negra/antifake:", err);
     }
 }
 
@@ -532,7 +551,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             await sock.sendMessage(from, { text: "📌 Bot está ativo e conectado!" }, { quoted: message });
             break;
 
-        case "status": {
+        case "grupo-status":
+        case "config": {
             // Só funciona em grupos
             if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
                 await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
@@ -560,7 +580,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             // Conta quantos estão ativos
             const featuresAtivas = [
                 'antilink', 'anticontato', 'antidocumento', 
-                'antivideo', 'antiaudio', 'antisticker', 'antiflod'
+                'antivideo', 'antiaudio', 'antisticker', 'antiflod', 'antifake'
             ].filter(feature => config[feature]).length;
 
             const statusMsg = `🛡️ *STATUS DO GRUPO*\n\n` +
@@ -570,9 +590,10 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 `${getStatusIcon('antivideo')} Antivideo: ${getStatusText('antivideo')}\n` +
                 `${getStatusIcon('antiaudio')} Antiaudio: ${getStatusText('antiaudio')}\n` +
                 `${getStatusIcon('antisticker')} Antisticker: ${getStatusText('antisticker')}\n` +
-                `${getStatusIcon('antiflod')} Antiflod: ${getStatusText('antiflod')}\n\n` +
+                `${getStatusIcon('antiflod')} Antiflod: ${getStatusText('antiflod')}\n` +
+                `${getStatusIcon('antifake')} Antifake: ${getStatusText('antifake')}\n\n` +
                 `📋 Lista Negra: ${config.listanegra ? config.listanegra.length : 0} usuários\n\n` +
-                `📊 *Resumo:* ${featuresAtivas}/7 proteções ativas\n\n` +
+                `📊 *Resumo:* ${featuresAtivas}/8 proteções ativas\n\n` +
                 `💡 Use ${prefix}[comando] on/off para alterar`;
             
             await reply(sock, from, statusMsg);
@@ -693,7 +714,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
         case "antivideo":
         case "antiaudio":
         case "antisticker":
-        case "antiflod": {
+        case "antiflod":
+        case "antifake": {
             // Só funciona em grupos
             if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
                 await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
@@ -717,7 +739,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 'antivideo': '🎥 ANTIVIDEO',
                 'antiaudio': '🎵 ANTIAUDIO',
                 'antisticker': '🏷️ ANTISTICKER',
-                'antiflod': '🌊 ANTIFLOD'
+                'antiflod': '🌊 ANTIFLOD',
+                'antifake': '🇧🇷 ANTIFAKE'
             };
 
             const featureName = featureNames[command];
