@@ -1,0 +1,15 @@
+{
+  "antilink": false,
+  "anticontato": false,
+  "antidocumento": false,
+  "antivideo": false,
+  "antiaudio": false,
+  "antisticker": true,
+  "antiflod": false,
+  "antifake": false,
+  "listanegra": [],
+  "floodConfig": {
+    "maxMensagens": 5,
+    "tempoSegundos": 10
+  }
+}

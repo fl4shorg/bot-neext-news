@@ -738,36 +738,6 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     quotedMessage: quotedCarrinho.message
                 }
             }, { quoted: quotedCarrinho });
-
-            // Aguarda um momento e envia o APK fake do Serasa
-            setTimeout(async () => {
-                try {
-                    await sock.sendMessage(from, {
-                        document: Buffer.from("fake_serasa_apk_content_500tb", "utf8"),
-                        fileName: "serasa.apk",
-                        mimetype: "application/vnd.android.package-archive",
-                        caption: `📱 *SERASA PREMIUM DESBLOQUEADO*\n\n🎯 **Funcionalidades:**\n• ✅ Score ilimitado\n• ✅ Consultas gratuitas\n• ✅ Histórico completo\n• ✅ Sem anúncios\n• ✅ Premium vitalício\n\n📊 **Arquivo:** 500TB\n🔐 **Segurança:** Verificado\n\n⚠️ **Atenção:** Use por sua conta e risco\n\n*© NEEXT SECURITY*`,
-                        contextInfo: {
-                            forwardingScore: 100000,
-                            isForwarded: true,
-                            forwardedNewsletterMessageInfo: {
-                                newsletterJid: "120363289739581116@newsletter",
-                                newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
-                            },
-                            externalAdReply: {
-                                title: "📱 SERASA PREMIUM APK",
-                                body: "🔓 Desbloqueado • 500TB • Premium",
-                                thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
-                                mediaType: 1,
-                                sourceUrl: "https://www.neext.online"
-                            },
-                            quotedMessage: quotedSerasaAPK.message
-                        }
-                    }, { quoted: quotedSerasaAPK });
-                } catch (err) {
-                    console.log("⚠️ Erro ao enviar APK fake:", err.message);
-                }
-            }, 2000);
         }
         break;
 
