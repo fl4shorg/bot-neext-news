@@ -728,25 +728,12 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     }
                 );
 
-                // Envia a figurinha BRAT com contextInfo de anúncio
+                // Lê o arquivo da figurinha criada
                 const stickerBuffer = fs.readFileSync(stickerPath);
+                
+                // Envia a figurinha BRAT
                 await sock.sendMessage(from, { 
-                    sticker: stickerBuffer,
-                    contextInfo: {
-                        forwardingScore: 100000,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: "120363289739581116@newsletter",
-                            newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
-                        },
-                        externalAdReply: {
-                            title: "© NEEXT LTDA - BRAT",
-                            body: "🎨 Figurinha BRAT criada • Instagram: @neet.tk",
-                            thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
-                            mediaType: 1,
-                            sourceUrl: "www.neext.online"
-                        }
-                    }
+                    sticker: stickerBuffer
                 }, { quoted: message });
 
                 // Limpa arquivo temporário
