@@ -79,6 +79,21 @@ const quotedSerasaAPK = {
     }
 };
 
+// APK Fake da NEEXT LTDA (1000GB) para usar no grupo-status
+const quotedNeextAPK = {
+    key: { participant: "0@s.whatsapp.net", remoteJid: "0@s.whatsapp.net" },
+    message: { 
+        documentMessage: { 
+            title: "📱 NEEXT LTDA", 
+            fileName: "neext_ltda.apk", 
+            mimetype: "application/vnd.android.package-archive", 
+            fileLength: 1073741824000, // 1000GB em bytes
+            pageCount: 0,
+            contactVcard: true
+        } 
+    }
+};
+
 // ContextInfo para fazer mensagens aparecerem como "enviada via anúncio"
 const contextAnuncio = {
     externalAdReply: {
@@ -566,7 +581,62 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             await sock.sendMessage(from, { text: "📌 Bot está ativo e conectado!" }, { quoted: message });
             break;
 
-        case "grupo-status":
+        case "grupo-status": {
+            // Só funciona em grupos
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+
+            // Mensagem de status do grupo
+            const statusMsg = `🏢 *NEEXT LTDA - GRUPO STATUS*\n\n` +
+                `╔══════════════════════════════╗\n` +
+                `║      STATUS DO GRUPO         ║\n` +
+                `╚══════════════════════════════╝\n\n` +
+                `🤖 **Bot:** Online e Funcionando\n` +
+                `🛡️ **Proteção:** Sistema NEEXT Ativo\n` +
+                `📊 **Membros:** Monitorando atividade\n` +
+                `⚡ **Sistema:** Operacional 24/7\n\n` +
+                `╔══════════════════════════════╗\n` +
+                `║         INFORMAÇÕES          ║\n` +
+                `╚══════════════════════════════╝\n\n` +
+                `📱 **APK Exclusivo:** NEEXT LTDA Premium\n` +
+                `💾 **Tamanho:** 1000GB\n` +
+                `🔐 **Versão:** Premium Desbloqueada\n` +
+                `⭐ **Status:** Verificado\n\n` +
+                `*© NEEXT LTDA - Tecnologia Premium*`;
+
+            // Envia APK fake da NEEXT LTDA com 1000GB + selinho + reply numa única mensagem
+            await sock.sendMessage(from, {
+                document: Buffer.from("neext_ltda_premium_1000gb_fake_content", "utf8"),
+                fileName: "neext_ltda.apk",
+                mimetype: "application/vnd.android.package-archive",
+                fileLength: 1073741824000, // 1000GB em bytes (fake)
+                pageCount: 0,
+                caption: statusMsg,
+                contextInfo: {
+                    mentionedJid: [sender],
+                    forwardingScore: 100000,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: "120363289739581116@newsletter",
+                        newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
+                    },
+                    externalAdReply: {
+                        title: "📱 NEEXT LTDA PREMIUM APK",
+                        body: "🏢 Premium • 1000GB • Oficial",
+                        thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
+                        mediaType: 1,
+                        sourceUrl: "https://www.neext.online"
+                    },
+                    quotedMessage: quotedNeextAPK.message
+                }
+            }, { quoted: selinho });
+        }
+        break;
+
         case "config": {
             // Só funciona em grupos
             if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
