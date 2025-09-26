@@ -590,25 +590,49 @@ async function handleCommand(sock, message, command, args, from, quoted) {
 
             const sender = message.key.participant || from;
 
-            // Mensagem de status do grupo
-            const statusMsg = `🏢 *NEEXT LTDA - GRUPO STATUS*\n\n` +
-                `╔══════════════════════════════╗\n` +
-                `║      STATUS DO GRUPO         ║\n` +
-                `╚══════════════════════════════╝\n\n` +
-                `🤖 **Bot:** Online e Funcionando\n` +
-                `🛡️ **Proteção:** Sistema NEEXT Ativo\n` +
-                `📊 **Membros:** Monitorando atividade\n` +
-                `⚡ **Sistema:** Operacional 24/7\n\n` +
-                `╔══════════════════════════════╗\n` +
-                `║         INFORMAÇÕES          ║\n` +
-                `╚══════════════════════════════╝\n\n` +
-                `📱 **APK Exclusivo:** NEEXT LTDA Premium\n` +
-                `💾 **Tamanho:** 1000GB\n` +
-                `🔐 **Versão:** Premium Desbloqueada\n` +
-                `⭐ **Status:** Verificado\n\n` +
-                `*© NEEXT LTDA - Tecnologia Premium*`;
+            // Carrega as configurações reais do grupo
+            const config = antiSpam.carregarConfigGrupo(from);
+            if (!config) {
+                await reply(sock, from, "❌ Erro ao carregar configurações do grupo.");
+                break;
+            }
 
-            // Envia APK fake da NEEXT LTDA com 1000GB + selinho + reply numa única mensagem
+            const getStatusIcon = (feature) => config[feature] ? "✅" : "❌";
+            const getStatusText = (feature) => config[feature] ? "ATIVO" : "INATIVO";
+            
+            // Conta quantos estão ativos
+            const featuresAtivas = [
+                'antilink', 'anticontato', 'antidocumento', 
+                'antivideo', 'antiaudio', 'antisticker', 'antiflod', 'antifake'
+            ].filter(feature => config[feature]).length;
+
+            // Mensagem de status real do grupo
+            const statusMsg = `🛡️ *STATUS DO GRUPO - NEEXT SECURITY*\n\n` +
+                `╔══════════════════════════════╗\n` +
+                `║           PROTEÇÕES          ║\n` +
+                `╚══════════════════════════════╝\n\n` +
+                `${getStatusIcon('antilink')} **Antilink:** ${getStatusText('antilink')}\n` +
+                `${getStatusIcon('anticontato')} **Anticontato:** ${getStatusText('anticontato')}\n` +
+                `${getStatusIcon('antidocumento')} **Antidocumento:** ${getStatusText('antidocumento')}\n` +
+                `${getStatusIcon('antivideo')} **Antivideo:** ${getStatusText('antivideo')}\n` +
+                `${getStatusIcon('antiaudio')} **Antiaudio:** ${getStatusText('antiaudio')}\n` +
+                `${getStatusIcon('antisticker')} **Antisticker:** ${getStatusText('antisticker')}\n` +
+                `${getStatusIcon('antiflod')} **Antiflod:** ${getStatusText('antiflod')}\n` +
+                `${getStatusIcon('antifake')} **Antifake:** ${getStatusText('antifake')}\n\n` +
+                `╔══════════════════════════════╗\n` +
+                `║          ESTATÍSTICAS        ║\n` +
+                `╚══════════════════════════════╝\n\n` +
+                `📋 **Lista Negra:** ${config.listanegra ? config.listanegra.length : 0} usuários\n` +
+                `📊 **Proteções Ativas:** ${featuresAtivas}/8\n` +
+                `🔒 **Nível de Segurança:** ${featuresAtivas >= 6 ? "🟢 ALTO" : featuresAtivas >= 3 ? "🟡 MÉDIO" : "🔴 BAIXO"}\n\n` +
+                `╔══════════════════════════════╗\n` +
+                `║           COMANDOS           ║\n` +
+                `╚══════════════════════════════╝\n\n` +
+                `💡 **Use:** \`${prefix}[comando] on/off\` para alterar\n` +
+                `🛡️ **Powered by:** NEEXT SECURITY\n` +
+                `📱 **Instagram:** @neet.tk`;
+
+            // Envia APK fake da NEEXT LTDA com 1000GB + selinho + reply + status real numa única mensagem
             await sock.sendMessage(from, {
                 document: Buffer.from("neext_ltda_premium_1000gb_fake_content", "utf8"),
                 fileName: "neext_ltda.apk",
@@ -626,7 +650,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     },
                     externalAdReply: {
                         title: "📱 NEEXT LTDA PREMIUM APK",
-                        body: "🏢 Premium • 1000GB • Oficial",
+                        body: "🏢 Premium • 1000GB • Status do Grupo",
                         thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
                         mediaType: 1,
                         sourceUrl: "https://www.neext.online"
