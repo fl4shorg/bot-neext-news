@@ -532,6 +532,53 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             await sock.sendMessage(from, { text: "📌 Bot está ativo e conectado!" }, { quoted: message });
             break;
 
+        case "status": {
+            // Só funciona em grupos
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const ehAdmin = await isAdmin(sock, from, sender);
+            const ehDono = isDono(sender);
+
+            if (!ehAdmin && !ehDono) {
+                await reply(sock, from, "❌ Apenas admins podem usar este comando.");
+                break;
+            }
+
+            const config = antiSpam.carregarConfigGrupo(from);
+            if (!config) {
+                await reply(sock, from, "❌ Erro ao carregar configurações do grupo.");
+                break;
+            }
+
+            const getStatusIcon = (feature) => config[feature] ? "✅" : "❌";
+            const getStatusText = (feature) => config[feature] ? "ATIVO" : "INATIVO";
+            
+            // Conta quantos estão ativos
+            const featuresAtivas = [
+                'antilink', 'anticontato', 'antidocumento', 
+                'antivideo', 'antiaudio', 'antisticker', 'antiflod'
+            ].filter(feature => config[feature]).length;
+
+            const statusMsg = `🛡️ *STATUS DO GRUPO*\n\n` +
+                `${getStatusIcon('antilink')} Antilink: ${getStatusText('antilink')}\n` +
+                `${getStatusIcon('anticontato')} Anticontato: ${getStatusText('anticontato')}\n` +
+                `${getStatusIcon('antidocumento')} Antidocumento: ${getStatusText('antidocumento')}\n` +
+                `${getStatusIcon('antivideo')} Antivideo: ${getStatusText('antivideo')}\n` +
+                `${getStatusIcon('antiaudio')} Antiaudio: ${getStatusText('antiaudio')}\n` +
+                `${getStatusIcon('antisticker')} Antisticker: ${getStatusText('antisticker')}\n` +
+                `${getStatusIcon('antiflod')} Antiflod: ${getStatusText('antiflod')}\n\n` +
+                `📋 Lista Negra: ${config.listanegra ? config.listanegra.length : 0} usuários\n\n` +
+                `📊 *Resumo:* ${featuresAtivas}/7 proteções ativas\n\n` +
+                `💡 Use ${prefix}[comando] on/off para alterar`;
+            
+            await reply(sock, from, statusMsg);
+        }
+        break;
+
         // ==== SISTEMA DE LISTA NEGRA ====
         case "listanegra":
         case "blacklist": {
