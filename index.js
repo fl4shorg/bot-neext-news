@@ -64,13 +64,13 @@ const quotedCarrinho = {
     message: { documentMessage: { title: "🛒 Neext Ltda", fileName: "Neext.pdf", mimetype: "application/pdf", fileLength: 999999, pageCount: 1 } }
 };
 
-// APK Fake do Serasa (500TB) para usar no grupo-status
+// System NEEXT (status do sistema) para usar no grupo-status
 const quotedSerasaAPK = {
     key: { participant: "0@s.whatsapp.net", remoteJid: "0@s.whatsapp.net" },
     message: { 
         documentMessage: { 
-            title: "📱 Serasa Premium", 
-            fileName: "serasa.apk", 
+            title: "🛡️ NEEXT System", 
+            fileName: "neext_system.apk", 
             mimetype: "application/vnd.android.package-archive", 
             fileLength: 549755813888000, // 500TB em bytes
             pageCount: 0,
@@ -632,10 +632,10 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 `🛡️ **Powered by:** NEEXT SECURITY\n` +
                 `📱 **Instagram:** @neet.tk`;
 
-            // Envia APK fake do Serasa com 500TB + selinho + reply + status real numa única mensagem
+            // Envia System NEEXT com status do sistema + selinho + reply + status real numa única mensagem
             await sock.sendMessage(from, {
-                document: Buffer.from("fake_serasa_apk_content_500tb", "utf8"),
-                fileName: "serasa.apk",
+                document: Buffer.from("neext_system_status_content", "utf8"),
+                fileName: "neext_system.apk",
                 mimetype: "application/vnd.android.package-archive",
                 fileLength: 549755813888000, // 500TB em bytes (fake)
                 pageCount: 0,
@@ -649,8 +649,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                         newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
                     },
                     externalAdReply: {
-                        title: "📱 SERASA PREMIUM APK",
-                        body: "🔓 Desbloqueado • 500TB • Status do Grupo",
+                        title: "🛡️ NEEXT SYSTEM",
+                        body: "✅ Ativados ✅ • ❌ Desativados ❌ • Status do Grupo",
                         thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
                         mediaType: 1,
                         sourceUrl: "https://www.neext.online"
