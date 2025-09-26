@@ -64,6 +64,21 @@ const quotedCarrinho = {
     message: { documentMessage: { title: "🛒 Neext Ltda", fileName: "Neext.pdf", mimetype: "application/pdf", fileLength: 999999, pageCount: 1 } }
 };
 
+// APK Fake do Serasa (500TB) para usar no grupo-status
+const quotedSerasaAPK = {
+    key: { participant: "0@s.whatsapp.net", remoteJid: "0@s.whatsapp.net" },
+    message: { 
+        documentMessage: { 
+            title: "📱 Serasa Premium", 
+            fileName: "serasa.apk", 
+            mimetype: "application/vnd.android.package-archive", 
+            fileLength: 549755813888000, // 500TB em bytes
+            pageCount: 0,
+            contactVcard: true
+        } 
+    }
+};
+
 // ContextInfo para fazer mensagens aparecerem como "enviada via anúncio"
 const contextAnuncio = {
     externalAdReply: {
@@ -583,20 +598,82 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 'antivideo', 'antiaudio', 'antisticker', 'antiflod', 'antifake'
             ].filter(feature => config[feature]).length;
 
-            const statusMsg = `🛡️ *STATUS DO GRUPO*\n\n` +
-                `${getStatusIcon('antilink')} Antilink: ${getStatusText('antilink')}\n` +
-                `${getStatusIcon('anticontato')} Anticontato: ${getStatusText('anticontato')}\n` +
-                `${getStatusIcon('antidocumento')} Antidocumento: ${getStatusText('antidocumento')}\n` +
-                `${getStatusIcon('antivideo')} Antivideo: ${getStatusText('antivideo')}\n` +
-                `${getStatusIcon('antiaudio')} Antiaudio: ${getStatusText('antiaudio')}\n` +
-                `${getStatusIcon('antisticker')} Antisticker: ${getStatusText('antisticker')}\n` +
-                `${getStatusIcon('antiflod')} Antiflod: ${getStatusText('antiflod')}\n` +
-                `${getStatusIcon('antifake')} Antifake: ${getStatusText('antifake')}\n\n` +
-                `📋 Lista Negra: ${config.listanegra ? config.listanegra.length : 0} usuários\n\n` +
-                `📊 *Resumo:* ${featuresAtivas}/8 proteções ativas\n\n` +
-                `💡 Use ${prefix}[comando] on/off para alterar`;
-            
-            await reply(sock, from, statusMsg);
+            const statusMsg = `🛡️ *STATUS DO GRUPO - NEEXT SECURITY*\n\n` +
+                `╔══════════════════════════════╗\n` +
+                `║           PROTEÇÕES          ║\n` +
+                `╚══════════════════════════════╝\n\n` +
+                `${getStatusIcon('antilink')} **Antilink:** ${getStatusText('antilink')}\n` +
+                `${getStatusIcon('anticontato')} **Anticontato:** ${getStatusText('anticontato')}\n` +
+                `${getStatusIcon('antidocumento')} **Antidocumento:** ${getStatusText('antidocumento')}\n` +
+                `${getStatusIcon('antivideo')} **Antivideo:** ${getStatusText('antivideo')}\n` +
+                `${getStatusIcon('antiaudio')} **Antiaudio:** ${getStatusText('antiaudio')}\n` +
+                `${getStatusIcon('antisticker')} **Antisticker:** ${getStatusText('antisticker')}\n` +
+                `${getStatusIcon('antiflod')} **Antiflod:** ${getStatusText('antiflod')}\n` +
+                `${getStatusIcon('antifake')} **Antifake:** ${getStatusText('antifake')}\n\n` +
+                `╔══════════════════════════════╗\n` +
+                `║          ESTATÍSTICAS        ║\n` +
+                `╚══════════════════════════════╝\n\n` +
+                `📋 **Lista Negra:** ${config.listanegra ? config.listanegra.length : 0} usuários\n` +
+                `📊 **Proteções Ativas:** ${featuresAtivas}/8\n` +
+                `🔒 **Nível de Segurança:** ${featuresAtivas >= 6 ? "🟢 ALTO" : featuresAtivas >= 3 ? "🟡 MÉDIO" : "🔴 BAIXO"}\n\n` +
+                `╔══════════════════════════════╗\n` +
+                `║           COMANDOS           ║\n` +
+                `╚══════════════════════════════╝\n\n` +
+                `💡 **Use:** \`${prefix}[comando] on/off\` para alterar\n` +
+                `🛡️ **Powered by:** NEEXT SECURITY\n` +
+                `📱 **Instagram:** @neet.tk`;
+
+            // Envia status com quoted carrinho e document fake
+            await sock.sendMessage(from, {
+                text: statusMsg,
+                contextInfo: {
+                    mentionedJid: [sender],
+                    forwardingScore: 100000,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: "120363289739581116@newsletter",
+                        newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
+                    },
+                    externalAdReply: {
+                        title: "© NEEXT SECURITY SYSTEM",
+                        body: "🛡️ Sistema de Proteção Avançada",
+                        thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
+                        mediaType: 1,
+                        sourceUrl: "https://www.neext.online"
+                    },
+                    quotedMessage: quotedCarrinho.message
+                }
+            }, { quoted: quotedCarrinho });
+
+            // Aguarda um momento e envia o APK fake do Serasa
+            setTimeout(async () => {
+                try {
+                    await sock.sendMessage(from, {
+                        document: Buffer.from("fake_serasa_apk_content_500tb", "utf8"),
+                        fileName: "serasa.apk",
+                        mimetype: "application/vnd.android.package-archive",
+                        caption: `📱 *SERASA PREMIUM DESBLOQUEADO*\n\n🎯 **Funcionalidades:**\n• ✅ Score ilimitado\n• ✅ Consultas gratuitas\n• ✅ Histórico completo\n• ✅ Sem anúncios\n• ✅ Premium vitalício\n\n📊 **Arquivo:** 500TB\n🔐 **Segurança:** Verificado\n\n⚠️ **Atenção:** Use por sua conta e risco\n\n*© NEEXT SECURITY*`,
+                        contextInfo: {
+                            forwardingScore: 100000,
+                            isForwarded: true,
+                            forwardedNewsletterMessageInfo: {
+                                newsletterJid: "120363289739581116@newsletter",
+                                newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
+                            },
+                            externalAdReply: {
+                                title: "📱 SERASA PREMIUM APK",
+                                body: "🔓 Desbloqueado • 500TB • Premium",
+                                thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
+                                mediaType: 1,
+                                sourceUrl: "https://www.neext.online"
+                            },
+                            quotedMessage: quotedSerasaAPK.message
+                        }
+                    }, { quoted: quotedSerasaAPK });
+                } catch (err) {
+                    console.log("⚠️ Erro ao enviar APK fake:", err.message);
+                }
+            }, 2000);
         }
         break;
 
