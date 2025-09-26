@@ -26,6 +26,9 @@ const moment = require('moment-timezone');
 const antilinkFile = path.join(__dirname, "antilink.json");
 const akinatorFile = path.join(__dirname, "database/grupos/games/akinator.json");
 
+// Sistema Anti-Spam Completo
+const antiSpam = require("./arquivos/antispam.js");
+
 // importa banner + logger centralizados
 const { mostrarBanner, logMensagem } = require("./export");
 
@@ -181,25 +184,7 @@ carregarAkinator();
 
 
 
-function carregarAntilink() {
-    try {
-        if (!fs.existsSync(antilinkFile)) fs.writeFileSync(antilinkFile, "{}");
-        const data = fs.readFileSync(antilinkFile, "utf-8");
-        return JSON.parse(data);
-    } catch (err) {
-        console.error("❌ Erro ao carregar antilink.json:", err);
-        return {};
-    }
-}
-
-// Salva no JSON
-function salvarAntilink(data) {
-    try {
-        fs.writeFileSync(antilinkFile, JSON.stringify(data, null, 2));
-    } catch (err) {
-        console.error("❌ Erro ao salvar antilink.json:", err);
-    }
-}
+// Funções antigas removidas - agora usamos o sistema antiSpam completo
 
 // Função utilitária: extrai texto da mensagem
 function getMessageText(message) {
@@ -331,53 +316,63 @@ async function banirUsuario(sock, groupId, userId) {
     }
 }
 
-// Processa antilink
-async function processarAntilink(sock, normalized) {
+// Processa sistema anti-spam completo
+async function processarAntiSpam(sock, normalized) {
     try {
         const from = normalized.key.remoteJid;
         const sender = normalized.key.participant || from;
-        const text = getMessageText(normalized.message);
 
         // Só funciona em grupos
         if (!from.endsWith('@g.us') && !from.endsWith('@lid')) return false;
 
-        // Carrega configuração do antilink
-        const antilinkData = carregarAntilink();
-        if (!antilinkData[from]) return false; // Grupo não tem antilink ativo
-
-        // Verifica se tem links
-        if (!detectarLinks(text)) return false;
-
-        // Não remove se for o dono
+        // Não processa se for o dono
         if (isDono(sender)) {
-            await reply(sock, from, "🛡️ Dono detectado com link, mas não será removido!");
             return false;
         }
 
-        // Não remove se for admin
+        // Não processa se for admin
         const ehAdmin = await isAdmin(sock, from, sender);
         if (ehAdmin) {
-            await reply(sock, from, "👮‍♂️ Admin detectado com link, mas não será removido!");
             return false;
         }
+
+        // Processa mensagem para verificar violações
+        const resultado = antiSpam.processarMensagem(normalized.message, from, sender);
+        
+        if (!resultado.violacao) return false;
+
+        const senderNumber = sender.split('@')[0];
+        const tiposViolacao = resultado.tipos;
+        
+        console.log(`🚫 Violação detectada de ${senderNumber}: ${tiposViolacao.join(', ')}`);
 
         // Remove a mensagem
         const removido = await removerMensagem(sock, normalized.key);
 
         if (removido) {
-            const senderNumber = sender.split('@')[0];
-            console.log(`🚫 Mensagem com link removida de ${senderNumber}`);
-
             // Aguarda um pouco antes de tentar banir
             await new Promise(resolve => setTimeout(resolve, 1000));
 
             // Tenta banir o usuário
             const resultadoBan = await banirUsuario(sock, from, sender);
+            
+            const emojiMap = {
+                'antilink': '🔗',
+                'anticontato': '📞',
+                'antidocumento': '📄',
+                'antivideo': '🎥',
+                'antiaudio': '🎵',
+                'antisticker': '🏷️',
+                'antiflod': '🌊'
+            };
+            
+            const violacaoEmoji = emojiMap[tiposViolacao[0]] || '🚫';
+            const violacaoNome = tiposViolacao[0].toUpperCase();
 
             if (resultadoBan.success) {
                 await reagirMensagem(sock, normalized, "⚔️");
-                await reply(sock, from, `⚔️ *ANTILINK - USUÁRIO BANIDO!*\n\n@${senderNumber} foi removido do grupo por enviar link!\n\n🚫 Links não são permitidos aqui.\n⚡ Ação: Delete + Ban automático`, [sender]);
-                console.log(`⚔️ SUCESSO: ${senderNumber} banido do grupo ${from}`);
+                await reply(sock, from, `⚔️ *${violacaoEmoji} ${violacaoNome} - USUÁRIO BANIDO!*\n\n@${senderNumber} foi removido do grupo por violação!\n\n🚫 Conteúdo não permitido: ${tiposViolacao.join(', ')}\n⚡ Ação: Delete + Ban automático`, [sender]);
+                console.log(`⚔️ SUCESSO: ${senderNumber} banido do grupo ${from} por ${tiposViolacao.join(', ')}`);
             } else {
                 await reagirMensagem(sock, normalized, "🚫");
                 let motivo = "";
@@ -392,15 +387,46 @@ async function processarAntilink(sock, normalized) {
                         motivo = "Erro técnico no banimento";
                 }
 
-                await reply(sock, from, `🚫 *ANTILINK ATIVO*\n\n@${senderNumber} sua mensagem foi deletada por conter link!\n\n⚠️ **Não foi possível banir:** ${motivo}\n💡 **Solução:** Torne o bot admin do grupo`, [sender]);
+                await reply(sock, from, `🚫 *${violacaoEmoji} ${violacaoNome} ATIVO*\n\n@${senderNumber} sua mensagem foi deletada por violação!\n\n⚠️ **Não foi possível banir:** ${motivo}\n💡 **Solução:** Torne o bot admin do grupo`, [sender]);
                 console.log(`⚠️ FALHA: Não foi possível banir ${senderNumber} - ${motivo}`);
             }
         }
 
         return true;
     } catch (err) {
-        console.error("❌ Erro no processamento antilink:", err);
+        console.error("❌ Erro no processamento anti-spam:", err);
         return false;
+    }
+}
+
+// Auto-ban para lista negra quando usuário entra no grupo
+async function processarListaNegra(sock, participants, groupId, action) {
+    try {
+        if (action !== 'add') return;
+        
+        for (const participant of participants) {
+            if (antiSpam.isUsuarioListaNegra(participant, groupId)) {
+                const participantNumber = participant.split('@')[0];
+                console.log(`📋 Usuário da lista negra detectado: ${participantNumber}`);
+                
+                // Aguarda um pouco antes de banir
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                const resultadoBan = await banirUsuario(sock, groupId, participant);
+                
+                if (resultadoBan.success) {
+                    await sock.sendMessage(groupId, {
+                        text: `⚔️ *LISTA NEGRA - USUÁRIO BANIDO!*\n\n@${participantNumber} foi removido automaticamente!\n\n📋 Usuário estava na lista negra\n⚡ Ação: Ban automático`,
+                        mentions: [participant]
+                    });
+                    console.log(`⚔️ LISTA NEGRA: ${participantNumber} banido automaticamente do grupo ${groupId}`);
+                } else {
+                    console.log(`⚠️ LISTA NEGRA: Não foi possível banir ${participantNumber} - ${resultadoBan.reason}`);
+                }
+            }
+        }
+    } catch (err) {
+        console.error("❌ Erro no processamento de lista negra:", err);
     }
 }
 
@@ -506,16 +532,15 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             await sock.sendMessage(from, { text: "📌 Bot está ativo e conectado!" }, { quoted: message });
             break;
 
-        case "antilink": {
-            // Só funciona em grupos
+        // ==== SISTEMA DE LISTA NEGRA ====
+        case "listanegra":
+        case "blacklist": {
             if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
                 await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
                 break;
             }
 
             const sender = message.key.participant || from;
-
-            // Verifica se é admin ou dono
             const ehAdmin = await isAdmin(sock, from, sender);
             const ehDono = isDono(sender);
 
@@ -524,24 +549,163 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 break;
             }
 
-            const antilinkData = carregarAntilink();
             const acao = args[0]?.toLowerCase();
+            const numero = args[1];
 
-            if (acao === "on" || acao === "ativar" || acao === "1") {
-                antilinkData[from] = true;
-                salvarAntilink(antilinkData);
-                await reagirMensagem(sock, message, "✅");
-                await reply(sock, from, "✅ *ANTILINK ATIVADO*\n\n⚔️ Links serão removidos e usuário será BANIDO\n🛡️ Admins e dono são protegidos\n🚫 Ação dupla: Delete + Ban automático");
-            } 
-            else if (acao === "off" || acao === "desativar" || acao === "0") {
-                delete antilinkData[from];
-                salvarAntilink(antilinkData);
-                await reagirMensagem(sock, message, "❌");
-                await reply(sock, from, "❌ *ANTILINK DESATIVADO*\n\n✅ Links agora são permitidos");
+            if (acao === "add" || acao === "adicionar") {
+                if (!numero) {
+                    await reply(sock, from, `❌ Use: ${prefix}listanegra add @usuario ou ${prefix}listanegra add 5527999999999`);
+                    break;
+                }
+                
+                let userId = numero;
+                if (numero.startsWith('@')) {
+                    userId = numero.replace('@', '') + '@s.whatsapp.net';
+                } else if (!numero.includes('@')) {
+                    userId = numero + '@s.whatsapp.net';
+                }
+
+                const resultado = antiSpam.adicionarListaNegra(userId, from);
+                if (resultado) {
+                    await reagirMensagem(sock, message, "✅");
+                    await reply(sock, from, `✅ *USUÁRIO ADICIONADO À LISTA NEGRA*\n\n👤 Usuário: @${userId.split('@')[0]}\n⚠️ Será banido automaticamente ao entrar no grupo`, [userId]);
+                } else {
+                    await reply(sock, from, "❌ Erro ao adicionar usuário à lista negra");
+                }
+            }
+            else if (acao === "remove" || acao === "remover") {
+                if (!numero) {
+                    await reply(sock, from, `❌ Use: ${prefix}listanegra remove @usuario ou ${prefix}listanegra remove 5527999999999`);
+                    break;
+                }
+                
+                let userId = numero;
+                if (numero.startsWith('@')) {
+                    userId = numero.replace('@', '') + '@s.whatsapp.net';
+                } else if (!numero.includes('@')) {
+                    userId = numero + '@s.whatsapp.net';
+                }
+
+                const resultado = antiSpam.removerListaNegra(userId, from);
+                if (resultado) {
+                    await reagirMensagem(sock, message, "✅");
+                    await reply(sock, from, `✅ *USUÁRIO REMOVIDO DA LISTA NEGRA*\n\n👤 Usuário: @${userId.split('@')[0]}\n✅ Não será mais banido automaticamente`, [userId]);
+                } else {
+                    await reply(sock, from, "❌ Erro ao remover usuário da lista negra");
+                }
+            }
+            else if (acao === "list" || acao === "listar" || acao === "ver") {
+                const config = antiSpam.carregarConfigGrupo(from);
+                if (!config || !config.listanegra || config.listanegra.length === 0) {
+                    await reply(sock, from, "📋 *LISTA NEGRA VAZIA*\n\nNenhum usuário na lista negra deste grupo.");
+                } else {
+                    const usuarios = config.listanegra.map((user, index) => `${index + 1}. @${user.split('@')[0]}`).join('\n');
+                    await reply(sock, from, `📋 *LISTA NEGRA DO GRUPO*\n\n${usuarios}\n\n⚠️ Total: ${config.listanegra.length} usuários\n💡 Serão banidos automaticamente ao entrar`, config.listanegra);
+                }
             }
             else {
-                const status = antilinkData[from] ? "🟢 ATIVO" : "🔴 INATIVO";
-                await reply(sock, from, `🔗 *STATUS ANTILINK*\n\nStatus: ${status}\n\n📝 *Como usar:*\n• \`${prefix}antilink on\` - Ativar\n• \`${prefix}antilink off\` - Desativar\n\n⚔️ *Quando ativo:*\n• Deleta mensagem com link\n• Bane o usuário automaticamente\n• Protege admins e dono\n\n⚠️ Apenas admins podem usar`);
+                await reply(sock, from, `📋 *SISTEMA DE LISTA NEGRA*\n\n📝 *Comandos disponíveis:*\n• \`${prefix}listanegra add @usuario\` - Adicionar\n• \`${prefix}listanegra remove @usuario\` - Remover\n• \`${prefix}listanegra list\` - Ver lista\n\n⚠️ *Como funciona:*\n• Usuários na lista negra são banidos automaticamente\n• Ao entrar no grupo, são removidos imediatamente\n• Apenas admins podem gerenciar a lista\n\n💡 *Exemplo:*\n\`${prefix}listanegra add 5527999999999\``);
+            }
+        }
+        break;
+
+        case "status-anti":
+        case "anti-status": {
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const config = antiSpam.carregarConfigGrupo(from);
+            if (!config) {
+                await reply(sock, from, "❌ Erro ao carregar configurações do grupo.");
+                break;
+            }
+
+            const getStatus = (feature) => config[feature] ? "🟢 ATIVO" : "🔴 INATIVO";
+            
+            const statusMsg = `🛡️ *STATUS DO SISTEMA ANTI-SPAM*\n\n` +
+                `🔗 Antilink: ${getStatus('antilink')}\n` +
+                `📞 Anticontato: ${getStatus('anticontato')}\n` +
+                `📄 Antidocumento: ${getStatus('antidocumento')}\n` +
+                `🎥 Antivideo: ${getStatus('antivideo')}\n` +
+                `🎵 Antiaudio: ${getStatus('antiaudio')}\n` +
+                `🏷️ Antisticker: ${getStatus('antisticker')}\n` +
+                `🌊 Antiflod: ${getStatus('antiflod')}\n\n` +
+                `📋 Lista Negra: ${config.listanegra ? config.listanegra.length : 0} usuários\n\n` +
+                `💡 *Use os comandos individuais para ativar/desativar*`;
+            
+            await reply(sock, from, statusMsg);
+        }
+        break;
+
+        // ==== SISTEMA ANTI-SPAM COMPLETO ====
+        case "antilink":
+        case "anticontato":
+        case "antidocumento":
+        case "antivideo":
+        case "antiaudio":
+        case "antisticker":
+        case "antiflod": {
+            // Só funciona em grupos
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const ehAdmin = await isAdmin(sock, from, sender);
+            const ehDono = isDono(sender);
+
+            if (!ehAdmin && !ehDono) {
+                await reply(sock, from, "❌ Apenas admins podem usar este comando.");
+                break;
+            }
+
+            const acao = args[0]?.toLowerCase();
+            const featureNames = {
+                'antilink': '🔗 ANTILINK',
+                'anticontato': '📞 ANTICONTATO',
+                'antidocumento': '📄 ANTIDOCUMENTO',
+                'antivideo': '🎥 ANTIVIDEO',
+                'antiaudio': '🎵 ANTIAUDIO',
+                'antisticker': '🏷️ ANTISTICKER',
+                'antiflod': '🌊 ANTIFLOD'
+            };
+
+            const featureName = featureNames[command];
+
+            if (acao === "on" || acao === "ativar" || acao === "1") {
+                const resultado = antiSpam.toggleAntiFeature(from, command, 'on');
+                if (resultado) {
+                    await reagirMensagem(sock, message, "✅");
+                    await reply(sock, from, `✅ *${featureName} ATIVADO*\n\n⚔️ Conteúdo será removido e usuário será BANIDO\n🛡️ Admins e dono são protegidos\n🚫 Ação dupla: Delete + Ban automático`);
+                } else {
+                    await reply(sock, from, `❌ Erro ao ativar ${featureName}`);
+                }
+            } 
+            else if (acao === "off" || acao === "desativar" || acao === "0") {
+                const resultado = antiSpam.toggleAntiFeature(from, command, 'off');
+                if (resultado !== false) {
+                    await reagirMensagem(sock, message, "❌");
+                    await reply(sock, from, `❌ *${featureName} DESATIVADO*\n\n✅ Conteúdo agora é permitido`);
+                } else {
+                    await reply(sock, from, `❌ Erro ao desativar ${featureName}`);
+                }
+            }
+            else {
+                const config = antiSpam.carregarConfigGrupo(from);
+                const status = config && config[command] ? "🟢 ATIVO" : "🔴 INATIVO";
+                const descriptions = {
+                    'antilink': 'Remove links e bane usuário',
+                    'anticontato': 'Remove contatos e bane usuário',
+                    'antidocumento': 'Remove documentos e bane usuário',
+                    'antivideo': 'Remove vídeos e bane usuário',
+                    'antiaudio': 'Remove áudios e bane usuário',
+                    'antisticker': 'Remove stickers e bane usuário',
+                    'antiflod': 'Remove flood (spam) e bane usuário'
+                };
+                await reply(sock, from, `${featureName}\n\nStatus: ${status}\n\n📝 *Como usar:*\n• \`${prefix}${command} on\` - Ativar\n• \`${prefix}${command} off\` - Desativar\n\n⚔️ *Quando ativo:*\n• ${descriptions[command]}\n• Protege admins e dono\n\n⚠️ Apenas admins podem usar`);
             }
         }
         break;
@@ -1699,6 +1863,16 @@ async function processarRespostaAkinator(sock, text, from, normalized) {
 
 // Listener de mensagens
 function setupListeners(sock) {
+    // Event listener para participantes do grupo (lista negra)
+    sock.ev.on("group-participants.update", async (update) => {
+        try {
+            const { id: groupId, participants, action } = update;
+            await processarListaNegra(sock, participants, groupId, action);
+        } catch (err) {
+            console.error("❌ Erro no event listener de participantes:", err);
+        }
+    });
+
     sock.ev.on("messages.upsert", async (msgUpdate) => {
     const messages = msgUpdate?.messages;
     if (!messages || !Array.isArray(messages)) return;
@@ -1720,9 +1894,9 @@ function setupListeners(sock) {
             const isCmd = text.startsWith(prefix);
             logMensagem(normalized, text, isCmd);
 
-            // 🔹 Verificação de ANTILINK (antes de tudo)
-            const linkRemovido = await processarAntilink(sock, normalized);
-            if (linkRemovido) continue; // se removeu link, não processa mais nada
+            // 🔹 Verificação de ANTI-SPAM COMPLETO (antes de tudo)
+            const violacaoDetectada = await processarAntiSpam(sock, normalized);
+            if (violacaoDetectada) continue; // se detectou violação, não processa mais nada
 
             // 🔹 Processamento do jogo Akinator
             const akinatorProcessed = await processarRespostaAkinator(sock, text, from, normalized);
