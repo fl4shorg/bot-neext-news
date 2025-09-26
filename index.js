@@ -23,6 +23,9 @@ const cloudscraper = require('cloudscraper');
 const UserAgent = require('user-agents');
 const moment = require('moment-timezone');
 
+// Sistema RPG - NeextCity
+const rpg = require('./arquivos/rpg.js');
+
 const antilinkFile = path.join(__dirname, "antilink.json");
 const akinatorFile = path.join(__dirname, "database/grupos/games/akinator.json");
 
@@ -1906,6 +1909,412 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             }
         }
         break;
+
+        // ================== SISTEMA RPG - NEEXTCITY ==================
+
+        case "rpg": {
+            // Só funciona em grupos
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const ehAdmin = await isAdmin(sock, from, sender);
+            const ehDono = isDono(sender);
+
+            if (!ehAdmin && !ehDono) {
+                await reply(sock, from, "❌ Apenas admins podem ativar/desativar o RPG.");
+                break;
+            }
+
+            const action = args[0]?.toLowerCase();
+            
+            if (action === "on") {
+                if (rpg.toggleRPG(from, true)) {
+                    await reply(sock, from, "🎮 **RPG ATIVADO!**\n\n🏙️ **Bem-vindos à NeextCity!**\n\n Para começar sua jornada:\n• Digite **/registrar** para se registrar\n• Escolha seu banco favorito\n• Comece a pescar, minerar e trabalhar!\n\n✨ **Comandos disponíveis:**\n• `/pescar` - Pesque e ganhe gold\n• `/minerar` - Minere recursos valiosos\n• `/trabalhar` - Trabalhe por dinheiro\n• `/tigrinho` - Jogue no cassino\n• `/assalto` - Assalte outros jogadores\n• `/vermeusaldo` - Veja seu saldo\n• `/rank` - Ranking dos mais ricos");
+                } else {
+                    await reply(sock, from, "❌ Erro ao ativar o RPG.");
+                }
+            } else if (action === "off") {
+                if (rpg.toggleRPG(from, false)) {
+                    await reply(sock, from, "🎮 **RPG DESATIVADO!**\n\n👋 Até logo, NeextCity!");
+                } else {
+                    await reply(sock, from, "❌ Erro ao desativar o RPG.");
+                }
+            } else {
+                const isAtivo = rpg.isRPGAtivo(from);
+                await reply(sock, from, `🎮 **STATUS DO RPG**\n\n${isAtivo ? "✅ ATIVO" : "❌ INATIVO"}\n\n💡 **Uso:** \`${prefix}rpg on/off\``);
+            }
+        }
+        break;
+
+        case "registrar": {
+            // Só funciona em grupos
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            // Verifica se RPG está ativo
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo. Um admin deve ativar com `" + prefix + "rpg on`");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            // Verifica se já está registrado
+            if (rpg.isUsuarioRegistrado(userId)) {
+                const userData = rpg.obterDadosUsuario(userId);
+                await reply(sock, from, `✅ **Você já está registrado na NeextCity!**\n\n👤 **Nome:** ${userData.nome}\n${userData.banco.emoji} **Banco:** ${userData.banco.nome}\n💰 **Saldo:** ${userData.saldo} Gold`);
+                break;
+            }
+
+            // Se não tem argumentos, mostra como usar
+            if (args.length < 2) {
+                let bancosText = "🏦 **BANCOS DISPONÍVEIS:**\n\n";
+                rpg.bancos.forEach((banco, index) => {
+                    bancosText += `${index + 1}. ${banco.emoji} ${banco.nome}\n`;
+                });
+                
+                await reply(sock, from, `🏙️ **REGISTRO NA NEEXTCITY**\n\n${bancosText}\n💡 **Como usar:**\n\`${prefix}registrar [nome] [número_do_banco]\`\n\n📝 **Exemplo:**\n\`${prefix}registrar João 3\` (para Nubank)`);
+                break;
+            }
+
+            const nome = args[0];
+            const bancoIndex = parseInt(args[1]) - 1;
+
+            if (!nome || nome.length < 2) {
+                await reply(sock, from, "❌ Nome deve ter pelo menos 2 caracteres.");
+                break;
+            }
+
+            if (isNaN(bancoIndex) || bancoIndex < 0 || bancoIndex >= rpg.bancos.length) {
+                await reply(sock, from, `❌ Número do banco inválido. Escolha entre 1 e ${rpg.bancos.length}.`);
+                break;
+            }
+
+            const banco = rpg.bancos[bancoIndex];
+
+            if (rpg.registrarUsuario(userId, nome, banco.id)) {
+                await reply(sock, from, `🎉 **REGISTRO CONCLUÍDO!**\n\n🏙️ **Bem-vindo à NeextCity!**\n\n👤 **Nome:** ${nome}\n${banco.emoji} **Banco:** ${banco.nome}\n💰 **Saldo inicial:** 100 Gold\n\n✨ **Agora você pode:**\n• `/pescar` - Ganhe gold pescando\n• `/minerar` - Encontre minerais valiosos\n• `/trabalhar` - Trabalhe por dinheiro\n• `/tigrinho` - Teste sua sorte no cassino\n• `/vermeusaldo` - Veja seu progresso`);
+            } else {
+                await reply(sock, from, "❌ Erro ao registrar. Tente novamente.");
+            }
+        }
+        break;
+
+        case "pescar": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + prefix + "registrar`");
+                break;
+            }
+
+            const resultado = rpg.pescar(userId);
+
+            if (resultado.erro) {
+                if (resultado.erro === 'Cooldown') {
+                    await reply(sock, from, resultado.mensagem);
+                } else {
+                    await reply(sock, from, `❌ ${resultado.erro}`);
+                }
+                break;
+            }
+
+            // Envia resultado com imagem
+            await sock.sendMessage(from, {
+                image: { url: resultado.imagem },
+                caption: resultado.mensagem,
+                contextInfo: {
+                    forwardingScore: 100000,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: "120363289739581116@newsletter",
+                        newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
+                    },
+                    externalAdReply: {
+                        title: "🎣 NeextCity - Sistema de Pesca",
+                        body: "© NEEXT LTDA",
+                        thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
+                        mediaType: 1,
+                        sourceUrl: "https://www.neext.online"
+                    }
+                }
+            }, { quoted: message });
+
+            if (resultado.sucesso) {
+                await reagirMensagem(sock, message, "🎣");
+            } else {
+                await reagirMensagem(sock, message, "💔");
+            }
+        }
+        break;
+
+        case "minerar": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + prefix + "registrar`");
+                break;
+            }
+
+            const resultado = rpg.minerar(userId);
+
+            if (resultado.erro) {
+                if (resultado.erro === 'Cooldown') {
+                    await reply(sock, from, resultado.mensagem);
+                } else {
+                    await reply(sock, from, `❌ ${resultado.erro}`);
+                }
+                break;
+            }
+
+            // Envia resultado com imagem
+            await sock.sendMessage(from, {
+                image: { url: resultado.imagem },
+                caption: resultado.mensagem,
+                contextInfo: {
+                    forwardingScore: 100000,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: "120363289739581116@newsletter",
+                        newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
+                    },
+                    externalAdReply: {
+                        title: "⛏️ NeextCity - Sistema de Mineração",
+                        body: "© NEEXT LTDA",
+                        thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
+                        mediaType: 1,
+                        sourceUrl: "https://www.neext.online"
+                    }
+                }
+            }, { quoted: message });
+
+            if (resultado.sucesso) {
+                await reagirMensagem(sock, message, "⛏️");
+            } else {
+                await reagirMensagem(sock, message, "💔");
+            }
+        }
+        break;
+
+        case "trabalhar": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + prefix + "registrar`");
+                break;
+            }
+
+            const resultado = rpg.trabalhar(userId);
+
+            if (resultado.erro) {
+                if (resultado.erro === 'Cooldown') {
+                    await reply(sock, from, resultado.mensagem);
+                } else {
+                    await reply(sock, from, `❌ ${resultado.erro}`);
+                }
+                break;
+            }
+
+            await reply(sock, from, resultado.mensagem);
+            await reagirMensagem(sock, message, "💼");
+        }
+        break;
+
+        case "tigrinho": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + prefix + "registrar`");
+                break;
+            }
+
+            const aposta = parseInt(args[0]);
+            if (!aposta || isNaN(aposta)) {
+                await reply(sock, from, `🎰 **JOGO DO TIGRINHO** 🐅\n\n💡 **Como jogar:**\n\`${prefix}tigrinho [valor]\`\n\n📝 **Exemplo:**\n\`${prefix}tigrinho 50\`\n\n🎲 **Regras:**\n• Aposta mínima: 10 Gold\n• 3 iguais = Prêmio maior\n• 2 iguais = Prêmio menor\n• 💎💎💎 = JACKPOT! (10x)\n• 🐅🐅🐅 = Tigrinho! (5x)`);
+                break;
+            }
+
+            const resultado = rpg.jogarTigrinho(userId, aposta);
+
+            if (resultado.erro) {
+                await reply(sock, from, `❌ ${resultado.erro}`);
+                break;
+            }
+
+            await reply(sock, from, resultado.mensagem);
+            
+            if (resultado.ganhou) {
+                await reagirMensagem(sock, message, "🎉");
+            } else {
+                await reagirMensagem(sock, message, "😢");
+            }
+        }
+        break;
+
+        case "assalto": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + prefix + "registrar`");
+                break;
+            }
+
+            // Verifica se marcou alguém
+            const mentionedJid = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
+            if (!mentionedJid || mentionedJid.length === 0) {
+                await reply(sock, from, `🔫 **SISTEMA DE ASSALTO**\n\n💡 **Como usar:**\nMarque a pessoa que deseja assaltar\n\n📝 **Exemplo:**\n\`${prefix}assalto @usuario\`\n\n⚠️ **Regras:**\n• Cooldown: 15 minutos\n• Chance de sucesso: 60%\n• Você rouba 20% do saldo da vítima\n• Se falhar, paga multa de 30 Gold`);
+                break;
+            }
+
+            const targetId = mentionedJid[0].split('@')[0];
+            const resultado = rpg.assaltar(userId, targetId);
+
+            if (resultado.erro) {
+                if (resultado.erro === 'Cooldown') {
+                    await reply(sock, from, resultado.mensagem);
+                } else {
+                    await reply(sock, from, `❌ ${resultado.erro}`);
+                }
+                break;
+            }
+
+            await reply(sock, from, resultado.mensagem, mentionedJid);
+            
+            if (resultado.assalto) {
+                await reagirMensagem(sock, message, "💰");
+            } else {
+                await reagirMensagem(sock, message, "🚨");
+            }
+        }
+        break;
+
+        case "vermeusaldo": 
+        case "saldo": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + prefix + "registrar`");
+                break;
+            }
+
+            const userData = rpg.obterDadosUsuario(userId);
+            const dataRegistro = new Date(userData.registrado).toLocaleDateString('pt-BR');
+
+            const extrato = `🏙️ **EXTRATO NEEXTCITY**\n\n` +
+                          `👤 **Nome:** ${userData.nome}\n` +
+                          `${userData.banco.emoji} **Banco:** ${userData.banco.nome}\n` +
+                          `💰 **Saldo:** ${userData.saldo} Gold\n` +
+                          `📅 **Registrado em:** ${dataRegistro}\n\n` +
+                          `📊 **ESTATÍSTICAS**\n\n` +
+                          `🎣 **Pescas:** ${userData.pescasFeitas}\n` +
+                          `⛏️ **Minerações:** ${userData.mineracoesFeitas}\n` +
+                          `💼 **Trabalhos:** ${userData.trabalhosFeitos}\n` +
+                          `🔫 **Assaltos:** ${userData.assaltosFeitos}\n\n` +
+                          `© NEEXT LTDA - NeextCity`;
+
+            await reply(sock, from, extrato);
+            await reagirMensagem(sock, message, "🏦");
+        }
+        break;
+
+        case "rank":
+        case "ranking": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const ranking = rpg.obterRanking();
+            await reply(sock, from, ranking.mensagem);
+            await reagirMensagem(sock, message, "🏆");
+        }
+        break;
+
+        // ================== FIM DO SISTEMA RPG ==================
 
         default:
             await sock.sendMessage(from, { text: `❌ Comando "${command}" não encontrado.\n\nDigite "prefixo" para ver meu prefixo ou "${prefix}ping" para testar.` }, { quoted: message });
