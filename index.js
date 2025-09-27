@@ -986,7 +986,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             } 
             else if (acao === "off" || acao === "desativar" || acao === "0") {
                 const resultado = antiSpam.toggleAntiFeature(from, command, 'off');
-                if (resultado !== false) {
+                if (resultado) {
                     await reagirMensagem(sock, message, "❌");
                     await reply(sock, from, `❌ *${featureName} DESATIVADO*\n\n✅ Conteúdo agora é permitido`);
                 } else {
