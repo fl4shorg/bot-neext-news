@@ -1945,7 +1945,47 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const sender = message.key.participant || from;
             const pushName = message.pushName || "Usuário";
             const menuText = await menus.obterMenuPrincipal(sock, from, sender, pushName);
-            await reply(sock, from, menuText);
+            
+            // Obter saudação para o caption
+            const { obterSaudacao } = require('./arquivos/funcoes/function.js');
+            const saudacaoCaption = `${obterSaudacao()} - Menu Principal`;
+            
+            // Documento fake PPTX de 1000GB
+            const quotedMenuPPTX = {
+                key: { participant: "0@s.whatsapp.net", remoteJid: "0@s.whatsapp.net" },
+                message: { 
+                    documentMessage: { 
+                        title: "o melhor tem nome.pptx", 
+                        fileName: "o melhor tem nome.pptx", 
+                        mimetype: "application/vnd.openxmlformats-officedocument.presentationml.presentation", 
+                        fileLength: 1073741824000, // 1000GB em bytes
+                        pageCount: 999,
+                        contactVcard: true
+                    } 
+                }
+            };
+            
+            await sock.sendMessage(from, {
+                text: menuText,
+                contextInfo: {
+                    mentionedJid: [sender],
+                    quotedMessage: quotedMenuPPTX.message,
+                    forwardingScore: 100000,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: "120363289739581116@newsletter",
+                        newsletterName: saudacaoCaption
+                    },
+                    externalAdReply: {
+                        title: `© NEEXT LTDA`,
+                        body: `📱 Instagram: @neet.tk`,
+                        thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
+                        mediaType: 1,
+                        sourceUrl: "https://www.neext.online",
+                        showAdAttribution: true
+                    }
+                }
+            }, { quoted: quotedMenuPPTX });
         }
         break;
 
