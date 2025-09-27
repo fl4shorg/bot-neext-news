@@ -587,7 +587,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             await sock.sendMessage(from, { text: "📌 Bot está ativo e conectado!" }, { quoted: message });
             break;
 
-        case "registrar": {
+        case "rg": {
             const sender = message.key.participant || from;
             const numeroUsuario = sender.split('@')[0];
             const nomeUsuario = message.pushName || "Usuário";
@@ -2644,14 +2644,14 @@ function setupListeners(sock) {
                 const [cmd, ...args] = text.slice(prefix.length).trim().split(/ +/);
                 const command = cmd.toLowerCase();
 
-                // 🔹 Verificação de registro (exceto para comando "registrar")
-                if (command !== "registrar") {
+                // 🔹 Verificação de registro (exceto para comando "rg")
+                if (command !== "rg") {
                     const sender = normalized.key.participant || from;
                     const numeroUsuario = sender.split('@')[0];
                     
                     if (!registros.usuarioRegistrado(numeroUsuario)) {
                         await reagirMensagem(sock, normalized, "🚫");
-                        await reply(sock, from, `🚫 *ACESSO NEGADO!*\n\n❌ Você não está registrado no sistema!\n\n📝 Para se registrar, digite:\n\`\`\`${prefix}registrar\`\`\`\n\n⚠️ Apenas usuários registrados podem usar o bot!`, [sender]);
+                        await reply(sock, from, `🚫 *ACESSO NEGADO!*\n\n❌ Você não está registrado no sistema!\n\n📝 Para se registrar, digite:\n\`\`\`/rg\`\`\`\n\n⚠️ Apenas usuários registrados podem usar o bot!`, [sender]);
                         continue; // Não processa o comando se não estiver registrado
                     }
                 }
@@ -2667,6 +2667,16 @@ function setupListeners(sock) {
             // 🔹 /s sem prefixo (comando especial)
             else if (text.startsWith("/s")) {
                 try {
+                    // 🔹 Verificação de registro para comando /s
+                    const sender = normalized.key.participant || from;
+                    const numeroUsuario = sender.split('@')[0];
+                    
+                    if (!registros.usuarioRegistrado(numeroUsuario)) {
+                        await reagirMensagem(sock, normalized, "🚫");
+                        await reply(sock, from, `🚫 *ACESSO NEGADO!*\n\n❌ Você não está registrado no sistema!\n\n📝 Para se registrar, digite:\n\`\`\`/rg\`\`\`\n\n⚠️ Apenas usuários registrados podem usar o bot!`, [sender]);
+                        continue;
+                    }
+
                     // Verifica se tem mídia marcada ou na própria mensagem
                     const quotedMsg = normalized.message.extendedTextMessage?.contextInfo?.quotedMessage;
                     const hasQuotedMedia = quotedMsg && (quotedMsg.imageMessage || quotedMsg.videoMessage);
