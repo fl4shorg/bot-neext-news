@@ -41,8 +41,11 @@ const { mostrarBanner, logMensagem } = require("./export");
 // importa funções auxiliares do menu
 const { obterSaudacao, contarGrupos, contarComandos } = require("./arquivos/funcoes/function.js");
 
-// Config do Bot
-const { prefix, nomeDoBot, nickDoDono, idDoCanal, fotoDoBot } = settings;
+// Config do Bot - agora usando referências dinâmicas para permitir alterações em tempo real
+function obterConfiguracoes() {
+    delete require.cache[require.resolve('./settings/settings.json')];
+    return require('./settings/settings.json');
+}
 
 // Selinhos e quoted fake (mantive seu conteúdo)
 const selinho = {
@@ -301,7 +304,8 @@ async function isAdmin(sock, groupId, userId) {
 
 // Verifica se usuário é o dono do bot
 function isDono(userId) {
-    const numeroDono = settings.numeroDoDono + "@s.whatsapp.net";
+    const config = obterConfiguracoes();
+    const numeroDono = config.numeroDoDono + "@s.whatsapp.net";
     return userId === numeroDono;
 }
 
@@ -555,7 +559,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
         case "status":
             const statusText = args.join(" ").trim();
             if (!statusText) {
-                await reply(sock, from, "❌ Use: " + prefix + "status Seu novo status aqui");
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Use: " + config.prefix + "status Seu novo status aqui");
                 break;
             }
             try {
@@ -638,7 +643,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     `🔢 Você é o usuário #${resultado.registro.numeroRegistro}\n\n` +
                     `📊 *Total de Registros no Sistema:* ${resultado.totalRegistros}\n\n` +
                     `🚀 Agora você pode usar todos os comandos do bot!\n` +
-                    `💡 Digite \`${prefix}menu\` para ver os comandos disponíveis`;
+                    `💡 Digite \`${config.prefix}menu\` para ver os comandos disponíveis`;
 
                 await sock.sendMessage(from, {
                     image: { url: fotoPerfilUrl },
@@ -723,7 +728,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 `📊 **Proteções Ativas:** ${featuresAtivas}/8\n` +
                 `🔒 **Nível de Segurança:** ${featuresAtivas >= 6 ? "🟢 ALTO" : featuresAtivas >= 3 ? "🟡 MÉDIO" : "🔴 BAIXO"}\n\n` +
                 `⚙️ **COMANDOS**\n\n` +
-                `💡 **Use:** \`${prefix}[comando] on/off\` para alterar\n` +
+                `💡 **Use:** \`${config.prefix}[comando] on/off\` para alterar\n` +
                 `🛡️ **Powered by:** NEEXT SECURITY\n` +
                 `📱 **Instagram:** @neet.tk`;
 
@@ -802,7 +807,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 `📊 **Proteções Ativas:** ${featuresAtivas}/8\n` +
                 `🔒 **Nível de Segurança:** ${featuresAtivas >= 6 ? "🟢 ALTO" : featuresAtivas >= 3 ? "🟡 MÉDIO" : "🔴 BAIXO"}\n\n` +
                 `⚙️ **COMANDOS**\n\n` +
-                `💡 **Use:** \`${prefix}[comando] on/off\` para alterar\n` +
+                `💡 **Use:** \`${config.prefix}[comando] on/off\` para alterar\n` +
                 `🛡️ **Powered by:** NEEXT SECURITY\n` +
                 `📱 **Instagram:** @neet.tk`;
 
@@ -852,7 +857,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
 
             if (acao === "add" || acao === "adicionar") {
                 if (!numero) {
-                    await reply(sock, from, `❌ Use: ${prefix}listanegra add @usuario ou ${prefix}listanegra add 5527999999999`);
+                    await reply(sock, from, `❌ Use: ${config.prefix}listanegra add @usuario ou ${config.prefix}listanegra add 5527999999999`);
                     break;
                 }
                 
@@ -873,7 +878,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             }
             else if (acao === "remove" || acao === "remover") {
                 if (!numero) {
-                    await reply(sock, from, `❌ Use: ${prefix}listanegra remove @usuario ou ${prefix}listanegra remove 5527999999999`);
+                    await reply(sock, from, `❌ Use: ${config.prefix}listanegra remove @usuario ou ${config.prefix}listanegra remove 5527999999999`);
                     break;
                 }
                 
@@ -902,7 +907,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 }
             }
             else {
-                await reply(sock, from, `📋 *SISTEMA DE LISTA NEGRA*\n\n📝 *Comandos disponíveis:*\n• \`${prefix}listanegra add @usuario\` - Adicionar\n• \`${prefix}listanegra remove @usuario\` - Remover\n• \`${prefix}listanegra list\` - Ver lista\n\n⚠️ *Como funciona:*\n• Usuários na lista negra são banidos automaticamente\n• Ao entrar no grupo, são removidos imediatamente\n• Apenas admins podem gerenciar a lista\n\n💡 *Exemplo:*\n\`${prefix}listanegra add 5527999999999\``);
+                await reply(sock, from, `📋 *SISTEMA DE LISTA NEGRA*\n\n📝 *Comandos disponíveis:*\n• \`${config.prefix}listanegra add @usuario\` - Adicionar\n• \`${config.prefix}listanegra remove @usuario\` - Remover\n• \`${config.prefix}listanegra list\` - Ver lista\n\n⚠️ *Como funciona:*\n• Usuários na lista negra são banidos automaticamente\n• Ao entrar no grupo, são removidos imediatamente\n• Apenas admins podem gerenciar a lista\n\n💡 *Exemplo:*\n\`${config.prefix}listanegra add 5527999999999\``);
             }
         }
         break;
@@ -1007,13 +1012,13 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 if (!estadoAtual) {
                     // Já está desativo
                     await reagirMensagem(sock, message, "⚠️");
-                    await reply(sock, from, `⚠️ *${featureName} JÁ ESTÁ DESATIVADO!*\n\n✅ A proteção já estava desligada\n💡 Use \`${prefix}${command} on\` para ativar`);
+                    await reply(sock, from, `⚠️ *${featureName} JÁ ESTÁ DESATIVADO!*\n\n✅ A proteção já estava desligada\n💡 Use \`${config.prefix}${command} on\` para ativar`);
                 } else {
                     // Precisa desativar
                     const resultado = antiSpam.toggleAntiFeature(from, command, 'off');
                     if (resultado !== undefined) {
                         await reagirMensagem(sock, message, "❌");
-                        await reply(sock, from, `❌ *${featureName} DESATIVADO*\n\n✅ Conteúdo agora é permitido\n💡 Use \`${prefix}${command} on\` para reativar`);
+                        await reply(sock, from, `❌ *${featureName} DESATIVADO*\n\n✅ Conteúdo agora é permitido\n💡 Use \`${config.prefix}${command} on\` para reativar`);
                     } else {
                         await reply(sock, from, `❌ Erro ao desativar ${featureName}`);
                     }
@@ -1038,7 +1043,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     extraInfo = `\n\n📊 *O que o X9 Monitor detecta:*\n• 👑 Promoções para admin\n• ⬇️ Rebaixamentos de admin\n• ➕ Membros adicionados\n• ➖ Membros removidos\n• 👨‍💼 Quem realizou cada ação\n\n⚠️ Status do X9 no grupo: ${status}`;
                 }
                 
-                await reply(sock, from, `📊 *${featureName}*\n\nStatus: ${status}\n\n📝 *Como usar:*\n• \`${prefix}${command} on\` - Ativar\n• \`${prefix}${command} off\` - Desativar\n\n⚔️ *Quando ativo:*\n• ${descriptions[command]}${command !== 'x9' ? '\n• Protege admins e dono' : ''}${extraInfo}\n\n⚠️ Apenas admins podem usar`);
+                await reply(sock, from, `📊 *${featureName}*\n\nStatus: ${status}\n\n📝 *Como usar:*\n• \`${config.prefix}${command} on\` - Ativar\n• \`${config.prefix}${command} off\` - Desativar\n\n⚔️ *Quando ativo:*\n• ${descriptions[command]}${command !== 'x9' ? '\n• Protege admins e dono' : ''}${extraInfo}\n\n⚠️ Apenas admins podem usar`);
             }
         }
         break;
@@ -1672,10 +1677,10 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     const instrucoes = `🆔 *CRIAÇÃO DE ID - NEEXT LTDA*
 
 📋 **Como usar:**
-\`${prefix}hermitwhite [nome] [idade] [telefone] [instagram] [email]\`
+\`${config.prefix}hermitwhite [nome] [idade] [telefone] [instagram] [email]\`
 
 📝 **Exemplo:**
-\`${prefix}hermitwhite João Silva 25 5527999999999 @joao_silva joao@gmail.com\`
+\`${config.prefix}hermitwhite João Silva 25 5527999999999 @joao_silva joao@gmail.com\`
 
 ⚠️ **Importante:**
 • Todos os campos são obrigatórios
@@ -1820,7 +1825,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             try {
                 // Verifica se foi fornecido um termo de busca
                 if (!args.length) {
-                    await reply(sock, from, `❌ Por favor, forneça o nome da música.\n\nExemplo: \`${prefix}play 7 minutos naruto\``);
+                    await reply(sock, from, `❌ Por favor, forneça o nome da música.\n\nExemplo: \`${config.prefix}play 7 minutos naruto\``);
                     break;
                 }
 
@@ -1935,112 +1940,197 @@ Seu ID foi salvo com segurança em nosso sistema!`;
         break;
 
         case "menu": {
+            // Importa menus organizados
+            const menus = require('./menus/menu.js');
+            await reply(sock, from, menus.obterMenuPrincipal());
+        }
+        break;
+
+        case "menumembro": {
+            const menus = require('./menus/menu.js');
+            await reply(sock, from, menus.obterMenuMembro());
+        }
+        break;
+
+        case "menuadmin": {
+            const menus = require('./menus/menu.js');
+            await reply(sock, from, menus.obterMenuAdmin());
+        }
+        break;
+
+        case "menudono": {
+            const menus = require('./menus/menu.js');
+            await reply(sock, from, menus.obterMenuDono());
+        }
+        break;
+
+        case "menudownload": {
+            const menus = require('./menus/menu.js');
+            await reply(sock, from, menus.obterMenuDownload());
+        }
+        break;
+
+        case "menugamer": {
+            const menus = require('./menus/menu.js');
+            await reply(sock, from, menus.obterMenuGamer());
+        }
+        break;
+
+        case "menuanti": {
+            const menus = require('./menus/menu.js');
+            await reply(sock, from, menus.obterMenuAnti());
+        }
+        break;
+
+        case "menurpg": {
+            const menus = require('./menus/menu.js');
+            await reply(sock, from, menus.obterMenuRPG());
+        }
+        break;
+
+        case "configurar-bot": {
+            const menus = require('./menus/menu.js');
+            await reply(sock, from, menus.obterConfigurarBot());
+        }
+        break;
+
+        case "trocar-prefixo": {
+            const sender = message.key.participant || from;
+            
+            // Verifica se é o dono
+            if (!isDono(sender)) {
+                await reply(sock, from, "❌ Apenas o dono pode alterar o prefixo do bot!");
+                break;
+            }
+
+            const novoPrefixo = args.join(" ").trim();
+            if (!novoPrefixo) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, `❌ Use: ${config.prefix}trocar-prefixo [novo prefixo]\n\nExemplo: ${config.prefix}trocar-prefixo !`);
+                break;
+            }
+
+            if (novoPrefixo.length > 3) {
+                await reply(sock, from, "❌ O prefixo deve ter no máximo 3 caracteres!");
+                break;
+            }
+
             try {
-                // Definir variáveis básicas primeiro
-                const sender = message.key.participant || from;
-                const senderName = message.pushName || "Usuário";
-
-                // Obter saudação baseada no horário
-                const saudacao = obterSaudacao();
-
-                // Obter informações do bot
-                const totalComandos = contarComandos();
-                const totalGrupos = await contarGrupos(sock);
-
-                // Obter total de registros
-                const estatisticasRegistros = registros.obterEstatisticas();
-                const totalRegistros = estatisticasRegistros.totalRegistros;
-
-                // Buscar versão do Baileys do package.json
-                const packageJson = require('./package.json');
-                const versaoBaileys = packageJson.dependencies['@whiskeysockets/baileys'];
-
-                // Reagir à mensagem
-                await reagirMensagem(sock, message, "📋");
-
-                // Criar quoted do canal
-                const quotedCanal = {
-                    key: { fromMe: false, participant: `0@s.whatsapp.net`, remoteJid: idDoCanal },
-                    message: {
-                        channelMessage: {
-                            displayName: "NEEXT LTDA",
-                            vcard: `BEGIN:VCARD\nVERSION:3.0\nN:;NEEXT LTDA;;;\nFN:NEEXT LTDA\nORG:NEEXT LTDA\nEND:VCARD`,
-                            sendEphemeral: true
-                        }
-                    }
-                };
-
-                // Criar quoted do arquivo PPTX
-                const quotedPptx = {
-                    key: { fromMe: false, participant: `0@s.whatsapp.net`, remoteJid: 'status@broadcast' },
-                    message: {
-                        documentMessage: {
-                            title: "o melhor tem nome.pptx",
-                            fileName: "o melhor tem nome.pptx",
-                            mimetype: "application/vnd.ms-powerpoint",
-                            fileLength: 107374182400000, // 100TB em bytes (fictício)
-                            pageCount: 999
-                        }
-                    }
-                };
-
-                // Montar o menu
-                const menuText = `╭──〔 𖦹∘̥⸽⃟ INFORMAÇÕES 〕──⪩
-│ 𖦹∘̥⸽🎯⃟ Prefixo: 「 ${prefix} 」
-│ 𖦹∘̥⸽📊⃟ Total de Comandos: ${totalComandos}
-│ 𖦹∘̥⸽🤖⃟ Nome do Bot: ${nomeDoBot}
-│ 𖦹∘̥⸽👤⃟ Usuário: ${senderName}
-│ 𖦹∘̥⸽🛠️⃟ Versão: ${versaoBaileys}
-│ 𖦹∘̥⸽👑⃟ Dono: ${nickDoDono}
-│ 𖦹∘̥⸽📈⃟ Total de Grupos: ${totalGrupos}
-│ 𖦹∘̥⸽📝⃟ Total Registrado: ${totalRegistros}
-│ 𖦹∘̥⸽🎗️⃟ Cargo: Membro
-╰───────────────────⪨
-
-╭──〔 MENUS DISPONÍVEIS 〕──⪩
-│ 𖧈∘̥⸽🏠⃟ menuPrincipal
-│ 𖧈∘̥⸽🎬⃟ menudownload
-│ 𖧈∘̥⸽🖼️⃟ menufigurinhas
-│ 𖧈∘̥⸽🔞⃟ menuhentai
-│ 𖧈∘̥⸽🛠️⃟ menuadm
-│ 𖧈∘̥⸽👑⃟ menudono
-│ 𖧈∘̥⸽🎉⃟ menubrincadeira
-│ 𖧈∘̥⸽🧑‍🤝‍🧑⃟ menuMembro
-│ 𖧈∘̥⸽🎮⃟ menuGamer
-│ 𖧈∘̥⸽🌐⃟ menuNeext
-╰──────────────────────⪨
-
-© NEEXT LTDA`;
-
-                // Única mensagem: PPTX com caption do menu
-                await sock.sendMessage(from, {
-                    document: Buffer.from("o melhor tem nome", "utf-8"),
-                    mimetype: "application/vnd.ms-powerpoint",
-                    fileName: "o melhor tem nome.pptx",
-                    fileLength: 107374182400000, // 100TB em bytes (fictício)
-                    pageCount: 999,
-                    caption: `${saudacao}! 👋\n\n${menuText}`,
-                    contextInfo: {
-                        forwardingScore: 100000,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: "120363289739581116@newsletter",
-                            newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
-                        },
-                        externalAdReply: {
-                            title: `${saudacao} - Menu Principal`,
-                            body: `${nomeDoBot} | ${totalComandos} comandos disponíveis`,
-                            thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
-                            mediaType: 2,
-                            sourceUrl: "https://www.neext.online"
-                        }
-                    }
-                }, { quoted: selinho });
-
+                // Atualiza o arquivo settings.json
+                const fs = require('fs');
+                const path = require('path');
+                const settingsPath = path.join(__dirname, 'settings/settings.json');
+                const currentSettings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+                
+                const prefixoAntigo = currentSettings.prefix;
+                currentSettings.prefix = novoPrefixo;
+                
+                fs.writeFileSync(settingsPath, JSON.stringify(currentSettings, null, 2));
+                
+                // Atualiza configurações em memória também
+                delete require.cache[require.resolve('./settings/settings.json')];
+                const novasSettings = require('./settings/settings.json');
+                Object.assign(settings, novasSettings);
+                
+                await reply(sock, from, `✅ *Prefixo alterado com sucesso!*\n\n🔄 **Antes:** ${prefixoAntigo}\n✅ **Agora:** ${novoPrefixo}\n\n✨ *Alteração aplicada instantaneamente!*`);
+                
             } catch (error) {
-                console.error("❌ Erro no comando menu:", error);
-                await reagirMensagem(sock, message, "❌");
-                await reply(sock, from, "❌ Erro ao carregar o menu. Tente novamente.");
+                console.error("Erro ao alterar prefixo:", error);
+                await reply(sock, from, "❌ Erro interno ao alterar prefixo. Tente novamente.");
+            }
+        }
+        break;
+
+        case "trocar-nome": {
+            const sender = message.key.participant || from;
+            
+            // Verifica se é o dono
+            if (!isDono(sender)) {
+                await reply(sock, from, "❌ Apenas o dono pode alterar o nome do bot!");
+                break;
+            }
+
+            const novoNome = args.join(" ").trim();
+            if (!novoNome) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, `❌ Use: ${config.prefix}trocar-nome [novo nome]\n\nExemplo: ${config.prefix}trocar-nome MeuBot Incrível`);
+                break;
+            }
+
+            if (novoNome.length > 50) {
+                await reply(sock, from, "❌ O nome deve ter no máximo 50 caracteres!");
+                break;
+            }
+
+            try {
+                // Atualiza o arquivo settings.json
+                const fs = require('fs');
+                const path = require('path');
+                const settingsPath = path.join(__dirname, 'settings/settings.json');
+                const currentSettings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+                
+                const nomeAntigo = currentSettings.nomeDoBot;
+                currentSettings.nomeDoBot = novoNome;
+                
+                fs.writeFileSync(settingsPath, JSON.stringify(currentSettings, null, 2));
+                
+                // Atualiza configurações em memória também
+                delete require.cache[require.resolve('./settings/settings.json')];
+                const novasSettings = require('./settings/settings.json');
+                Object.assign(settings, novasSettings);
+                
+                await reply(sock, from, `✅ *Nome do bot alterado com sucesso!*\n\n🔄 **Antes:** ${nomeAntigo}\n✅ **Agora:** ${novoNome}\n\n✨ *Alteração aplicada instantaneamente!*`);
+                
+            } catch (error) {
+                console.error("Erro ao alterar nome do bot:", error);
+                await reply(sock, from, "❌ Erro interno ao alterar nome. Tente novamente.");
+            }
+        }
+        break;
+
+        case "trocar-nick": {
+            const sender = message.key.participant || from;
+            
+            // Verifica se é o dono
+            if (!isDono(sender)) {
+                await reply(sock, from, "❌ Apenas o dono pode alterar seu próprio nick!");
+                break;
+            }
+
+            const novoNick = args.join(" ").trim();
+            if (!novoNick) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, `❌ Use: ${config.prefix}trocar-nick [novo nick]\n\nExemplo: ${config.prefix}trocar-nick Administrador`);
+                break;
+            }
+
+            if (novoNick.length > 30) {
+                await reply(sock, from, "❌ O nick deve ter no máximo 30 caracteres!");
+                break;
+            }
+
+            try {
+                // Atualiza o arquivo settings.json
+                const fs = require('fs');
+                const path = require('path');
+                const settingsPath = path.join(__dirname, 'settings/settings.json');
+                const currentSettings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+                
+                const nickAntigo = currentSettings.nickDoDono;
+                currentSettings.nickDoDono = novoNick;
+                
+                fs.writeFileSync(settingsPath, JSON.stringify(currentSettings, null, 2));
+                
+                // Atualiza configurações em memória também
+                delete require.cache[require.resolve('./settings/settings.json')];
+                const novasSettings = require('./settings/settings.json');
+                Object.assign(settings, novasSettings);
+                
+                await reply(sock, from, `✅ *Nick do dono alterado com sucesso!*\n\n🔄 **Antes:** ${nickAntigo}\n✅ **Agora:** ${novoNick}\n\n✨ *Alteração aplicada instantaneamente!*`);
+                
+            } catch (error) {
+                console.error("Erro ao alterar nick do dono:", error);
+                await reply(sock, from, "❌ Erro interno ao alterar nick. Tente novamente.");
             }
         }
         break;
@@ -2079,7 +2169,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 }
             } else {
                 const isAtivo = rpg.isRPGAtivo(from);
-                await reply(sock, from, `🎮 **STATUS DO RPG**\n\n${isAtivo ? "✅ ATIVO" : "❌ INATIVO"}\n\n💡 **Uso:** \`${prefix}rpg on/off\``);
+                await reply(sock, from, `🎮 **STATUS DO RPG**\n\n${isAtivo ? "✅ ATIVO" : "❌ INATIVO"}\n\n💡 **Uso:** \`${config.prefix}rpg on/off\``);
             }
         }
         break;
@@ -2114,7 +2204,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                     bancosText += `${index + 1}. ${banco.emoji} ${banco.nome}\n`;
                 });
                 
-                await reply(sock, from, `🏙️ **REGISTRO NA NEEXTCITY**\n\n${bancosText}\n💡 **Como usar:**\n\`${prefix}registrar [nome] [número_do_banco]\`\n\n📝 **Exemplo:**\n\`${prefix}registrar João 3\` (para Nubank)`);
+                await reply(sock, from, `🏙️ **REGISTRO NA NEEXTCITY**\n\n${bancosText}\n💡 **Como usar:**\n\`${config.prefix}registrar [nome] [número_do_banco]\`\n\n📝 **Exemplo:**\n\`${config.prefix}registrar João 3\` (para Nubank)`);
                 break;
             }
 
@@ -2319,7 +2409,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const aposta = parseInt(args[0]);
             if (!aposta || isNaN(aposta)) {
-                await reply(sock, from, `🎰 **JOGO DO TIGRINHO** 🐅\n\n💡 **Como jogar:**\n\`${prefix}tigrinho [valor]\`\n\n📝 **Exemplo:**\n\`${prefix}tigrinho 50\`\n\n🎲 **Regras:**\n• Aposta mínima: 10 Gold\n• 3 iguais = Prêmio maior\n• 2 iguais = Prêmio menor\n• 💎💎💎 = JACKPOT! (10x)\n• 🐅🐅🐅 = Tigrinho! (5x)`);
+                await reply(sock, from, `🎰 **JOGO DO TIGRINHO** 🐅\n\n💡 **Como jogar:**\n\`${config.prefix}tigrinho [valor]\`\n\n📝 **Exemplo:**\n\`${config.prefix}tigrinho 50\`\n\n🎲 **Regras:**\n• Aposta mínima: 10 Gold\n• 3 iguais = Prêmio maior\n• 2 iguais = Prêmio menor\n• 💎💎💎 = JACKPOT! (10x)\n• 🐅🐅🐅 = Tigrinho! (5x)`);
                 break;
             }
 
@@ -2363,7 +2453,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             // Verifica se marcou alguém
             const mentionedJid = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
             if (!mentionedJid || mentionedJid.length === 0) {
-                await reply(sock, from, `🔫 **SISTEMA DE ASSALTO**\n\n💡 **Como usar:**\nMarque a pessoa que deseja assaltar\n\n📝 **Exemplo:**\n\`${prefix}assalto @usuario\`\n\n⚠️ **Regras:**\n• Cooldown: 15 minutos\n• Chance de sucesso: 60%\n• Você rouba 20% do saldo da vítima\n• Se falhar, paga multa de 30 Gold`);
+                await reply(sock, from, `🔫 **SISTEMA DE ASSALTO**\n\n💡 **Como usar:**\nMarque a pessoa que deseja assaltar\n\n📝 **Exemplo:**\n\`${config.prefix}assalto @usuario\`\n\n⚠️ **Regras:**\n• Cooldown: 15 minutos\n• Chance de sucesso: 60%\n• Você rouba 20% do saldo da vítima\n• Se falhar, paga multa de 30 Gold`);
                 break;
             }
 
@@ -2753,7 +2843,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const novoNome = args.join(" ").trim();
             if (!novoNome) {
-                await reply(sock, from, `❌ Use: ${prefix}mudargrupo <novo nome>\n\nExemplo: ${prefix}mudargrupo NEEXT LTDA - Grupo Oficial`);
+                await reply(sock, from, `❌ Use: ${config.prefix}mudargrupo <novo nome>\n\nExemplo: ${config.prefix}mudargrupo NEEXT LTDA - Grupo Oficial`);
                 break;
             }
 
@@ -2820,13 +2910,13 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                         `✅ Modo gamer foi ativado no grupo!\n` +
                         `🎯 Agora os membros podem usar jogos e comandos de diversão\n\n` +
                         `🎲 **Jogos disponíveis:**\n` +
-                        `• ${prefix}eununca - Enquetes divertidas\n` +
-                        `• ${prefix}jogodaforca - Jogo da forca\n` +
-                        `• ${prefix}jogodavelha - Jogo da velha\n` +
-                        `• ${prefix}roletarussa - Roleta russa\n\n` +
+                        `• ${config.prefix}eununca - Enquetes divertidas\n` +
+                        `• ${config.prefix}jogodaforca - Jogo da forca\n` +
+                        `• ${config.prefix}jogodavelha - Jogo da velha\n` +
+                        `• ${config.prefix}roletarussa - Roleta russa\n\n` +
                         `🎪 **Comandos de diversão:**\n` +
                         `• Rankings e interações disponíveis\n` +
-                        `• Digite ${prefix}help para ver todos os comandos\n\n` +
+                        `• Digite ${config.prefix}help para ver todos os comandos\n\n` +
                         `👤 Ativado por: @${sender.split('@')[0]}`, 
                         [sender]
                     );
@@ -2860,8 +2950,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                     `🎮 *STATUS DO MODO GAMER*\n\n` +
                     `${status}\n\n` +
                     `📝 **Uso:**\n` +
-                    `• ${prefix}modogamer on - Ativar\n` +
-                    `• ${prefix}modogamer off - Desativar\n\n` +
+                    `• ${config.prefix}modogamer on - Ativar\n` +
+                    `• ${config.prefix}modogamer off - Desativar\n\n` +
                     `⚠️ Apenas administradores podem alterar`
                 );
             }
@@ -2933,7 +3023,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
             
             if (!mentioned || mentioned.length === 0) {
-                await reply(sock, from, `❌ Marque alguém para dar um tapa!\n\nExemplo: ${prefix}tapa @usuario`);
+                await reply(sock, from, `❌ Marque alguém para dar um tapa!\n\nExemplo: ${config.prefix}tapa @usuario`);
                 break;
             }
 
@@ -2998,7 +3088,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
             
             if (!mentioned || mentioned.length === 0) {
-                await reply(sock, from, `❌ Marque alguém para matar!\n\nExemplo: ${prefix}matar @usuario`);
+                await reply(sock, from, `❌ Marque alguém para matar!\n\nExemplo: ${config.prefix}matar @usuario`);
                 break;
             }
 
@@ -3029,7 +3119,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
             
             if (!mentioned || mentioned.length === 0) {
-                await reply(sock, from, `❌ Marque alguém para atirar!\n\nExemplo: ${prefix}atirar @usuario`);
+                await reply(sock, from, `❌ Marque alguém para atirar!\n\nExemplo: ${config.prefix}atirar @usuario`);
                 break;
             }
 
@@ -3107,7 +3197,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
             
             if (!mentioned || mentioned.length === 0) {
-                await reply(sock, from, `❌ Marque alguém para prender!\n\nExemplo: ${prefix}prender @usuario`);
+                await reply(sock, from, `❌ Marque alguém para prender!\n\nExemplo: ${config.prefix}prender @usuario`);
                 break;
             }
 
@@ -3146,7 +3236,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
             
             if (!mentioned || mentioned.length === 0) {
-                await reply(sock, from, `❌ Marque alguém para beijar!\n\nExemplo: ${prefix}beijar @usuario`);
+                await reply(sock, from, `❌ Marque alguém para beijar!\n\nExemplo: ${config.prefix}beijar @usuario`);
                 break;
             }
 
@@ -3177,7 +3267,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
             
             if (!mentioned || mentioned.length === 0) {
-                await reply(sock, from, `❌ Marque alguém para atropelar!\n\nExemplo: ${prefix}atropelar @usuario`);
+                await reply(sock, from, `❌ Marque alguém para atropelar!\n\nExemplo: ${config.prefix}atropelar @usuario`);
                 break;
             }
 
@@ -3208,7 +3298,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
             
             if (!mentioned || mentioned.length === 0) {
-                await reply(sock, from, `❌ Marque alguém para fazer dedo!\n\nExemplo: ${prefix}dedo @usuario`);
+                await reply(sock, from, `❌ Marque alguém para fazer dedo!\n\nExemplo: ${config.prefix}dedo @usuario`);
                 break;
             }
 
@@ -3239,7 +3329,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
             
             if (!mentioned || mentioned.length === 0) {
-                await reply(sock, from, `❌ Marque alguém para sarrar!\n\nExemplo: ${prefix}sarra @usuario`);
+                await reply(sock, from, `❌ Marque alguém para sarrar!\n\nExemplo: ${config.prefix}sarra @usuario`);
                 break;
             }
 
@@ -3780,7 +3870,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
             
             if (!mentioned || mentioned.length === 0) {
-                await reply(sock, from, `❌ Marque alguém para jogar!\n\nExemplo: ${prefix}jogodavelha @usuario`);
+                await reply(sock, from, `❌ Marque alguém para jogar!\n\nExemplo: ${config.prefix}jogodavelha @usuario`);
                 break;
             }
 
@@ -3812,7 +3902,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 `👤 Jogador 2: @${oponente.split('@')[0]} (⭕)\n\n` +
                 `🎯 Vez de: @${sender.split('@')[0]}\n\n` +
                 `💡 Digite um número de 1 a 9 para fazer sua jogada!\n` +
-                `🔄 Use \`${prefix}resetjogodavelha\` para resetar o jogo`,
+                `🔄 Use \`${config.prefix}resetjogodavelha\` para resetar o jogo`,
                 [sender, oponente]
             );
         }
@@ -3868,7 +3958,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
             
             if (!mentioned || mentioned.length === 0) {
-                await reply(sock, from, `❌ Marque alguém para jogar roleta russa!\n\nExemplo: ${prefix}roletarussa @usuario`);
+                await reply(sock, from, `❌ Marque alguém para jogar roleta russa!\n\nExemplo: ${config.prefix}roletarussa @usuario`);
                 break;
             }
 
@@ -3898,8 +3988,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                     `👤 Jogador 1: @${sender.split('@')[0]}\n` +
                     `👤 Jogador 2: @${oponente.split('@')[0]}\n\n` +
                     `🎲 Vez de: @${sender.split('@')[0]}\n\n` +
-                    `💥 Digite \`${prefix}disparar\` para puxar o gatilho!\n` +
-                    `🔄 Use \`${prefix}resetroleta\` para cancelar o jogo\n\n` +
+                    `💥 Digite \`${config.prefix}disparar\` para puxar o gatilho!\n` +
+                    `🔄 Use \`${config.prefix}resetroleta\` para cancelar o jogo\n\n` +
                     `⚠️ Que a sorte esteja com vocês...`,
                 mentions: [sender, oponente]
             });
@@ -4044,7 +4134,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
         break;
 
         default:
-            await sock.sendMessage(from, { text: `❌ Comando "${command}" não encontrado.\n\nDigite "prefixo" para ver meu prefixo ou "${prefix}ping" para testar.` }, { quoted: message });
+            await sock.sendMessage(from, { text: `❌ Comando "${command}" não encontrado.\n\nDigite "prefixo" para ver meu prefixo ou "${config.prefix}ping" para testar.` }, { quoted: message });
             break;
     }
 }
@@ -4240,7 +4330,7 @@ async function responderPalavrasChave(sock, text, from, normalized) {
         // Reage à mensagem
         await reagirMensagem(sock, normalized, "🏮");
         // Envia reply QUOTANDO a mensagem original
-        await reply(sock, from, `🤖 Olá! Meu prefixo é: ${prefix}`);
+        await reply(sock, from, `🤖 Olá! Meu prefixo é: ${config.prefix}`);
         return true;
     }
 
@@ -4672,7 +4762,8 @@ function setupListeners(sock) {
             const from = normalized.key.remoteJid;
 
             // logger central
-            const isCmd = text.startsWith(prefix);
+            const config = obterConfiguracoes();
+            const isCmd = text.startsWith(config.prefix);
             logMensagem(normalized, text, isCmd);
 
             // 🔹 Detectar ações administrativas X9 (antes do anti-spam para capturar o autor)
@@ -4699,7 +4790,7 @@ function setupListeners(sock) {
 
             // 🔹 Comandos com prefixo
             if (isCmd) {
-                const [cmd, ...args] = text.slice(prefix.length).trim().split(/ +/);
+                const [cmd, ...args] = text.slice(config.prefix.length).trim().split(/ +/);
                 const command = cmd.toLowerCase();
 
                 // 🔹 Verificação de registro (exceto para comando "rg")
@@ -4709,7 +4800,7 @@ function setupListeners(sock) {
                     
                     if (!registros.usuarioRegistrado(numeroUsuario)) {
                         await reagirMensagem(sock, normalized, "🚫");
-                        await reply(sock, from, `🚫 *ACESSO NEGADO!*\n\n❌ Você não está registrado no sistema!\n\n📝 Para se registrar, digite:\n\`\`\`${prefix}rg\`\`\`\n\n⚠️ Apenas usuários registrados podem usar o bot!`, [sender]);
+                        await reply(sock, from, `🚫 *ACESSO NEGADO!*\n\n❌ Você não está registrado no sistema!\n\n📝 Para se registrar, digite:\n\`\`\`${config.prefix}rg\`\`\`\n\n⚠️ Apenas usuários registrados podem usar o bot!`, [sender]);
                         continue; // Não processa o comando se não estiver registrado
                     }
                 }
@@ -4731,7 +4822,7 @@ function setupListeners(sock) {
                     
                     if (!registros.usuarioRegistrado(numeroUsuario)) {
                         await reagirMensagem(sock, normalized, "🚫");
-                        await reply(sock, from, `🚫 *ACESSO NEGADO!*\n\n❌ Você não está registrado no sistema!\n\n📝 Para se registrar, digite:\n\`\`\`${prefix}rg\`\`\`\n\n⚠️ Apenas usuários registrados podem usar o bot!`, [sender]);
+                        await reply(sock, from, `🚫 *ACESSO NEGADO!*\n\n❌ Você não está registrado no sistema!\n\n📝 Para se registrar, digite:\n\`\`\`${config.prefix}rg\`\`\`\n\n⚠️ Apenas usuários registrados podem usar o bot!`, [sender]);
                         continue;
                     }
 
