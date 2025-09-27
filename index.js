@@ -32,6 +32,9 @@ const akinatorFile = path.join(__dirname, "database/grupos/games/akinator.json")
 // Sistema Anti-Spam Completo
 const antiSpam = require("./arquivos/antispam.js");
 
+// Sistema de Registros
+const registros = require("./arquivos/registros.js");
+
 // importa banner + logger centralizados
 const { mostrarBanner, logMensagem } = require("./export");
 
@@ -583,6 +586,97 @@ async function handleCommand(sock, message, command, args, from, quoted) {
         case "recado":
             await sock.sendMessage(from, { text: "📌 Bot está ativo e conectado!" }, { quoted: message });
             break;
+
+        case "registrar": {
+            const sender = message.key.participant || from;
+            const numeroUsuario = sender.split('@')[0];
+            const nomeUsuario = message.pushName || "Usuário";
+
+            // Verifica se já está registrado
+            if (registros.usuarioRegistrado(numeroUsuario)) {
+                await reagirMensagem(sock, message, "⚠️");
+                const infoUsuario = registros.obterInfoUsuario(numeroUsuario);
+                await reply(sock, from, 
+                    `⚠️ *VOCÊ JÁ ESTÁ REGISTRADO!*\n\n` +
+                    `👤 Nome: ${infoUsuario.nome}\n` +
+                    `📱 Número: ${infoUsuario.numero}\n` +
+                    `📅 Data do Registro: ${infoUsuario.dataRegistroFormatada}\n` +
+                    `🔢 Seu Número de Registro: #${infoUsuario.numeroRegistro}\n\n` +
+                    `✅ Você já pode usar todos os comandos do bot!`, 
+                    [sender]
+                );
+                break;
+            }
+
+            // Registra o usuário
+            const resultado = registros.registrarUsuario(numeroUsuario, nomeUsuario);
+
+            if (resultado.sucesso) {
+                await reagirMensagem(sock, message, "🎉");
+                
+                // Obtém foto do perfil do usuário
+                let fotoPerfilUrl = null;
+                try {
+                    const profilePic = await sock.profilePictureUrl(sender, 'image');
+                    fotoPerfilUrl = profilePic;
+                } catch (err) {
+                    console.log("❌ Erro ao obter foto do perfil:", err.message);
+                    // Use uma imagem padrão se não conseguir obter a foto
+                    fotoPerfilUrl = "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg";
+                }
+
+                const mensagemSucesso = 
+                    `🎉 *PARABÉNS! REGISTRO REALIZADO COM SUCESSO!* 🎉\n\n` +
+                    `✅ *Dados do Registro:*\n` +
+                    `👤 Nome: ${resultado.registro.nome}\n` +
+                    `📱 Número: ${resultado.registro.numero}\n` +
+                    `📅 Data: ${resultado.registro.dataRegistroFormatada}\n` +
+                    `🔢 Você é o usuário #${resultado.registro.numeroRegistro}\n\n` +
+                    `📊 *Total de Registros no Sistema:* ${resultado.totalRegistros}\n\n` +
+                    `🚀 Agora você pode usar todos os comandos do bot!\n` +
+                    `💡 Digite \`${prefix}menu\` para ver os comandos disponíveis`;
+
+                await sock.sendMessage(from, {
+                    image: { url: fotoPerfilUrl },
+                    caption: mensagemSucesso,
+                    contextInfo: {
+                        mentionedJid: [sender],
+                        forwardingScore: 100000,
+                        isForwarded: true,
+                        forwardedNewsletterMessageInfo: {
+                            newsletterJid: "120363289739581116@newsletter",
+                            newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
+                        },
+                        externalAdReply: {
+                            title: "🎉 REGISTRO REALIZADO",
+                            body: `© NEEXT LTDA • Usuário #${resultado.registro.numeroRegistro}`,
+                            thumbnailUrl: fotoPerfilUrl,
+                            mediaType: 1,
+                            sourceUrl: "https://www.neext.online"
+                        }
+                    }
+                }, { quoted: selinho2 });
+
+                console.log(`✅ NOVO REGISTRO: ${nomeUsuario} (${numeroUsuario}) - Registro #${resultado.registro.numeroRegistro}`);
+            } else {
+                await reagirMensagem(sock, message, "❌");
+                let mensagemErro = "❌ Erro ao registrar usuário!";
+                
+                switch(resultado.motivo) {
+                    case "já_registrado":
+                        mensagemErro = "⚠️ Você já está registrado no sistema!";
+                        break;
+                    case "erro_salvar":
+                        mensagemErro = "❌ Erro ao salvar registro. Tente novamente!";
+                        break;
+                    default:
+                        mensagemErro = "❌ Erro técnico. Contate o administrador!";
+                }
+                
+                await reply(sock, from, mensagemErro, [sender]);
+            }
+        }
+        break;
 
         case "grupo-status": {
             // Só funciona em grupos
@@ -1816,6 +1910,10 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 const totalComandos = contarComandos();
                 const totalGrupos = await contarGrupos(sock);
 
+                // Obter total de registros
+                const estatisticasRegistros = registros.obterEstatisticas();
+                const totalRegistros = estatisticasRegistros.totalRegistros;
+
                 // Buscar versão do Baileys do package.json
                 const packageJson = require('./package.json');
                 const versaoBaileys = packageJson.dependencies['@whiskeysockets/baileys'];
@@ -1858,8 +1956,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 │ 𖦹∘̥⸽🛠️⃟ Versão: ${versaoBaileys}
 │ 𖦹∘̥⸽👑⃟ Dono: ${nickDoDono}
 │ 𖦹∘̥⸽📈⃟ Total de Grupos: ${totalGrupos}
-│ 𖦹∘̥⸽📝⃟ Total Registrado: 
-│ 𖦹∘̥⸽🎗️⃟ Cargo: 
+│ 𖦹∘̥⸽📝⃟ Total Registrado: ${totalRegistros}
+│ 𖦹∘̥⸽🎗️⃟ Cargo: Membro
 ╰───────────────────⪨
 
 ╭──〔 MENUS DISPONÍVEIS 〕──⪩
@@ -2545,6 +2643,19 @@ function setupListeners(sock) {
             if (isCmd) {
                 const [cmd, ...args] = text.slice(prefix.length).trim().split(/ +/);
                 const command = cmd.toLowerCase();
+
+                // 🔹 Verificação de registro (exceto para comando "registrar")
+                if (command !== "registrar") {
+                    const sender = normalized.key.participant || from;
+                    const numeroUsuario = sender.split('@')[0];
+                    
+                    if (!registros.usuarioRegistrado(numeroUsuario)) {
+                        await reagirMensagem(sock, normalized, "🚫");
+                        await reply(sock, from, `🚫 *ACESSO NEGADO!*\n\n❌ Você não está registrado no sistema!\n\n📝 Para se registrar, digite:\n\`\`\`${prefix}registrar\`\`\`\n\n⚠️ Apenas usuários registrados podem usar o bot!`, [sender]);
+                        continue; // Não processa o comando se não estiver registrado
+                    }
+                }
+
                 try {
                     await handleCommand(sock, normalized, command, args, from, quoted);
                 } catch (err) {
