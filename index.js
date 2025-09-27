@@ -3898,7 +3898,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                     `👤 Jogador 1: @${sender.split('@')[0]}\n` +
                     `👤 Jogador 2: @${oponente.split('@')[0]}\n\n` +
                     `🎲 Vez de: @${sender.split('@')[0]}\n\n` +
-                    `💥 Digite \`${prefix}atirar\` para puxar o gatilho!\n` +
+                    `💥 Digite \`${prefix}disparar\` para puxar o gatilho!\n` +
                     `🔄 Use \`${prefix}resetroleta\` para cancelar o jogo\n\n` +
                     `⚠️ Que a sorte esteja com vocês...`,
                 mentions: [sender, oponente]
@@ -3936,6 +3936,110 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             delete global.roletaRussa[from];
             await reply(sock, from, `🔄 *ROLETA RUSSA CANCELADA!*\n\nO jogo foi cancelado por @${sender.split('@')[0]}\n\n😮‍💨 Todos respiraram aliviados...`, [sender]);
+        }
+        break;
+
+        case "disparar": {
+            // Verifica se modo gamer está ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const config = antiSpam.carregarConfigGrupo(from);
+            if (!config || !config.modogamer) {
+                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
+                break;
+            }
+
+            global.roletaRussa = global.roletaRussa || {};
+            if (!global.roletaRussa[from] || !global.roletaRussa[from].ativo) {
+                await reply(sock, from, "❌ Não há roleta russa ativa neste grupo! Use `.roletarussa @usuario` para iniciar.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const jogo = global.roletaRussa[from];
+            
+            // Verifica se é um dos jogadores
+            if (sender !== jogo.jogador1 && sender !== jogo.jogador2) {
+                await reply(sock, from, "❌ Apenas os jogadores podem disparar!");
+                break;
+            }
+
+            // Verifica se é a vez do jogador
+            if (sender !== jogo.vezDe) {
+                await reply(sock, from, `❌ Não é sua vez! É a vez de @${jogo.vezDe.split('@')[0]}`, [jogo.vezDe]);
+                break;
+            }
+
+            // Verifica se o jogo já deveria ter terminado (proteção contra loop infinito)
+            if (jogo.tiroAtual > 6) {
+                // Força final do jogo - alguém deve morrer
+                const vencedor = sender === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
+                
+                await sock.sendMessage(from, {
+                    video: { url: "https://i.ibb.co/hg39XnfJ/76dfd37d9b97af5aba62b4b2a6e1b3b6.gif" },
+                    caption: 
+                        `💥 *BANG! JOGO FORÇADO!*\n\n` +
+                        `💀 @${sender.split('@')[0]} morreu na câmara extra! 🔫\n\n` +
+                        `🏆 Vencedor: @${vencedor.split('@')[0]}\n` +
+                        `📊 O jogo foi muito longo - fim forçado!\n\n` +
+                        `⚰️ Alguém tinha que morrer... 🌹`,
+                    mentions: [sender, vencedor],
+                    gifPlayback: true
+                });
+                
+                delete global.roletaRussa[from];
+                break;
+            }
+
+            // Processa o disparo
+            console.log(`🔫 Tiro ${jogo.tiroAtual} - Bala fatal na posição ${jogo.balaFatal}`);
+            
+            if (jogo.tiroAtual === jogo.balaFatal) {
+                // BANG! Jogador morreu
+                const vencedor = sender === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
+                
+                await sock.sendMessage(from, {
+                    video: { url: "https://i.ibb.co/hg39XnfJ/76dfd37d9b97af5aba62b4b2a6e1b3b6.gif" },
+                    caption: 
+                        `💥 *BANG! GAME OVER!*\n\n` +
+                        `💀 @${sender.split('@')[0]} puxou a bala fatal! 🔫\n\n` +
+                        `🏆 Vencedor: @${vencedor.split('@')[0]}\n` +
+                        `📊 Tiro fatal: ${jogo.tiroAtual}/6\n\n` +
+                        `⚰️ RIP... que a terra te seja leve! 🌹`,
+                    mentions: [sender, vencedor],
+                    gifPlayback: true
+                });
+                
+                // Reset do jogo
+                delete global.roletaRussa[from];
+                
+            } else {
+                // Clique! Jogador sobreviveu
+                const proximoJogador = sender === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
+                jogo.vezDe = proximoJogador;
+                jogo.tiroAtual++;
+                
+                const sobrevivencia = [
+                    "escapou por pouco", "teve sorte desta vez", "a morte passou longe",
+                    "o destino poupou", "ainda não chegou sua hora", "sobreviveu mais uma vez"
+                ];
+                const frase = sobrevivencia[Math.floor(Math.random() * sobrevivencia.length)];
+                
+                await sock.sendMessage(from, {
+                    video: { url: "https://i.ibb.co/VpyJfZ6w/e6f41b63d39c8b1c36c80ebb14b75c71.gif" },
+                    caption: 
+                        `🔫 *CLIQUE!* Nada aconteceu...\n\n` +
+                        `😅 @${sender.split('@')[0]} ${frase}!\n\n` +
+                        `🎲 Próxima vez: @${proximoJogador.split('@')[0]}\n` +
+                        `📊 Tiro: ${jogo.tiroAtual - 1}/6\n\n` +
+                        `💥 Digite \`.disparar\` para continuar!`,
+                    mentions: [sender, proximoJogador],
+                    gifPlayback: true
+                });
+            }
         }
         break;
 
