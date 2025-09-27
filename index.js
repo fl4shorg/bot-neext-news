@@ -615,14 +615,18 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 await reagirMensagem(sock, message, "🎉");
                 
                 // Obtém foto do perfil do usuário
-                let fotoPerfilUrl = null;
+                let fotoPerfilUrl = "https://i.ibb.co/LDs3wJR3/a720804619ff4c744098b956307db1ff.jpg"; // Foto padrão para usuários sem perfil
                 try {
                     const profilePic = await sock.profilePictureUrl(sender, 'image');
-                    fotoPerfilUrl = profilePic;
+                    if (profilePic) {
+                        fotoPerfilUrl = profilePic;
+                        console.log(`✅ Foto do perfil obtida para ${numeroUsuario}: ${profilePic}`);
+                    } else {
+                        console.log(`⚠️ Usuário ${numeroUsuario} não possui foto de perfil, usando imagem padrão`);
+                    }
                 } catch (err) {
-                    console.log("❌ Erro ao obter foto do perfil:", err.message);
-                    // Use uma imagem padrão se não conseguir obter a foto
-                    fotoPerfilUrl = "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg";
+                    console.log(`❌ Erro ao obter foto do perfil de ${numeroUsuario}:`, err.message);
+                    console.log("📷 Usando foto padrão para usuário sem perfil");
                 }
 
                 const mensagemSucesso = 
