@@ -929,7 +929,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 `🎥 Antivideo: ${getStatus('antivideo')}\n` +
                 `🎵 Antiaudio: ${getStatus('antiaudio')}\n` +
                 `🏷️ Antisticker: ${getStatus('antisticker')}\n` +
-                `🌊 Antiflod: ${getStatus('antiflod')}\n\n` +
+                `🌊 Antiflod: ${getStatus('antiflod')}\n` +
+                `📊 X9 Monitor: ${getStatus('x9')}\n\n` +
                 `📋 Lista Negra: ${config.listanegra ? config.listanegra.length : 0} usuários\n\n` +
                 `💡 *Use os comandos individuais para ativar/desativar*`;
             
@@ -945,7 +946,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
         case "antiaudio":
         case "antisticker":
         case "antiflod":
-        case "antifake": {
+        case "antifake":
+        case "x9": {
             // Só funciona em grupos
             if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
                 await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
@@ -970,7 +972,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 'antiaudio': '🎵 ANTIAUDIO',
                 'antisticker': '🏷️ ANTISTICKER',
                 'antiflod': '🌊 ANTIFLOD',
-                'antifake': '🇧🇷 ANTIFAKE'
+                'antifake': '🇧🇷 ANTIFAKE',
+                'x9': '📊 X9 MONITOR'
             };
 
             const featureName = featureNames[command];
@@ -1025,7 +1028,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     'antivideo': 'Remove vídeos e bane usuário',
                     'antiaudio': 'Remove áudios e bane usuário',
                     'antisticker': 'Remove stickers e bane usuário',
-                    'antiflod': 'Remove flood (spam) e bane usuário'
+                    'antiflod': 'Remove flood (spam) e bane usuário',
+                    'x9': 'Monitora ações administrativas do grupo'
                 };
                 await reply(sock, from, `${featureName}\n\nStatus: ${status}\n\n📝 *Como usar:*\n• \`${prefix}${command} on\` - Ativar\n• \`${prefix}${command} off\` - Desativar\n\n⚔️ *Quando ativo:*\n• ${descriptions[command]}\n• Protege admins e dono\n\n⚠️ Apenas admins podem usar`);
             }
@@ -2945,13 +2949,92 @@ async function processarRespostaAkinator(sock, text, from, normalized) {
     }
 }
 
+// X9 Monitor - Detecta ações administrativas
+async function processarX9Monitor(sock, groupId, participants, action) {
+    try {
+        const config = antiSpam.carregarConfigGrupo(groupId);
+        if (!config || !config.x9) return; // X9 não está ativo
+        
+        // Só monitora em grupos
+        if (!groupId.endsWith('@g.us') && !groupId.endsWith('@lid')) return;
+        
+        // Obtém metadados do grupo para verificar mudanças de admin
+        const groupMetadata = await sock.groupMetadata(groupId);
+        
+        for (const participant of participants) {
+            const participantInfo = groupMetadata.participants.find(p => p.id === participant);
+            const number = participant.split('@')[0];
+            const name = participantInfo?.notify || number;
+            
+            let mensagem = "";
+            let emoji = "";
+            
+            switch (action) {
+                case "promote":
+                    mensagem = `📊 *X9 MONITOR DETECTOU*\n\n👑 **PROMOÇÃO PARA ADMIN**\n\n👤 @${number} foi promovido para administrador\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando ações administrativas...`;
+                    emoji = "👑";
+                    break;
+                    
+                case "demote":
+                    mensagem = `📊 *X9 MONITOR DETECTOU*\n\n⬇️ **REBAIXAMENTO DE ADMIN**\n\n👤 @${number} foi rebaixado de administrador\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando ações administrativas...`;
+                    emoji = "⬇️";
+                    break;
+                    
+                case "add":
+                    mensagem = `📊 *X9 MONITOR DETECTOU*\n\n➕ **MEMBRO ADICIONADO**\n\n👤 @${number} foi adicionado ao grupo\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando entrada de membros...`;
+                    emoji = "➕";
+                    break;
+                    
+                case "remove":
+                    mensagem = `📊 *X9 MONITOR DETECTOU*\n\n➖ **MEMBRO REMOVIDO**\n\n👤 @${number} foi removido do grupo\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando saída de membros...`;
+                    emoji = "➖";
+                    break;
+            }
+            
+            if (mensagem) {
+                // Envia notificação do X9 Monitor
+                await sock.sendMessage(groupId, {
+                    text: mensagem,
+                    contextInfo: {
+                        mentionedJid: [participant],
+                        forwardingScore: 100000,
+                        isForwarded: true,
+                        forwardedNewsletterMessageInfo: {
+                            newsletterJid: "120363289739581116@newsletter",
+                            newsletterName: "📊⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗫𓋌𝟿 𝗠𝗢𝗡𝗜𝗧𝗢𝗥⦙⦙ꜣྀ"
+                        },
+                        externalAdReply: {
+                            title: "© NEEXT LTDA - X9 Monitor",
+                            body: `${emoji} Ação detectada no grupo`,
+                            thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
+                            mediaType: 1,
+                            sourceUrl: "www.neext.online"
+                        }
+                    }
+                });
+                
+                console.log(`📊 X9 MONITOR: ${action} detectado para ${number} no grupo ${groupId}`);
+            }
+        }
+        
+    } catch (err) {
+        console.error("❌ Erro no X9 Monitor:", err);
+    }
+}
+
 // Listener de mensagens
 function setupListeners(sock) {
-    // Event listener para participantes do grupo (lista negra)
+    // Event listener para participantes do grupo (lista negra + X9 Monitor)
     sock.ev.on("group-participants.update", async (update) => {
         try {
             const { id: groupId, participants, action } = update;
+            
+            // Processamento da lista negra
             await processarListaNegra(sock, participants, groupId, action);
+            
+            // Monitoramento X9 de ações administrativas
+            await processarX9Monitor(sock, groupId, participants, action);
+            
         } catch (err) {
             console.error("❌ Erro no event listener de participantes:", err);
         }
