@@ -2949,6 +2949,9 @@ async function processarRespostaAkinator(sock, text, from, normalized) {
     }
 }
 
+// Cache para armazenar quem fez as últimas ações administrativas
+const x9ActionCache = new Map();
+
 // X9 Monitor - Detecta ações administrativas
 async function processarX9Monitor(sock, groupId, participants, action) {
     try {
@@ -2966,27 +2969,61 @@ async function processarX9Monitor(sock, groupId, participants, action) {
             const number = participant.split('@')[0];
             const name = participantInfo?.notify || number;
             
+            // Busca quem fez a ação no cache
+            const cacheKey = `${groupId}_${action}_${participant}`;
+            const actionData = x9ActionCache.get(cacheKey);
+            
+            let autorAction = null;
+            let autorName = "Sistema";
+            
+            if (actionData && actionData.timestamp > Date.now() - 30000) { // 30 segundos
+                autorAction = actionData.author;
+                const autorInfo = groupMetadata.participants.find(p => p.id === autorAction);
+                autorName = autorInfo?.notify || autorAction?.split('@')[0] || "Admin";
+            }
+            
             let mensagem = "";
             let emoji = "";
+            let mentionedUsers = [participant];
+            
+            if (autorAction) {
+                mentionedUsers.push(autorAction);
+            }
             
             switch (action) {
                 case "promote":
-                    mensagem = `📊 *X9 MONITOR DETECTOU*\n\n👑 **PROMOÇÃO PARA ADMIN**\n\n👤 @${number} foi promovido para administrador\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando ações administrativas...`;
+                    if (autorAction) {
+                        mensagem = `📊 *X9 MONITOR DETECTOU*\n\n👑 **PROMOÇÃO PARA ADMIN**\n\n👤 @${number} foi promovido para administrador\n👨‍💼 **Por:** @${autorAction.split('@')[0]}\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando ações administrativas...`;
+                    } else {
+                        mensagem = `📊 *X9 MONITOR DETECTOU*\n\n👑 **PROMOÇÃO PARA ADMIN**\n\n👤 @${number} foi promovido para administrador\n👨‍💼 **Por:** ${autorName}\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando ações administrativas...`;
+                    }
                     emoji = "👑";
                     break;
                     
                 case "demote":
-                    mensagem = `📊 *X9 MONITOR DETECTOU*\n\n⬇️ **REBAIXAMENTO DE ADMIN**\n\n👤 @${number} foi rebaixado de administrador\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando ações administrativas...`;
+                    if (autorAction) {
+                        mensagem = `📊 *X9 MONITOR DETECTOU*\n\n⬇️ **REBAIXAMENTO DE ADMIN**\n\n👤 @${number} foi rebaixado de administrador\n👨‍💼 **Por:** @${autorAction.split('@')[0]}\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando ações administrativas...`;
+                    } else {
+                        mensagem = `📊 *X9 MONITOR DETECTOU*\n\n⬇️ **REBAIXAMENTO DE ADMIN**\n\n👤 @${number} foi rebaixado de administrador\n👨‍💼 **Por:** ${autorName}\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando ações administrativas...`;
+                    }
                     emoji = "⬇️";
                     break;
                     
                 case "add":
-                    mensagem = `📊 *X9 MONITOR DETECTOU*\n\n➕ **MEMBRO ADICIONADO**\n\n👤 @${number} foi adicionado ao grupo\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando entrada de membros...`;
+                    if (autorAction) {
+                        mensagem = `📊 *X9 MONITOR DETECTOU*\n\n➕ **MEMBRO ADICIONADO**\n\n👤 @${number} foi adicionado ao grupo\n👨‍💼 **Por:** @${autorAction.split('@')[0]}\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando entrada de membros...`;
+                    } else {
+                        mensagem = `📊 *X9 MONITOR DETECTOU*\n\n➕ **MEMBRO ADICIONADO**\n\n👤 @${number} foi adicionado ao grupo\n👨‍💼 **Por:** ${autorName}\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando entrada de membros...`;
+                    }
                     emoji = "➕";
                     break;
                     
                 case "remove":
-                    mensagem = `📊 *X9 MONITOR DETECTOU*\n\n➖ **MEMBRO REMOVIDO**\n\n👤 @${number} foi removido do grupo\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando saída de membros...`;
+                    if (autorAction) {
+                        mensagem = `📊 *X9 MONITOR DETECTOU*\n\n➖ **MEMBRO REMOVIDO**\n\n👤 @${number} foi removido do grupo\n👨‍💼 **Por:** @${autorAction.split('@')[0]}\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando saída de membros...`;
+                    } else {
+                        mensagem = `📊 *X9 MONITOR DETECTOU*\n\n➖ **MEMBRO REMOVIDO**\n\n👤 @${number} foi removido do grupo\n👨‍💼 **Por:** ${autorName}\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando saída de membros...`;
+                    }
                     emoji = "➖";
                     break;
             }
@@ -2996,7 +3033,7 @@ async function processarX9Monitor(sock, groupId, participants, action) {
                 await sock.sendMessage(groupId, {
                     text: mensagem,
                     contextInfo: {
-                        mentionedJid: [participant],
+                        mentionedJid: mentionedUsers,
                         forwardingScore: 100000,
                         isForwarded: true,
                         forwardedNewsletterMessageInfo: {
@@ -3013,12 +3050,70 @@ async function processarX9Monitor(sock, groupId, participants, action) {
                     }
                 });
                 
-                console.log(`📊 X9 MONITOR: ${action} detectado para ${number} no grupo ${groupId}`);
+                console.log(`📊 X9 MONITOR: ${action} detectado para ${number} no grupo ${groupId} ${autorAction ? 'por ' + autorAction.split('@')[0] : ''}`);
             }
+            
+            // Limpa o cache após usar
+            x9ActionCache.delete(cacheKey);
         }
         
     } catch (err) {
         console.error("❌ Erro no X9 Monitor:", err);
+    }
+}
+
+// Função para detectar quem fez ações administrativas através de mensagens do sistema
+async function detectarAutorAcaoX9(sock, message, from) {
+    try {
+        const config = antiSpam.carregarConfigGrupo(from);
+        if (!config || !config.x9) return; // X9 não está ativo
+        
+        // Só funciona em grupos
+        if (!from.endsWith('@g.us') && !from.endsWith('@lid')) return;
+        
+        const sender = message.key.participant || from;
+        const texto = getMessageText(message.message);
+        
+        // Detecta mensagens de sistema do WhatsApp sobre mudanças de admin
+        if (texto.includes('foi promovido') || texto.includes('foi rebaixado') || 
+            texto.includes('foi removido') || texto.includes('foi adicionado') ||
+            texto.includes('agora é admin') || texto.includes('não é mais admin')) {
+            
+            // Extrai o número da pessoa que foi afetada
+            const numeroAfetado = texto.match(/@(\d+)/)?.[1];
+            if (numeroAfetado) {
+                const participantAfetado = numeroAfetado + '@s.whatsapp.net';
+                
+                // Determina a ação
+                let action = '';
+                if (texto.includes('agora é admin') || texto.includes('foi promovido')) {
+                    action = 'promote';
+                } else if (texto.includes('não é mais admin') || texto.includes('foi rebaixado')) {
+                    action = 'demote';
+                } else if (texto.includes('foi adicionado')) {
+                    action = 'add';
+                } else if (texto.includes('foi removido')) {
+                    action = 'remove';
+                }
+                
+                if (action) {
+                    // Armazena quem fez a ação no cache
+                    const cacheKey = `${from}_${action}_${participantAfetado}`;
+                    x9ActionCache.set(cacheKey, {
+                        author: sender,
+                        timestamp: Date.now()
+                    });
+                    
+                    // Auto-limpa o cache após 30 segundos
+                    setTimeout(() => {
+                        x9ActionCache.delete(cacheKey);
+                    }, 30000);
+                }
+            }
+        }
+        
+    } catch (err) {
+        console.error("❌ Erro ao detectar autor da ação X9:", err);
     }
 }
 
