@@ -2959,8 +2959,11 @@ async function processarRespostaAkinator(sock, text, from, normalized) {
 // Cache para armazenar quem fez as últimas ações administrativas
 const x9ActionCache = new Map();
 
+// Cache para rastrear últimas atividades de admin (para melhor detecção de autor)
+const adminActivityCache = new Map();
+
 // X9 Monitor - Detecta ações administrativas
-async function processarX9Monitor(sock, groupId, participants, action) {
+async function processarX9Monitor(sock, groupId, participants, action, author = null) {
     try {
         const config = antiSpam.carregarConfigGrupo(groupId);
         if (!config || !config.x9) return; // X9 não está ativo
@@ -2976,17 +2979,36 @@ async function processarX9Monitor(sock, groupId, participants, action) {
             const number = participant.split('@')[0];
             const name = participantInfo?.notify || number;
             
-            // Busca quem fez a ação no cache
-            const cacheKey = `${groupId}_${action}_${participant}`;
-            const actionData = x9ActionCache.get(cacheKey);
-            
-            let autorAction = null;
+            let autorAction = author; // Usa o autor passado como parâmetro se disponível
             let autorName = "Sistema";
             
-            if (actionData && actionData.timestamp > Date.now() - 30000) { // 30 segundos
-                autorAction = actionData.author;
+            // Busca quem fez a ação no cache se não foi passado autor
+            if (!autorAction) {
+                const cacheKey = `${groupId}_${action}_${participant}`;
+                const actionData = x9ActionCache.get(cacheKey);
+                
+                if (actionData && actionData.timestamp > Date.now() - 30000) { // 30 segundos
+                    autorAction = actionData.author;
+                }
+            }
+            
+            // Se ainda não tem autor, tenta detectar pelo último admin ativo no grupo
+            if (!autorAction) {
+                const recentActivity = adminActivityCache.get(groupId);
+                if (recentActivity && recentActivity.timestamp > Date.now() - 60000) { // 1 minuto
+                    autorAction = recentActivity.admin;
+                }
+            }
+            
+            // Se encontrou o autor, obtém o nome
+            if (autorAction) {
                 const autorInfo = groupMetadata.participants.find(p => p.id === autorAction);
                 autorName = autorInfo?.notify || autorAction?.split('@')[0] || "Admin";
+                
+                // Log de sucesso
+                console.log(`📊 X9: Autor detectado - ${autorName} (${autorAction.split('@')[0]}) fez ${action} em ${number}`);
+            } else {
+                console.log(`⚠️ X9: Não foi possível detectar autor para ${action} de ${number} no grupo ${groupId.split('@')[0]}`);
             }
             
             let mensagem = "";
@@ -3069,6 +3091,40 @@ async function processarX9Monitor(sock, groupId, participants, action) {
     }
 }
 
+// Função para registrar atividade de admin (para melhor detecção de autor)
+async function registrarAtividadeAdmin(sock, message, from) {
+    try {
+        const config = antiSpam.carregarConfigGrupo(from);
+        if (!config || !config.x9) return; // X9 não está ativo
+        
+        // Só funciona em grupos
+        if (!from.endsWith('@g.us') && !from.endsWith('@lid')) return;
+        
+        const sender = message.key.participant || from;
+        
+        // Verifica se quem mandou a mensagem é admin
+        const ehAdmin = await isAdmin(sock, from, sender);
+        if (ehAdmin) {
+            // Registra a última atividade do admin neste grupo
+            adminActivityCache.set(from, {
+                admin: sender,
+                timestamp: Date.now()
+            });
+            
+            // Auto-limpa após 2 minutos
+            setTimeout(() => {
+                const current = adminActivityCache.get(from);
+                if (current && current.admin === sender && current.timestamp <= Date.now() - 120000) {
+                    adminActivityCache.delete(from);
+                }
+            }, 120000);
+        }
+        
+    } catch (err) {
+        console.error("❌ Erro ao registrar atividade admin:", err);
+    }
+}
+
 // Função para detectar quem fez ações administrativas através de mensagens do sistema
 async function detectarAutorAcaoX9(sock, message, from) {
     try {
@@ -3133,13 +3189,15 @@ function setupListeners(sock) {
     // Event listener para participantes do grupo (lista negra + X9 Monitor)
     sock.ev.on("group-participants.update", async (update) => {
         try {
-            const { id: groupId, participants, action } = update;
+            const { id: groupId, participants, action, author } = update;
+            
+            console.log(`📊 X9 Event - Grupo: ${groupId.split('@')[0]}, Ação: ${action}, Participantes: ${participants.map(p => p.split('@')[0]).join(', ')}, Autor: ${author ? author.split('@')[0] : 'não detectado'}`);
             
             // Processamento da lista negra
             await processarListaNegra(sock, participants, groupId, action);
             
-            // Monitoramento X9 de ações administrativas
-            await processarX9Monitor(sock, groupId, participants, action);
+            // Monitoramento X9 de ações administrativas com autor detectado
+            await processarX9Monitor(sock, groupId, participants, action, author);
             
         } catch (err) {
             console.error("❌ Erro no event listener de participantes:", err);
@@ -3169,6 +3227,9 @@ function setupListeners(sock) {
 
             // 🔹 Detectar ações administrativas X9 (antes do anti-spam para capturar o autor)
             await detectarAutorAcaoX9(sock, normalized, from);
+            
+            // 🔹 Registrar atividade de admin para X9 Monitor
+            await registrarAtividadeAdmin(sock, normalized, from);
 
             // 🔹 Verificação de ANTI-SPAM COMPLETO (antes de tudo)
             const violacaoDetectada = await processarAntiSpam(sock, normalized);
