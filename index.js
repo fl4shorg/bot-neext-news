@@ -3945,6 +3945,189 @@ Seu ID foi salvo com segurança em nosso sistema!`;
     }
 }
 
+// Processa jogadas dos jogos ativos
+async function processarJogadas(sock, text, from, normalized) {
+    try {
+        const sender = normalized.key.participant || from;
+        const numero = parseInt(text.trim());
+        
+        // Jogo da Velha
+        global.jogoDaVelha = global.jogoDaVelha || {};
+        if (global.jogoDaVelha[from] && global.jogoDaVelha[from].ativo) {
+            const jogo = global.jogoDaVelha[from];
+            
+            // Verifica se é a vez do jogador
+            if (sender !== jogo.vezDe) {
+                return false; // Não é a vez dele, ignora
+            }
+            
+            // Verifica se o número é válido (1-9)
+            if (numero >= 1 && numero <= 9) {
+                const posicao = numero - 1;
+                
+                // Verifica se a posição está livre
+                if (jogo.tabuleiro[posicao].includes("️⃣")) {
+                    // Faz a jogada
+                    const simbolo = sender === jogo.jogador1 ? "❌" : "⭕";
+                    jogo.tabuleiro[posicao] = simbolo;
+                    
+                    // Verifica se ganhou
+                    const combinacoes = [
+                        [0,1,2], [3,4,5], [6,7,8], // linhas
+                        [0,3,6], [1,4,7], [2,5,8], // colunas
+                        [0,4,8], [2,4,6] // diagonais
+                    ];
+                    
+                    let ganhou = false;
+                    for (const combo of combinacoes) {
+                        if (combo.every(pos => jogo.tabuleiro[pos] === simbolo)) {
+                            ganhou = true;
+                            break;
+                        }
+                    }
+                    
+                    const tabuleiro = 
+                        `${jogo.tabuleiro[0]} ${jogo.tabuleiro[1]} ${jogo.tabuleiro[2]}\n` +
+                        `${jogo.tabuleiro[3]} ${jogo.tabuleiro[4]} ${jogo.tabuleiro[5]}\n` +
+                        `${jogo.tabuleiro[6]} ${jogo.tabuleiro[7]} ${jogo.tabuleiro[8]}`;
+                    
+                    if (ganhou) {
+                        await reply(sock, from, 
+                            `🏆 *JOGO DA VELHA - VITÓRIA!*\n\n` +
+                            `${tabuleiro}\n\n` +
+                            `🎉 @${sender.split('@')[0]} GANHOU!\n` +
+                            `🏅 Parabéns pelo jogo!`,
+                            [sender]
+                        );
+                        delete global.jogoDaVelha[from];
+                        return true;
+                    }
+                    
+                    // Verifica empate
+                    if (jogo.tabuleiro.every(pos => !pos.includes("️⃣"))) {
+                        await reply(sock, from, 
+                            `🤝 *JOGO DA VELHA - EMPATE!*\n\n` +
+                            `${tabuleiro}\n\n` +
+                            `😅 Deu velha! Ninguém ganhou!`
+                        );
+                        delete global.jogoDaVelha[from];
+                        return true;
+                    }
+                    
+                    // Alterna vez
+                    jogo.vezDe = sender === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
+                    
+                    await reply(sock, from, 
+                        `⭕ *JOGO DA VELHA*\n\n` +
+                        `${tabuleiro}\n\n` +
+                        `🎯 Vez de: @${jogo.vezDe.split('@')[0]}\n` +
+                        `💡 Digite um número de 1 a 9!`,
+                        [jogo.vezDe]
+                    );
+                    return true;
+                } else {
+                    await reply(sock, from, `❌ Posição ${numero} já ocupada! Escolha outra.`);
+                    return true;
+                }
+            }
+        }
+        
+        // Jogo da Forca
+        global.jogoDaForca = global.jogoDaForca || {};
+        if (global.jogoDaForca[from] && global.jogoDaForca[from].ativo) {
+            const jogo = global.jogoDaForca[from];
+            const letra = text.toUpperCase().trim();
+            
+            // Verifica se é uma letra válida
+            if (letra.length === 1 && /[A-Z]/.test(letra)) {
+                if (jogo.letrasUsadas.includes(letra)) {
+                    await reply(sock, from, `❌ Letra "${letra}" já foi usada!`);
+                    return true;
+                }
+                
+                jogo.letrasUsadas.push(letra);
+                
+                const desenhos = [
+                    "```\n  +---+\n  |   |\n      |\n      |\n      |\n      |\n=========```",
+                    "```\n  +---+\n  |   |\n  O   |\n      |\n      |\n      |\n=========```",
+                    "```\n  +---+\n  |   |\n  O   |\n  |   |\n      |\n      |\n=========```",
+                    "```\n  +---+\n  |   |\n  O   |\n /|   |\n      |\n      |\n=========```",
+                    "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n      |\n      |\n=========```",
+                    "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n /    |\n      |\n=========```",
+                    "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n=========```"
+                ];
+                
+                if (jogo.palavra.includes(letra)) {
+                    // Acertou a letra
+                    let palavraOculta = "";
+                    for (const char of jogo.palavra) {
+                        if (jogo.letrasUsadas.includes(char)) {
+                            palavraOculta += char + " ";
+                        } else {
+                            palavraOculta += "_ ";
+                        }
+                    }
+                    
+                    jogo.palavraOculta = palavraOculta;
+                    
+                    // Verifica se ganhou
+                    if (!palavraOculta.includes("_")) {
+                        await reply(sock, from, 
+                            `🏆 *JOGO DA FORCA - VITÓRIA!*\n\n` +
+                            `${desenhos[jogo.erros]}\n\n` +
+                            `🎉 Palavra: ${jogo.palavra}\n` +
+                            `✅ @${sender.split('@')[0]} ganhou!`,
+                            [sender]
+                        );
+                        delete global.jogoDaForca[from];
+                        return true;
+                    }
+                    
+                    await reply(sock, from, 
+                        `✅ *ACERTOU A LETRA "${letra}"!*\n\n` +
+                        `${desenhos[jogo.erros]}\n\n` +
+                        `📝 Palavra: ${palavraOculta}\n` +
+                        `❌ Erros: ${jogo.erros}/6\n` +
+                        `🔤 Letras usadas: ${jogo.letrasUsadas.join(", ")}\n\n` +
+                        `💡 Continue tentando!`
+                    );
+                    return true;
+                } else {
+                    // Errou a letra
+                    jogo.erros++;
+                    
+                    if (jogo.erros >= 6) {
+                        await reply(sock, from, 
+                            `💀 *JOGO DA FORCA - GAME OVER!*\n\n` +
+                            `${desenhos[6]}\n\n` +
+                            `😵 Você foi enforcado!\n` +
+                            `📝 A palavra era: ${jogo.palavra}\n` +
+                            `💔 Mais sorte na próxima!`
+                        );
+                        delete global.jogoDaForca[from];
+                        return true;
+                    }
+                    
+                    await reply(sock, from, 
+                        `❌ *ERROU A LETRA "${letra}"!*\n\n` +
+                        `${desenhos[jogo.erros]}\n\n` +
+                        `📝 Palavra: ${jogo.palavraOculta}\n` +
+                        `❌ Erros: ${jogo.erros}/6\n` +
+                        `🔤 Letras usadas: ${jogo.letrasUsadas.join(", ")}\n\n` +
+                        `💡 Continue tentando!`
+                    );
+                    return true;
+                }
+            }
+        }
+        
+        return false; // Nenhum jogo ativo ou entrada inválida
+    } catch (err) {
+        console.log("Erro ao processar jogadas:", err);
+        return false;
+    }
+}
+
 // Função para responder palavras-chave sem prefixo
 async function responderPalavrasChave(sock, text, from, normalized) {
     const msg = text.toLowerCase();
@@ -4401,6 +4584,10 @@ function setupListeners(sock) {
             // 🔹 Processamento do jogo Akinator
             const akinatorProcessed = await processarRespostaAkinator(sock, text, from, normalized);
             if (akinatorProcessed) continue; // se processou resposta do Akinator, não processa mais nada
+
+            // 🔹 Processamento de jogadas (Jogo da Velha, Forca, etc.)
+            const jogadaProcessada = await processarJogadas(sock, text, from, normalized);
+            if (jogadaProcessada) continue; // se processou jogada, não processa mais nada
 
             // 🔹 Palavras-chave sem prefixo
             const respondeu = await responderPalavrasChave(sock, text, from, normalized);
