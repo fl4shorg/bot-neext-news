@@ -6,30 +6,87 @@ function obterConfiguracoes() {
     return require('../settings/settings.json');
 }
 
+// Importa funções utilitárias
+const { obterSaudacao, contarGrupos, contarComandos } = require('../arquivos/funcoes/function.js');
+const { obterEstatisticas } = require('../arquivos/registros.js');
+
+// Função para determinar cargo do usuário
+async function obterCargoUsuario(sock, from, sender) {
+    try {
+        // Verifica se é o dono
+        const config = obterConfiguracoes();
+        const numeroDono = config.numeroDoDono + "@s.whatsapp.net";
+        if (sender === numeroDono) {
+            return "👑 Dono";
+        }
+
+        // Se estiver em grupo, verifica se é admin
+        if (from.endsWith('@g.us') || from.endsWith('@lid')) {
+            try {
+                const groupMetadata = await sock.groupMetadata(from);
+                const participant = groupMetadata.participants.find(p => p.id === sender);
+                if (participant && (participant.admin === 'admin' || participant.admin === 'superadmin')) {
+                    return "🛡️ Admin";
+                }
+            } catch (err) {
+                // Se der erro, assume membro
+            }
+        }
+
+        return "👤 Membro";
+    } catch (err) {
+        return "👤 Membro";
+    }
+}
+
 // ========================
-// MENU PRINCIPAL
+// MENU PRINCIPAL - NOVO FORMATO
 // ========================
-function obterMenuPrincipal() {
+async function obterMenuPrincipal(sock, from, sender, pushName) {
     const { prefix, nomeDoBot, nickDoDono } = obterConfiguracoes();
-    return `
-🤖 *${nomeDoBot} - MENU PRINCIPAL*
+    
+    try {
+        // Obter informações dinâmicas
+        const saudacao = obterSaudacao();
+        const totalComandos = contarComandos();
+        const totalGrupos = await contarGrupos(sock);
+        const estatisticasRegistros = obterEstatisticas();
+        const cargoUsuario = await obterCargoUsuario(sock, from, sender);
+        const nomeUsuario = pushName || "Usuário";
+        
+        return `${saudacao}! 👋
 
-📋 *CATEGORIAS DISPONÍVEIS:*
+╭──〔 𖦹∘̥⸽⃟ INFORMAÇÕES 〕──⪩
+│ 𖦹∘̥⸽🎯⃟ Prefixo: 「 ${prefix} 」
+│ 𖦹∘̥⸽📊⃟ Total de Comandos: ${totalComandos}
+│ 𖦹∘̥⸽🤖⃟ Nome do Bot: ${nomeDoBot}
+│ 𖦹∘̥⸽👤⃟ Usuário: ${nomeUsuario}
+│ 𖦹∘̥⸽🛠️⃟ Versão: ^7.0.0-rc.3
+│ 𖦹∘̥⸽👑⃟ Dono: ${nickDoDono}
+│ 𖦹∘̥⸽📈⃟ Total de Grupos: ${totalGrupos}
+│ 𖦹∘̥⸽📝⃟ Total Registrado: ${estatisticasRegistros.totalRegistros}
+│ 𖦹∘̥⸽🎗️⃟ Cargo: ${cargoUsuario.split(' ')[1]}
+╰───────────────────⪨
 
-👥 \`${prefix}menumembro\` - Comandos para membros
-🛡️ \`${prefix}menuadmin\` - Comandos administrativos
-👑 \`${prefix}menudono\` - Comandos do dono
-📥 \`${prefix}menudownload\` - Downloads e mídia
-🎮 \`${prefix}menugamer\` - Jogos e entretenimento
-🛡️ \`${prefix}menuanti\` - Sistema anti-spam
-💰 \`${prefix}menurpg\` - Sistema RPG (NeextCity)
-⚙️ \`${prefix}configurar-bot\` - Configurações do bot
+╭──〔 MENUS DISPONÍVEIS 〕──⪩
+│ 𖧈∘̥⸽🏠⃟ menuPrincipal
+│ 𖧈∘̥⸽🎬⃟ menudownload
+│ 𖧈∘̥⸽🖼️⃟ menufigurinhas
+│ 𖧈∘̥⸽🔞⃟ menuhentai
+│ 𖧈∘̥⸽🛠️⃟ menuadm
+│ 𖧈∘̥⸽👑⃟ menudono
+│ 𖧈∘̥⸽🎉⃟ menubrincadeira
+│ 𖧈∘̥⸽🧑‍🤝‍🧑⃟ menuMembro
+│ 𖧈∘̥⸽🎮⃟ menuGamer
+│ 𖧈∘̥⸽🌐⃟ menuNeext
+╰──────────────────────⪨
 
-💡 *Digite o comando da categoria para ver todos os comandos disponíveis!*
-
-━━━━━━━━━━━━━━━
-© NEEXT LTDA - ${nickDoDono}
-`;
+© NEEXT LTDA`;
+    } catch (error) {
+        console.error('Erro ao gerar menu principal:', error);
+        // Fallback para menu simples
+        return `🤖 *${nomeDoBot} - MENU PRINCIPAL*\n\n📋 *CATEGORIAS DISPONÍVEIS:*\n\n👥 \`${prefix}menumembro\` - Comandos para membros\n🛡️ \`${prefix}menuadmin\` - Comandos administrativos\n👑 \`${prefix}menudono\` - Comandos do dono\n\n━━━━━━━━━━━━━━━\n© NEEXT LTDA - ${nickDoDono}`;
+    }
 }
 
 // ========================

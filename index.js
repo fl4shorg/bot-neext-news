@@ -1942,7 +1942,10 @@ Seu ID foi salvo com segurança em nosso sistema!`;
         case "menu": {
             // Importa menus organizados
             const menus = require('./menus/menu.js');
-            await reply(sock, from, menus.obterMenuPrincipal());
+            const sender = message.key.participant || from;
+            const pushName = message.pushName || "Usuário";
+            const menuText = await menus.obterMenuPrincipal(sock, from, sender, pushName);
+            await reply(sock, from, menuText);
         }
         break;
 

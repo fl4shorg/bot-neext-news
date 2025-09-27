@@ -174,6 +174,15 @@ O bot é executado automaticamente via Workflow do Replit:
 ✅ **Stickers com Selinho Quotado Implementado**
 ✅ **Deployment Configurado para Produção (VM)**
 ✅ **Bot Conectado e Processando Comandos Ativamente**
+✅ **Menu Principal Reformulado com Estatísticas Dinâmicas**
+✅ **Sistema de Configuração Seguro Implementado**
+
+### 🆕 Funcionalidades Recentes
+- **Menu Principal Avançado**: Novo design com contadores de comandos, grupos e registros
+- **Configuração de Segurança**: Template `.env.example` para configuração segura
+- **Estatísticas Dinâmicas**: Contagem automática de comandos, grupos e usuários registrados
+- **Sistema de Cargo**: Detecção automática de cargo (Dono, Admin, Membro)
+- **Saudação Inteligente**: Saudações baseadas no horário atual
 
 ### 🚀 Ambiente de Produção
 - **Deployment Target**: VM (para conexão persistente)
