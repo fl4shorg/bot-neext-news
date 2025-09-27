@@ -2651,7 +2651,7 @@ function setupListeners(sock) {
                     
                     if (!registros.usuarioRegistrado(numeroUsuario)) {
                         await reagirMensagem(sock, normalized, "🚫");
-                        await reply(sock, from, `🚫 *ACESSO NEGADO!*\n\n❌ Você não está registrado no sistema!\n\n📝 Para se registrar, digite:\n\`\`\`/rg\`\`\`\n\n⚠️ Apenas usuários registrados podem usar o bot!`, [sender]);
+                        await reply(sock, from, `🚫 *ACESSO NEGADO!*\n\n❌ Você não está registrado no sistema!\n\n📝 Para se registrar, digite:\n\`\`\`${prefix}rg\`\`\`\n\n⚠️ Apenas usuários registrados podem usar o bot!`, [sender]);
                         continue; // Não processa o comando se não estiver registrado
                     }
                 }
@@ -2673,7 +2673,7 @@ function setupListeners(sock) {
                     
                     if (!registros.usuarioRegistrado(numeroUsuario)) {
                         await reagirMensagem(sock, normalized, "🚫");
-                        await reply(sock, from, `🚫 *ACESSO NEGADO!*\n\n❌ Você não está registrado no sistema!\n\n📝 Para se registrar, digite:\n\`\`\`/rg\`\`\`\n\n⚠️ Apenas usuários registrados podem usar o bot!`, [sender]);
+                        await reply(sock, from, `🚫 *ACESSO NEGADO!*\n\n❌ Você não está registrado no sistema!\n\n📝 Para se registrar, digite:\n\`\`\`${prefix}rg\`\`\`\n\n⚠️ Apenas usuários registrados podem usar o bot!`, [sender]);
                         continue;
                     }
 
