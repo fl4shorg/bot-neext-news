@@ -45,6 +45,7 @@ function carregarConfigGrupo(groupId) {
                 antiflod: false,
                 antifake: false,
                 x9: false,
+                modogamer: false,
                 listanegra: [],
                 floodConfig: {
                     maxMensagens: 5,
