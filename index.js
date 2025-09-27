@@ -1029,9 +1029,16 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     'antiaudio': 'Remove áudios e bane usuário',
                     'antisticker': 'Remove stickers e bane usuário',
                     'antiflod': 'Remove flood (spam) e bane usuário',
-                    'x9': 'Monitora ações administrativas do grupo'
+                    'antifake': 'Remove usuários não brasileiros',
+                    'x9': 'Monitora ações administrativas do grupo (promover, rebaixar, adicionar, remover)'
                 };
-                await reply(sock, from, `${featureName}\n\nStatus: ${status}\n\n📝 *Como usar:*\n• \`${prefix}${command} on\` - Ativar\n• \`${prefix}${command} off\` - Desativar\n\n⚔️ *Quando ativo:*\n• ${descriptions[command]}\n• Protege admins e dono\n\n⚠️ Apenas admins podem usar`);
+                
+                let extraInfo = "";
+                if (command === 'x9') {
+                    extraInfo = `\n\n📊 *O que o X9 Monitor detecta:*\n• 👑 Promoções para admin\n• ⬇️ Rebaixamentos de admin\n• ➕ Membros adicionados\n• ➖ Membros removidos\n• 👨‍💼 Quem realizou cada ação\n\n⚠️ Status do X9 no grupo: ${status}`;
+                }
+                
+                await reply(sock, from, `📊 *${featureName}*\n\nStatus: ${status}\n\n📝 *Como usar:*\n• \`${prefix}${command} on\` - Ativar\n• \`${prefix}${command} off\` - Desativar\n\n⚔️ *Quando ativo:*\n• ${descriptions[command]}${command !== 'x9' ? '\n• Protege admins e dono' : ''}${extraInfo}\n\n⚠️ Apenas admins podem usar`);
             }
         }
         break;
@@ -3077,7 +3084,9 @@ async function detectarAutorAcaoX9(sock, message, from) {
         // Detecta mensagens de sistema do WhatsApp sobre mudanças de admin
         if (texto.includes('foi promovido') || texto.includes('foi rebaixado') || 
             texto.includes('foi removido') || texto.includes('foi adicionado') ||
-            texto.includes('agora é admin') || texto.includes('não é mais admin')) {
+            texto.includes('agora é admin') || texto.includes('não é mais admin') ||
+            texto.includes('promoveu') || texto.includes('rebaixou') ||
+            texto.includes('removeu') || texto.includes('adicionou')) {
             
             // Extrai o número da pessoa que foi afetada
             const numeroAfetado = texto.match(/@(\d+)/)?.[1];
@@ -3086,13 +3095,13 @@ async function detectarAutorAcaoX9(sock, message, from) {
                 
                 // Determina a ação
                 let action = '';
-                if (texto.includes('agora é admin') || texto.includes('foi promovido')) {
+                if (texto.includes('agora é admin') || texto.includes('foi promovido') || texto.includes('promoveu')) {
                     action = 'promote';
-                } else if (texto.includes('não é mais admin') || texto.includes('foi rebaixado')) {
+                } else if (texto.includes('não é mais admin') || texto.includes('foi rebaixado') || texto.includes('rebaixou')) {
                     action = 'demote';
-                } else if (texto.includes('foi adicionado')) {
+                } else if (texto.includes('foi adicionado') || texto.includes('adicionou')) {
                     action = 'add';
-                } else if (texto.includes('foi removido')) {
+                } else if (texto.includes('foi removido') || texto.includes('removeu')) {
                     action = 'remove';
                 }
                 
@@ -3103,6 +3112,8 @@ async function detectarAutorAcaoX9(sock, message, from) {
                         author: sender,
                         timestamp: Date.now()
                     });
+                    
+                    console.log(`📊 X9: Ação ${action} de ${participantAfetado.split('@')[0]} por ${sender.split('@')[0]} armazenada no cache`);
                     
                     // Auto-limpa o cache após 30 segundos
                     setTimeout(() => {
@@ -3155,6 +3166,9 @@ function setupListeners(sock) {
             // logger central
             const isCmd = text.startsWith(prefix);
             logMensagem(normalized, text, isCmd);
+
+            // 🔹 Detectar ações administrativas X9 (antes do anti-spam para capturar o autor)
+            await detectarAutorAcaoX9(sock, normalized, from);
 
             // 🔹 Verificação de ANTI-SPAM COMPLETO (antes de tudo)
             const violacaoDetectada = await processarAntiSpam(sock, normalized);
