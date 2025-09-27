@@ -974,28 +974,50 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             };
 
             const featureName = featureNames[command];
+            
+            // Carrega configuração atual do grupo
+            const config = antiSpam.carregarConfigGrupo(from);
+            if (!config) {
+                await reply(sock, from, `❌ Erro ao carregar configuração do grupo.`);
+                break;
+            }
+
+            const estadoAtual = config[command] || false;
 
             if (acao === "on" || acao === "ativar" || acao === "1") {
-                const resultado = antiSpam.toggleAntiFeature(from, command, 'on');
-                if (resultado) {
-                    await reagirMensagem(sock, message, "✅");
-                    await reply(sock, from, `✅ *${featureName} ATIVADO*\n\n⚔️ Conteúdo será removido e usuário será BANIDO\n🛡️ Admins e dono são protegidos\n🚫 Ação dupla: Delete + Ban automático`);
+                if (estadoAtual) {
+                    // Já está ativo
+                    await reagirMensagem(sock, message, "⚠️");
+                    await reply(sock, from, `⚠️ *${featureName} JÁ ESTÁ ATIVO!*\n\n✅ A proteção já está funcionando\n⚔️ Links/conteúdo será removido e usuário banido`);
                 } else {
-                    await reply(sock, from, `❌ Erro ao ativar ${featureName}`);
+                    // Precisa ativar
+                    const resultado = antiSpam.toggleAntiFeature(from, command, 'on');
+                    if (resultado) {
+                        await reagirMensagem(sock, message, "✅");
+                        await reply(sock, from, `✅ *${featureName} ATIVADO*\n\n⚔️ Conteúdo será removido e usuário será BANIDO\n🛡️ Admins e dono são protegidos\n🚫 Ação dupla: Delete + Ban automático`);
+                    } else {
+                        await reply(sock, from, `❌ Erro ao ativar ${featureName}`);
+                    }
                 }
             } 
             else if (acao === "off" || acao === "desativar" || acao === "0") {
-                const resultado = antiSpam.toggleAntiFeature(from, command, 'off');
-                if (resultado) {
-                    await reagirMensagem(sock, message, "❌");
-                    await reply(sock, from, `❌ *${featureName} DESATIVADO*\n\n✅ Conteúdo agora é permitido`);
+                if (!estadoAtual) {
+                    // Já está desativo
+                    await reagirMensagem(sock, message, "⚠️");
+                    await reply(sock, from, `⚠️ *${featureName} JÁ ESTÁ DESATIVADO!*\n\n✅ A proteção já estava desligada\n💡 Use \`${prefix}${command} on\` para ativar`);
                 } else {
-                    await reply(sock, from, `❌ Erro ao desativar ${featureName}`);
+                    // Precisa desativar
+                    const resultado = antiSpam.toggleAntiFeature(from, command, 'off');
+                    if (resultado !== undefined) {
+                        await reagirMensagem(sock, message, "❌");
+                        await reply(sock, from, `❌ *${featureName} DESATIVADO*\n\n✅ Conteúdo agora é permitido\n💡 Use \`${prefix}${command} on\` para reativar`);
+                    } else {
+                        await reply(sock, from, `❌ Erro ao desativar ${featureName}`);
+                    }
                 }
             }
             else {
-                const config = antiSpam.carregarConfigGrupo(from);
-                const status = config && config[command] ? "🟢 ATIVO" : "🔴 INATIVO";
+                const status = estadoAtual ? "🟢 ATIVO" : "🔴 INATIVO";
                 const descriptions = {
                     'antilink': 'Remove links e bane usuário',
                     'anticontato': 'Remove contatos e bane usuário',

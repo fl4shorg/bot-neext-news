@@ -1,5 +1,5 @@
 {
-  "antilink": false,
+  "antilink": true,
   "anticontato": false,
   "antidocumento": false,
   "antivideo": false,
