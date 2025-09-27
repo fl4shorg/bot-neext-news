@@ -15,6 +15,33 @@ Bot WhatsApp automatizado construído com Baileys, com sistema de antilink avan�
 - **`.hermitwhite`** - Cria ID no sistema NEEXT (requer dados pessoais)
 - **`prefixo`** - Mostra o prefixo do bot (sem prefixo)
 
+### ⚡ Comandos Administrativos
+**Comandos exclusivos para administradores que exigem que o bot também seja admin:**
+
+#### 🔒 Controle do Grupo
+- **`.fechargrupo`** ou **`.fechar`** - Fecha o grupo (apenas admins podem enviar mensagens)
+- **`.abrirgrupo`** ou **`.abrir`** - Abre o grupo (todos podem enviar mensagens)
+- **`.soloadmin`** ou **`.adminonly`** - Permite apenas admins editarem informações do grupo
+
+#### 🗑️ Moderação de Mensagens
+- **`.delmsg`**, **`.del`** ou **`.delete`** - Deleta mensagem marcada (use respondendo a uma mensagem)
+
+#### 🔗 Gerenciamento de Link
+- **`.resetlink`**, **`.resetarlink`** ou **`.novolink`** - Gera novo link de convite e invalida o anterior
+
+#### 👥 Controle de Entrada
+- **`.ativarsolicitacao`**, **`.ativarjoin`** ou **`.reqon`** - Ativa aprovação obrigatória para novos membros
+- **`.desativarsolicitacao`**, **`.desativarjoin`** ou **`.reqoff`** - Desativa aprovação obrigatória
+
+#### ✏️ Edição do Grupo
+- **`.mudargrupo`**, **`.mudarnome`** ou **`.renamegroup [nome]`** - Altera o nome do grupo
+
+**Requisitos:**
+- ✅ Usuário deve ser admin do grupo
+- ✅ Bot deve ser admin do grupo
+- ✅ Funciona apenas em grupos
+- ⚠️ Se o bot não for admin, será exibido aviso específico
+
 ### 🆔 Sistema de Criação de ID - NEEXT
 Comando para criar IDs únicos no sistema da NEEXT LTDA:
 
@@ -131,6 +158,11 @@ O bot é executado automaticamente via Workflow do Replit:
 - ✅ **NOVO**: Sistema de gestão de partidas por grupo
 - ✅ **NOVO**: Processamento inteligente de respostas do usuário
 - ✅ **NOVO**: Estrutura de banco de dados para jogos
+- ✅ **RECENTE**: Implementados 8 comandos administrativos completos
+- ✅ **RECENTE**: Sistema automático de contagem de comandos
+- ✅ **RECENTE**: Controle total de grupos (abrir/fechar/resetar link)
+- ✅ **RECENTE**: Moderação avançada (deletar mensagens, controlar entrada)
+- ✅ **RECENTE**: Verificações robustas de permissões admin
 
 ## Estado Atual
 ✅ **Bot Online e Funcionando no Replit**

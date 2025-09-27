@@ -127,16 +127,36 @@ async function contarGrupos(sock) {
 }
 
 // ---------------------------
-// Função para contar comandos
+// Função para contar comandos automaticamente
 // ---------------------------
 function contarComandos() {
-    // Baseado na análise do código, temos os comandos implementados
-    const comandos = [
-        'ping', 'hora', 'dono', 'marca', 'recado', 's', 'hermitwhite', 'prefixo',
-        'antilink', 'brat', 'pinterest', 'rename', 'akinator', 'resetaki', 'instagram',
-        'ig', 'menu', 'status', 'play' // incluindo todos os comandos
-    ];
-    return comandos.length;
+    try {
+        const fs = require('fs');
+        const path = require('path');
+        
+        // Lê o arquivo index.js
+        const indexPath = path.join(__dirname, '../../index.js');
+        const indexContent = fs.readFileSync(indexPath, 'utf8');
+        
+        // Procura por todos os cases no switch da função handleCommand
+        const casePattern = /case\s+"([^"]+)"/g;
+        const matches = [];
+        let match;
+        
+        while ((match = casePattern.exec(indexContent)) !== null) {
+            // Evita duplicatas e ignora cases internos como break cases
+            if (!matches.includes(match[1])) {
+                matches.push(match[1]);
+            }
+        }
+        
+        console.log(`📊 Total de comandos encontrados automaticamente: ${matches.length}`);
+        return matches.length;
+    } catch (error) {
+        console.error('❌ Erro ao contar comandos automaticamente:', error);
+        // Fallback para contagem manual se houver erro
+        return 25; // estimativa atual
+    }
 }
 
 // ---------------------------

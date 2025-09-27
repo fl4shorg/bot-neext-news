@@ -2418,6 +2418,331 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
         // ================== FIM DO SISTEMA RPG ==================
 
+        // ================== COMANDOS ADMINISTRATIVOS ==================
+
+        case "fechargrupo":
+        case "fechar": {
+            // Só funciona em grupos
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const ehAdmin = await isAdmin(sock, from, sender);
+            const ehDono = isDono(sender);
+
+            if (!ehAdmin && !ehDono) {
+                await reply(sock, from, "❌ Apenas admins podem usar este comando.");
+                break;
+            }
+
+            // Verifica se bot é admin
+            const botAdmin = await botEhAdmin(sock, from);
+            if (!botAdmin) {
+                await reply(sock, from, "❌ O bot precisa ser admin para fechar o grupo.");
+                break;
+            }
+
+            try {
+                await sock.groupSettingUpdate(from, 'announcement');
+                await reagirMensagem(sock, message, "🔒");
+                await reply(sock, from, "🔒 *GRUPO FECHADO!*\n\nApenas admins podem enviar mensagens agora.");
+                console.log(`🔒 Grupo ${from} foi fechado por ${sender.split('@')[0]}`);
+            } catch (err) {
+                console.error("❌ Erro ao fechar grupo:", err);
+                await reply(sock, from, "❌ Erro ao fechar o grupo. Verifique se o bot tem permissões de admin.");
+            }
+        }
+        break;
+
+        case "abrirgrupo":
+        case "abrir": {
+            // Só funciona em grupos
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const ehAdmin = await isAdmin(sock, from, sender);
+            const ehDono = isDono(sender);
+
+            if (!ehAdmin && !ehDono) {
+                await reply(sock, from, "❌ Apenas admins podem usar este comando.");
+                break;
+            }
+
+            // Verifica se bot é admin
+            const botAdmin = await botEhAdmin(sock, from);
+            if (!botAdmin) {
+                await reply(sock, from, "❌ O bot precisa ser admin para abrir o grupo.");
+                break;
+            }
+
+            try {
+                await sock.groupSettingUpdate(from, 'not_announcement');
+                await reagirMensagem(sock, message, "🔓");
+                await reply(sock, from, "🔓 *GRUPO ABERTO!*\n\nTodos os membros podem enviar mensagens agora.");
+                console.log(`🔓 Grupo ${from} foi aberto por ${sender.split('@')[0]}`);
+            } catch (err) {
+                console.error("❌ Erro ao abrir grupo:", err);
+                await reply(sock, from, "❌ Erro ao abrir o grupo. Verifique se o bot tem permissões de admin.");
+            }
+        }
+        break;
+
+        case "delmsg":
+        case "del":
+        case "delete": {
+            // Só funciona em grupos
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const ehAdmin = await isAdmin(sock, from, sender);
+            const ehDono = isDono(sender);
+
+            if (!ehAdmin && !ehDono) {
+                await reply(sock, from, "❌ Apenas admins podem usar este comando.");
+                break;
+            }
+
+            // Verifica se bot é admin
+            const botAdmin = await botEhAdmin(sock, from);
+            if (!botAdmin) {
+                await reply(sock, from, "❌ O bot precisa ser admin para deletar mensagens.");
+                break;
+            }
+
+            // Verifica se há mensagem marcada
+            const quotedMsg = message.message.extendedTextMessage?.contextInfo?.quotedMessage;
+            if (!quotedMsg) {
+                await reply(sock, from, "❌ Marque uma mensagem para deletar!");
+                break;
+            }
+
+            try {
+                const quotedKey = message.message.extendedTextMessage.contextInfo.stanzaId;
+                const quotedParticipant = message.message.extendedTextMessage.contextInfo.participant;
+                
+                const messageKey = {
+                    remoteJid: from,
+                    fromMe: false,
+                    id: quotedKey,
+                    participant: quotedParticipant
+                };
+
+                await sock.sendMessage(from, { delete: messageKey });
+                await reagirMensagem(sock, message, "🗑️");
+                console.log(`🗑️ Mensagem deletada por admin ${sender.split('@')[0]}`);
+            } catch (err) {
+                console.error("❌ Erro ao deletar mensagem:", err);
+                await reply(sock, from, "❌ Erro ao deletar mensagem. A mensagem pode ser muito antiga ou já ter sido deletada.");
+            }
+        }
+        break;
+
+        case "resetlink":
+        case "resetarlink":
+        case "novolink": {
+            // Só funciona em grupos
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const ehAdmin = await isAdmin(sock, from, sender);
+            const ehDono = isDono(sender);
+
+            if (!ehAdmin && !ehDono) {
+                await reply(sock, from, "❌ Apenas admins podem usar este comando.");
+                break;
+            }
+
+            // Verifica se bot é admin
+            const botAdmin = await botEhAdmin(sock, from);
+            if (!botAdmin) {
+                await reply(sock, from, "❌ O bot precisa ser admin para resetar o link do grupo.");
+                break;
+            }
+
+            try {
+                const newLink = await sock.groupRevokeInvite(from);
+                await reagirMensagem(sock, message, "🔗");
+                await reply(sock, from, `🔗 *LINK DO GRUPO RESETADO!*\n\n✅ Novo link: https://chat.whatsapp.com/${newLink}\n\n⚠️ O link anterior foi invalidado!`);
+                console.log(`🔗 Link do grupo ${from} foi resetado por ${sender.split('@')[0]}`);
+            } catch (err) {
+                console.error("❌ Erro ao resetar link:", err);
+                await reply(sock, from, "❌ Erro ao resetar o link do grupo. Verifique se o bot tem permissões de admin.");
+            }
+        }
+        break;
+
+        case "ativarsolicitacao":
+        case "ativarjoin":
+        case "reqon": {
+            // Só funciona em grupos
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const ehAdmin = await isAdmin(sock, from, sender);
+            const ehDono = isDono(sender);
+
+            if (!ehAdmin && !ehDono) {
+                await reply(sock, from, "❌ Apenas admins podem usar este comando.");
+                break;
+            }
+
+            // Verifica se bot é admin
+            const botAdmin = await botEhAdmin(sock, from);
+            if (!botAdmin) {
+                await reply(sock, from, "❌ O bot precisa ser admin para alterar configurações do grupo.");
+                break;
+            }
+
+            try {
+                await sock.groupToggleEphemeral(from, false);
+                await sock.groupSettingUpdate(from, 'locked');
+                await reagirMensagem(sock, message, "✅");
+                await reply(sock, from, "✅ *SOLICITAÇÃO DE ENTRADA ATIVADA!*\n\nNovos membros precisarão da aprovação dos admins para entrar.");
+                console.log(`✅ Solicitação de entrada ativada no grupo ${from} por ${sender.split('@')[0]}`);
+            } catch (err) {
+                console.error("❌ Erro ao ativar solicitação:", err);
+                await reply(sock, from, "❌ Erro ao ativar solicitação de entrada. Verifique se o bot tem permissões de admin.");
+            }
+        }
+        break;
+
+        case "desativarsolicitacao":
+        case "desativarjoin":
+        case "reqoff": {
+            // Só funciona em grupos
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const ehAdmin = await isAdmin(sock, from, sender);
+            const ehDono = isDono(sender);
+
+            if (!ehAdmin && !ehDono) {
+                await reply(sock, from, "❌ Apenas admins podem usar este comando.");
+                break;
+            }
+
+            // Verifica se bot é admin
+            const botAdmin = await botEhAdmin(sock, from);
+            if (!botAdmin) {
+                await reply(sock, from, "❌ O bot precisa ser admin para alterar configurações do grupo.");
+                break;
+            }
+
+            try {
+                await sock.groupSettingUpdate(from, 'unlocked');
+                await reagirMensagem(sock, message, "❌");
+                await reply(sock, from, "❌ *SOLICITAÇÃO DE ENTRADA DESATIVADA!*\n\nQualquer pessoa com o link pode entrar no grupo agora.");
+                console.log(`❌ Solicitação de entrada desativada no grupo ${from} por ${sender.split('@')[0]}`);
+            } catch (err) {
+                console.error("❌ Erro ao desativar solicitação:", err);
+                await reply(sock, from, "❌ Erro ao desativar solicitação de entrada. Verifique se o bot tem permissões de admin.");
+            }
+        }
+        break;
+
+        case "soloadmin":
+        case "adminonly": {
+            // Só funciona em grupos
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const ehAdmin = await isAdmin(sock, from, sender);
+            const ehDono = isDono(sender);
+
+            if (!ehAdmin && !ehDono) {
+                await reply(sock, from, "❌ Apenas admins podem usar este comando.");
+                break;
+            }
+
+            // Verifica se bot é admin
+            const botAdmin = await botEhAdmin(sock, from);
+            if (!botAdmin) {
+                await reply(sock, from, "❌ O bot precisa ser admin para alterar configurações do grupo.");
+                break;
+            }
+
+            try {
+                await sock.groupSettingUpdate(from, 'locked');
+                await reagirMensagem(sock, message, "🔒");
+                await reply(sock, from, "🔒 *EDIÇÃO RESTRITA!*\n\nApenas admins podem editar as informações do grupo (nome, descrição, foto).");
+                console.log(`🔒 Edição restrita a admins no grupo ${from} por ${sender.split('@')[0]}`);
+            } catch (err) {
+                console.error("❌ Erro ao restringir edição:", err);
+                await reply(sock, from, "❌ Erro ao restringir edição do grupo. Verifique se o bot tem permissões de admin.");
+            }
+        }
+        break;
+
+        case "mudargrupo":
+        case "mudarnome":
+        case "renamegroup": {
+            // Só funciona em grupos
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const ehAdmin = await isAdmin(sock, from, sender);
+            const ehDono = isDono(sender);
+
+            if (!ehAdmin && !ehDono) {
+                await reply(sock, from, "❌ Apenas admins podem usar este comando.");
+                break;
+            }
+
+            // Verifica se bot é admin
+            const botAdmin = await botEhAdmin(sock, from);
+            if (!botAdmin) {
+                await reply(sock, from, "❌ O bot precisa ser admin para mudar o nome do grupo.");
+                break;
+            }
+
+            const novoNome = args.join(" ").trim();
+            if (!novoNome) {
+                await reply(sock, from, `❌ Use: ${prefix}mudargrupo <novo nome>\n\nExemplo: ${prefix}mudargrupo NEEXT LTDA - Grupo Oficial`);
+                break;
+            }
+
+            if (novoNome.length > 25) {
+                await reply(sock, from, "❌ O nome do grupo deve ter no máximo 25 caracteres!");
+                break;
+            }
+
+            try {
+                await sock.groupUpdateSubject(from, novoNome);
+                await reagirMensagem(sock, message, "✏️");
+                await reply(sock, from, `✏️ *NOME DO GRUPO ALTERADO!*\n\n📝 Novo nome: "${novoNome}"\n👤 Alterado por: @${sender.split('@')[0]}`, [sender]);
+                console.log(`✏️ Nome do grupo ${from} alterado para "${novoNome}" por ${sender.split('@')[0]}`);
+            } catch (err) {
+                console.error("❌ Erro ao alterar nome do grupo:", err);
+                await reply(sock, from, "❌ Erro ao alterar o nome do grupo. Verifique se o bot tem permissões de admin.");
+            }
+        }
+        break;
+
+        // ================== FIM DOS COMANDOS ADMINISTRATIVOS ==================
+
         default:
             await sock.sendMessage(from, { text: `❌ Comando "${command}" não encontrado.\n\nDigite "prefixo" para ver meu prefixo ou "${prefix}ping" para testar.` }, { quoted: message });
             break;
