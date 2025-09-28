@@ -3294,97 +3294,35 @@ Seu ID foi salvo com segurança em nosso sistema!`;
         }
         break;
 
-        // Função moderna para envio de GIFs com múltiplas estratégias (2025)
-async function enviarGifModerno(sock, from, gifUrl, caption, mentions = [], quoted = null) {
+        // Função simples para envio de GIFs usando método padrão do Baileys
+async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = null) {
     try {
-        console.log(`🎬 Tentando enviar GIF: ${gifUrl}`);
+        console.log(`🎬 Enviando GIF: ${gifUrl}`);
         
-        // Baixa o GIF com headers modernos
+        // Baixa o GIF
         const response = await axios({
             method: 'GET',
             url: gifUrl,
             responseType: 'arraybuffer',
-            timeout: 15000,
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'image/gif,image/webp,image/apng,image/*,*/*;q=0.8',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache'
-            }
+            timeout: 10000
         });
 
         const gifBuffer = Buffer.from(response.data);
         console.log(`📥 GIF baixado: ${gifBuffer.length} bytes`);
 
-        // Estratégia 1: Envio como video com gifPlayback (mais compatível 2025)
-        try {
-            await sock.sendMessage(from, {
-                video: gifBuffer,
-                gifPlayback: true,
-                caption: caption,
-                mentions: mentions,
-                contextInfo: {
-                    forwardingScore: 100000,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: "120363289739581116@newsletter",
-                        newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
-                    }
-                }
-            }, quoted ? { quoted } : {});
-            
-            console.log("✅ GIF enviado com sucesso (estratégia 1: video/gifPlayback)");
-            return true;
-        } catch (err1) {
-            console.log("⚠️ Estratégia 1 falhou, tentando estratégia 2...");
-            
-            // Estratégia 2: Envio como video com mimetype específico
-            try {
-                await sock.sendMessage(from, {
-                    video: gifBuffer,
-                    mimetype: "video/mp4",
-                    gifPlayback: true,
-                    caption: caption,
-                    mentions: mentions,
-                    contextInfo: {
-                        forwardingScore: 100000,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: "120363289739581116@newsletter",
-                            newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
-                        }
-                    }
-                }, quoted ? { quoted } : {});
-                
-                console.log("✅ GIF enviado com sucesso (estratégia 2: video/mp4)");
-                return true;
-            } catch (err2) {
-                console.log("⚠️ Estratégia 2 falhou, tentando estratégia 3...");
-                
-                // Estratégia 3: Envio simples como video
-                try {
-                    await sock.sendMessage(from, {
-                        video: gifBuffer,
-                        caption: caption,
-                        mentions: mentions
-                    }, quoted ? { quoted } : {});
-                    
-                    console.log("✅ GIF enviado com sucesso (estratégia 3: video simples)");
-                    return true;
-                } catch (err3) {
-                    console.log("❌ Todas as estratégias de GIF falharam:", {
-                        err1: err1.message,
-                        err2: err2.message, 
-                        err3: err3.message
-                    });
-                    return false;
-                }
-            }
-        }
-    } catch (downloadErr) {
-        console.log("❌ Erro ao baixar GIF:", downloadErr.message);
+        // Envia como vídeo com gifPlayback (método padrão Baileys)
+        await sock.sendMessage(from, {
+            video: gifBuffer,
+            gifPlayback: true,
+            caption: caption,
+            mentions: mentions
+        }, quoted ? { quoted } : {});
+        
+        console.log("✅ GIF enviado como vídeo");
+        return true;
+        
+    } catch (error) {
+        console.log("❌ Erro ao enviar GIF:", error.message);
         return false;
     }
 }
@@ -3414,8 +3352,8 @@ async function enviarGifModerno(sock, from, gifUrl, caption, mentions = [], quot
 
             const target = mentioned[0];
             
-            // Usa a nova função moderna de GIF
-            const gifEnviado = await enviarGifModerno(
+            // Envia GIF usando método simples
+            const gifEnviado = await enviarGif(
                 sock, 
                 from, 
                 "https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif",
@@ -3425,8 +3363,8 @@ async function enviarGifModerno(sock, from, gifUrl, caption, mentions = [], quot
             );
             
             if (!gifEnviado) {
-                // Fallback para texto com emoji se o GIF falhar
-                await reply(sock, from, `💀 *ASSASSINATO!*\n\n@${sender.split('@')[0]} matou @${target.split('@')[0]}! ⚰️\n\n🩸 RIP... F no chat\n\n💥 (GIF indisponível no momento)`, [sender, target]);
+                // Fallback para texto se o GIF falhar
+                await reply(sock, from, `💀 *ASSASSINATO!*\n\n@${sender.split('@')[0]} matou @${target.split('@')[0]}! ⚰️\n\n🩸 RIP... F no chat`, [sender, target]);
             }
         }
         break;
@@ -3456,8 +3394,8 @@ async function enviarGifModerno(sock, from, gifUrl, caption, mentions = [], quot
 
             const target = mentioned[0];
             
-            // Usa a nova função moderna de GIF
-            const gifEnviado = await enviarGifModerno(
+            // Envia GIF usando método simples
+            const gifEnviado = await enviarGif(
                 sock, 
                 from, 
                 "https://i.ibb.co/KpVxK1PB/9ab46702d1f0669a0ae40464b25568f2.gif",
@@ -3468,7 +3406,7 @@ async function enviarGifModerno(sock, from, gifUrl, caption, mentions = [], quot
             
             if (!gifEnviado) {
                 // Fallback para texto se o GIF falhar
-                await reply(sock, from, `🔫 *TIRO CERTEIRO!*\n\n@${sender.split('@')[0]} atirou em @${target.split('@')[0]}! 💥\n\n🎯 Pegou em cheio!\n\n💥 (GIF indisponível no momento)`, [sender, target]);
+                await reply(sock, from, `🔫 *TIRO CERTEIRO!*\n\n@${sender.split('@')[0]} atirou em @${target.split('@')[0]}! 💥\n\n🎯 Pegou em cheio!`, [sender, target]);
             }
         }
         break;
@@ -4437,8 +4375,8 @@ async function enviarGifModerno(sock, from, gifUrl, caption, mentions = [], quot
                 // BANG! Jogador morreu
                 const vencedor = sender === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
                 
-                // Usa a nova função moderna de GIF
-                const gifEnviado = await enviarGifModerno(
+                // Envia GIF usando método simples
+                const gifEnviado = await enviarGif(
                     sock, 
                     from, 
                     "https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif",
@@ -4458,7 +4396,7 @@ async function enviarGifModerno(sock, from, gifUrl, caption, mentions = [], quot
                         `🏆 *VENCEDOR:* @${vencedor.split('@')[0]} 🎉\n` +
                         `📊 Tiro fatal: ${jogo.tiroAtual}/6\n\n` +
                         `⚰️ RIP... que a terra te seja leve! 🌹\n` +
-                        `🎯 O destino foi selado!\n\n💥 (GIF indisponível)`,
+                        `🎯 O destino foi selado!`,
                         [sender, vencedor]
                     );
                 }
@@ -4480,8 +4418,8 @@ async function enviarGifModerno(sock, from, gifUrl, caption, mentions = [], quot
                 
                 const configBot = obterConfiguracoes();
                 
-                // Usa a nova função moderna de GIF
-                const gifEnviado = await enviarGifModerno(
+                // Envia GIF usando método simples
+                const gifEnviado = await enviarGif(
                     sock, 
                     from, 
                     "https://i.ibb.co/yFvQCn1p/3b7300aa2a120ec29a2b4de808f40a77.gif",
@@ -4501,7 +4439,7 @@ async function enviarGifModerno(sock, from, gifUrl, caption, mentions = [], quot
                         `🎲 *Próxima vez:* @${proximoJogador.split('@')[0]}\n` +
                         `📊 Tiro: ${jogo.tiroAtual - 1}/6\n\n` +
                         `💥 Digite \`${configBot.prefix}disparar\` para continuar!\n` +
-                        `⚡ A tensão aumenta...\n\n💥 (GIF indisponível)`,
+                        `⚡ A tensão aumenta...`,
                         [sender, proximoJogador]
                     );
                 }
