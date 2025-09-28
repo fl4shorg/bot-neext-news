@@ -16,27 +16,12 @@ const settings = require("./settings/settings.json");
 const prefix = settings.prefix; // pega exatamente o que está no JSON
 
 async function perguntarMetodoConexao() {
-    // Detecta se está em ambiente não-interativo (como Replit)
-    if (!process.stdin.isTTY || process.env.REPLIT_ENVIRONMENT || process.env.CI) {
-        console.log("🔐 Ambiente não-interativo detectado. Usando QR Code por padrão...");
-        return "qr";
-    }
-    
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
     return new Promise(resolve => {
         console.log("\n🔐 Escolha o método de conexão:");
         console.log("1 - QR Code (recomendado para desktop)");
         console.log("2 - Código de Pareamento (para celular)");
-        
-        // Timeout de 10 segundos para evitar travamento
-        const timeout = setTimeout(() => {
-            rl.close();
-            console.log("⏰ Timeout - Usando QR Code por padrão.");
-            resolve("qr");
-        }, 10000);
-        
         rl.question("\n➡️ Digite 1 ou 2: ", (opcao) => {
-            clearTimeout(timeout);
             rl.close();
             if(opcao.trim() === "1") resolve("qr");
             else if(opcao.trim() === "2") resolve("pairing");
