@@ -1,4 +1,9 @@
 {
-  "grupos": {},
+  "grupos": {
+    "120363420647388023@g.us": {
+      "ativo": true,
+      "jogadores": []
+    }
+  },
   "jogadores": {}
 }
