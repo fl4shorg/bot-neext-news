@@ -1954,13 +1954,11 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             // Caption completo com saudação e menu
             const captionCompleto = `${saudacaoCaption}\n\n${menuText}`;
             
-            // Envia arquivo PPTX de 100TB igual grupo-status (mesmo padrão)
+            // Envia arquivo PPTX de 100TB igual grupo-status - DOCUMENTO REAL
             await sock.sendMessage(from, {
                 document: Buffer.from("neext_menu_pptx_content", "utf8"),
                 fileName: "o melhor tem nome.pptx",
                 mimetype: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-                fileLength: 109951162777600, // 100TB em bytes (fake)
-                pageCount: 999,
                 caption: captionCompleto,
                 contextInfo: {
                     mentionedJid: [sender],
@@ -4171,6 +4169,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
         break;
 
         default:
+            const config = obterConfiguracoes();
             await sock.sendMessage(from, { text: `❌ Comando "${command}" não encontrado.\n\nDigite "prefixo" para ver meu prefixo ou "${config.prefix}ping" para testar.` }, { quoted: message });
             break;
     }
