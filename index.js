@@ -1,3 +1,4 @@
+replit_final_file>
 // index.js — Bot completo com eventos e comandos unificados
 
 const {
@@ -2340,7 +2341,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const banco = rpg.bancos[bancoIndex];
 
             if (rpg.registrarUsuario(userId, nome, banco.id)) {
-                await reply(sock, from, `🎉 **REGISTRO CONCLUÍDO!**\n\n🏙️ **Bem-vindo à NeextCity!**\n\n👤 **Nome:** ${nome}\n${banco.emoji} **Banco:** ${banco.nome}\n💰 **Saldo inicial:** 100 Gold\n\n✨ **Agora você pode:**\n• /pescar - Ganhe gold pescando\n• /minerar - Encontre minerais valiosos\n• /trabalhar - Trabalhe por dinheiro\n• /tigrinho - Teste sua sorte no cassino\n• /vermeusaldo - Veja seu progresso`);
+                await reply(sock, from, `🎉 **REGISTRO CONCLUÍDO!**\n\n🏙️ **Bem-vindo à NeextCity!**\n\n👤 **Nome:** ${nome}\n${banco.emoji} **Banco:** ${banco.nome}\n💰 **Saldo inicial:** 100 Gold\n\n✨ **Agora você pode:**\n• /pescar - Ganhe gold pescando\n• /minerar - Encontre minerais valiosos\n• /trabalhar - Trabalhe por dinheiro\n• /tigrinho - Teste sua sorte no cassino\n• /assalto - Assalte outros jogadores\n• /vermeusaldo - Veja seu progresso`);
             } else {
                 await reply(sock, from, "❌ Erro ao registrar. Tente novamente.");
             }
@@ -3678,8 +3679,8 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
                 }).join('\n');
 
                 await sock.sendMessage(from, {
-                    image: { url: "https://i.ibb.co/0VV96XgJ/e841507c630960766fc412f9d6f133c1.jpg" },
-                    caption: `🧠 *RANKING DOS BURROS*\n\n${ranking}\n\n🤪 QI negativinho! 📉`,
+                    image: { url: "https://i.ibb.co/0VV96XgJ/7760232d1a909d291a3231e720bf5ec9.jpg" },
+                    caption: `🧠 *RANKING DOS BURROS*\n\n${ranking}\n\n🤪 Burrice extrema! 📉`,
                     mentions: participants
                 });
             } catch (err) {
@@ -3755,184 +3756,6 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
                 });
             } catch (err) {
                 await reply(sock, from, "❌ Erro ao escolher impostor.");
-            }
-        }
-        break;
-
-        case "rankfumante": {
-            // Verifica se modo gamer está ativo
-            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
-                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
-                break;
-            }
-
-            const config = antiSpam.carregarConfigGrupo(from);
-            if (!config || !config.modogamer) {
-                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
-                break;
-            }
-
-            try {
-                const groupMetadata = await sock.groupMetadata(from);
-                const participants = groupMetadata.participants.map(p => p.id);
-
-                const shuffled = [...participants].sort(() => Math.random() - 0.5);
-                let ranking = shuffled.slice(0, Math.min(10, participants.length)).map((participant, index) => {
-                    const percentage = Math.floor(Math.random() * 100) + 1;
-                    return `${index + 1}. @${participant.split('@')[0]} - ${percentage}% 🚬`;
-                }).join('\n');
-
-                await sock.sendMessage(from, {
-                    image: { url: "https://i.ibb.co/nspp82mt/fe64de39442ed7d37096469a04fb56d5.jpg" },
-                    caption: `🚬 *RANKING DOS FUMANTES*\n\n${ranking}\n\n💨 Os viciados em nicotina! ⚠️`,
-                    mentions: participants
-                });
-            } catch (err) {
-                await reply(sock, from, "❌ Erro ao gerar ranking.");
-            }
-        }
-        break;
-
-        case "rankserasa": {
-            // Verifica se modo gamer está ativo
-            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
-                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
-                break;
-            }
-
-            const config = antiSpam.carregarConfigGrupo(from);
-            if (!config || !config.modogamer) {
-                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
-                break;
-            }
-
-            try {
-                const groupMetadata = await sock.groupMetadata(from);
-                const participants = groupMetadata.participants.map(p => p.id);
-
-                const dividas = [
-                    "Cartão de crédito", "Financiamento do carro", "Empréstimo pessoal", "FIES",
-                    "Conta de luz", "Internet", "Cartão de loja", "Carnê da casa",
-                    "Empréstimo no banco", "Cheque especial", "Financiamento da moto", "SPC/SERASA"
-                ];
-
-                const shuffled = [...participants].sort(() => Math.random() - 0.5);
-                let ranking = shuffled.slice(0, Math.min(10, participants.length)).map((participant, index) => {
-                    const divida = dividas[Math.floor(Math.random() * dividas.length)];
-                    const valor = Math.floor(Math.random() * 50000) + 500;
-                    return `${index + 1}. @${participant.split('@')[0]}\n   💸 ${divida}: R$ ${valor.toLocaleString('pt-BR')}`;
-                }).join('\n\n');
-
-                await sock.sendMessage(from, {
-                    image: { url: "https://i.ibb.co/W47FPx5Q/9fbf9b20577dda942b4165dd789eaf79.jpg" },
-                    caption: `📊 *RANKING SERASA*\n\n${ranking}\n\n🚫 Nome sujo na praça! 💳`,
-                    mentions: participants
-                });
-            } catch (err) {
-                await reply(sock, from, "❌ Erro ao gerar ranking.");
-            }
-        }
-        break;
-
-        case "rankpobre": {
-            // Verifica se modo gamer está ativo
-            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
-                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
-                break;
-            }
-
-            const config = antiSpam.carregarConfigGrupo(from);
-            if (!config || !config.modogamer) {
-                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
-                break;
-            }
-
-            try {
-                const groupMetadata = await sock.groupMetadata(from);
-                const participants = groupMetadata.participants.map(p => p.id);
-
-                const shuffled = [...participants].sort(() => Math.random() - 0.5);
-                let ranking = shuffled.slice(0, Math.min(10, participants.length)).map((participant, index) => {
-                    const dinheiro = Math.floor(Math.random() * 100) + 0.50;
-                    return `${index + 1}. @${participant.split('@')[0]} - R$ ${dinheiro.toFixed(2)} 💸`;
-                }).join('\n');
-
-                await sock.sendMessage(from, {
-                    image: { url: "https://i.ibb.co/jP9RxS3p/b6373651bce02af70980f2acafc4cd1f.jpg" },
-                    caption: `💸 *RANKING DOS POBRES*\n\n${ranking}\n\n🪙 Galera da miséria! 😭`,
-                    mentions: participants
-                });
-            } catch (err) {
-                await reply(sock, from, "❌ Erro ao gerar ranking.");
-            }
-        }
-        break;
-
-        case "ranksad": {
-            // Verifica se modo gamer está ativo
-            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
-                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
-                break;
-            }
-
-            const config = antiSpam.carregarConfigGrupo(from);
-            if (!config || !config.modogamer) {
-                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
-                break;
-            }
-
-            try {
-                const groupMetadata = await sock.groupMetadata(from);
-                const participants = groupMetadata.participants.map(p => p.id);
-
-                const shuffled = [...participants].sort(() => Math.random() - 0.5);
-                let ranking = shuffled.slice(0, Math.min(10, participants.length)).map((participant, index) => {
-                    const nivel = Math.floor(Math.random() * 5) + 1;
-                    const emoji = "😢".repeat(nivel);
-                    return `${index + 1}. @${participant.split('@')[0]} - Nível ${nivel}/5 ${emoji}`;
-                }).join('\n');
-
-                await sock.sendMessage(from, {
-                    image: { url: "https://i.ibb.co/HfmcqFCg/1758995787500.jpg" },
-                    caption: `😢 *RANKING DOS SOLITÁRIOS*\n\n${ranking}\n\n💔 Forever alone! 😭`,
-                    mentions: participants
-                });
-            } catch (err) {
-                await reply(sock, from, "❌ Erro ao gerar ranking.");
-            }
-        }
-        break;
-
-        case "rankjumento": {
-            // Verifica se modo gamer está ativo
-            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
-                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
-                break;
-            }
-
-            const config = antiSpam.carregarConfigGrupo(from);
-            if (!config || !config.modogamer) {
-                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
-                break;
-            }
-
-            try {
-                const groupMetadata = await sock.groupMetadata(from);
-                const participants = groupMetadata.participants.map(p => p.id);
-
-                const shuffled = [...participants].sort(() => Math.random() - 0.5);
-                let ranking = shuffled.slice(0, Math.min(10, participants.length)).map((participant, index) => {
-                    const percentage = Math.floor(Math.random() * 100) + 1;
-                    return `${index + 1}. @${participant.split('@')[0]} - ${percentage}% 🫏`;
-                }).join('\n');
-
-                await sock.sendMessage(from, {
-                    image: { url: "https://i.ibb.co/r23KVMMh/fc4d20334abf9a5e630d9916ce696243.jpg" },
-                    caption: `🫏 *RANKING DOS JUMENTOS*\n\n${ranking}\n\n🐴 Burrice extrema! 🤪`,
-                    mentions: participants
-                });
-            } catch (err) {
-                await reply(sock, from, "❌ Erro ao gerar ranking.");
             }
         }
         break;
@@ -4536,10 +4359,987 @@ async function processarJogadas(sock, text, from, normalized) {
                         `⭕ *JOGO DA VELHA*\n\n` +
                         `${tabuleiro}\n\n` +
                         `🎯 Vez de: @${jogo.vezDe.split('@')[0]}\n` +
-                        `💡 Digite um número de 1\n  +---+\n  |   |\n      |\n      |\n      |\n      |\n=========```",
-                    "```\n  +---+\n  |   |\n  O   |\n      |\n      |\n      |\n=========```",
-                    "```\n  +---+\n  |   |\n  O   |\n  |   |\n      |\n      |\n=========```",
-                    "```\n  +---+\n  |   |\n  O   |\n /|   |\n      |\n      |\n=========```",
-                    "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n      |\n      |\n=========```",
-                    "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n /    |\n      |\n=========```",
-                    "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n=========
+                        `💡 Digite um número de 1 a 9!`,
+                        [jogo.vezDe]
+                    );
+                    return true;
+                }
+            }
+        }
+
+        // Jogo da Forca
+        global.jogoDaForca = global.jogoDaForca || {};
+        if (global.jogoDaForca[from] && global.jogoDaForca[from].ativo) {
+            const jogo = global.jogoDaForca[from];
+            const letra = text.trim().toUpperCase();
+
+            // Verifica se é uma letra válida
+            if (letra.length === 1 && /[A-Z]/.test(letra)) {
+                if (jogo.letrasUsadas.includes(letra)) {
+                    await reply(sock, from, `⚠️ Letra **${letra}** já foi usada!`);
+                    return true;
+                }
+
+                jogo.letrasUsadas.push(letra);
+
+                if (jogo.palavra.includes(letra)) {
+                    // Acertou a letra
+                    let novaPalavraOculta = "";
+                    for (let i = 0; i < jogo.palavra.length; i++) {
+                        if (jogo.palavra[i] === letra || jogo.palavraOculta[i * 2] !== "_") {
+                            novaPalavraOculta += jogo.palavra[i] + " ";
+                        } else {
+                            novaPalavraOculta += "_ ";
+                        }
+                    }
+                    jogo.palavraOculta = novaPalavraOculta;
+
+                    // Verifica se ganhou
+                    if (!jogo.palavraOculta.includes("_")) {
+                        await reply(sock, from,
+                            `🎉 *PARABÉNS! VOCÊ GANHOU!*\n\n` +
+                            `🎯 Palavra: **${jogo.palavra}**\n` +
+                            `✅ Você adivinhou a palavra!\n` +
+                            `🔤 Letras usadas: ${jogo.letrasUsadas.join(", ")}`
+                        );
+                        delete global.jogoDaForca[from];
+                        return true;
+                    }
+
+                    await reply(sock, from,
+                        `✅ *BOA! Letra encontrada!*\n\n` +
+                        `📝 Palavra: ${jogo.palavraOculta}\n` +
+                        `❌ Erros: ${jogo.erros}/6\n` +
+                        `🔤 Letras usadas: ${jogo.letrasUsadas.join(", ")}`
+                    );
+                } else {
+                    // Errou a letra
+                    jogo.erros++;
+
+                    const desenhos = [
+                        "```\n  +---+\n  |   |\n      |\n      |\n      |\n      |\n=========```",
+                        "```\n  +---+\n  |   |\n  O   |\n      |\n      |\n      |\n=========```",
+                        "```\n  +---+\n  |   |\n  O   |\n  |   |\n      |\n      |\n=========```",
+                        "```\n  +---+\n  |   |\n  O   |\n /|   |\n      |\n      |\n=========```",
+                        "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n      |\n      |\n=========```",
+                        "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n /    |\n      |\n=========```",
+                        "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n=========```"
+                    ];
+
+                    if (jogo.erros >= 6) {
+                        await reply(sock, from,
+                            `💀 *GAME OVER! VOCÊ PERDEU!*\n\n` +
+                            `${desenhos[6]}\n\n` +
+                            `🎯 A palavra era: **${jogo.palavra}**\n` +
+                            `❌ Você foi enforcado!\n` +
+                            `🔤 Letras usadas: ${jogo.letrasUsadas.join(", ")}`
+                        );
+                        delete global.jogoDaForca[from];
+                        return true;
+                    }
+
+                    await reply(sock, from,
+                        `❌ *Letra não encontrada!*\n\n` +
+                        `${desenhos[jogo.erros]}\n\n` +
+                        `📝 Palavra: ${jogo.palavraOculta}\n` +
+                        `❌ Erros: ${jogo.erros}/6\n` +
+                        `🔤 Letras usadas: ${jogo.letrasUsadas.join(", ")}`
+                    );
+                }
+                return true;
+            }
+        }
+
+        return false;
+    } catch (error) {
+        console.error("❌ Erro ao processar jogada:", error);
+        return false;
+    }
+}
+
+// Função para processar mensagens do Akinator
+async function processarAkinator(sock, text, from, normalized) {
+    try {
+        const gameIndex = akinator.map(i => i.id).indexOf(from);
+        if (gameIndex === -1 || !akinator[gameIndex].aki) return false;
+
+        const respostas = {
+            "sim": 0,
+            "não": 1,
+            "nao": 1,
+            "não sei": 2,
+            "nao sei": 2,
+            "provavelmente sim": 3,
+            "provavelmente não": 4,
+            "provavelmente nao": 4
+        };
+
+        const resposta = text.toLowerCase().trim();
+        if (!(resposta in respostas)) return false;
+
+        const gameData = akinator[gameIndex];
+        const answer = respostas[resposta];
+
+        try {
+            await gameData.aki.step(answer);
+            gameData.step++;
+
+            if (gameData.aki.progress >= 85 || gameData.step >= 20) {
+                await gameData.aki.win();
+                const guess = gameData.aki.answers[0];
+
+                if (guess) {
+                    akinator[gameIndex].finish = 1;
+                    salvarAkinator();
+
+                    await sock.sendMessage(from, {
+                        image: { url: guess.absolute_picture_path || "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg" },
+                        caption: `🧞‍♂️ *EU ACHO QUE É...*\n\n👤 **${guess.name}**\n📝 **Descrição:** ${guess.description}\n🎯 **Confiança:** ${Math.round(guess.proba * 100)}%\n\n🤔 Acertei? Responda *sim* ou *não*`,
+                        contextInfo: {
+                            forwardingScore: 100000,
+                            isForwarded: true,
+                            forwardedNewsletterMessageInfo: {
+                                newsletterJid: "120363289739581116@newsletter",
+                                newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
+                            }
+                        }
+                    });
+                } else {
+                    await reply(sock, from, "🧞‍♂️ Hmm... não consegui adivinhar desta vez! Você venceu! 🎉");
+                    akinator.splice(gameIndex, 1);
+                    salvarAkinator();
+                }
+            } else {
+                await reply(sock, from, `🧞‍♂️ *PERGUNTA ${gameData.step + 1}:*\n• ${gameData.aki.question}\n\n📊 Progresso: ${Math.round(gameData.aki.progress)}%`);
+            }
+        } catch (err) {
+            console.error("❌ Erro no Akinator:", err);
+            await reply(sock, from, "❌ Erro no jogo do Akinator. Tente resetar com .resetaki");
+        }
+
+        return true;
+    } catch (error) {
+        console.error("❌ Erro ao processar Akinator:", error);
+        return false;
+    }
+}
+
+// Função principal de setup dos listeners
+function setupListeners(sock) {
+    sock.ev.on("messages.upsert", async ({ messages }) => {
+        try {
+            for (const m of messages) {
+                if (!m.message || m.key.fromMe) continue;
+
+                const messageId = m.key.id;
+                if (processedMessages.has(messageId)) continue;
+                processedMessages.add(messageId);
+
+                const { normalized, quoted } = normalizeMessage(m);
+                const text = getMessageText(normalized.message);
+                const from = normalized.key.remoteJid;
+
+                if (!text) continue;
+
+                // Log da mensagem
+                logMensagem(normalized, text);
+
+                // Processa anti-spam primeiro
+                const violacaoDetectada = await processarAntiSpam(sock, normalized);
+                if (violacaoDetectada) continue;
+
+                // Processa jogadas de jogos ativos
+                const jogadaProcessada = await processarJogadas(sock, text, from, normalized);
+                if (jogadaProcessada) continue;
+
+                // Processa Akinator
+                const akinatorProcessado = await processarAkinator(sock, text, from, normalized);
+                if (akinatorProcessado) continue;
+
+                // Processa comandos
+                const config = obterConfiguracoes();
+                if (text.startsWith(config.prefix)) {
+                    const args = text.slice(config.prefix.length).trim().split(/ +/);
+                    const command = args.shift()?.toLowerCase();
+
+                    if (command) {
+                        logMensagem(normalized, text, true);
+                        await handleCommand(sock, normalized, command, args, from, quoted);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("❌ Erro no processamento de mensagens:", error);
+        }
+    });
+
+    // Listener para participantes adicionados/removidos
+    sock.ev.on("group-participants.update", async ({ id, participants, action }) => {
+        try {
+            await processarListaNegra(sock, participants, id, action);
+        } catch (error) {
+            console.error("❌ Erro ao processar mudança de participantes:", error);
+        }
+    });
+
+    console.log("✅ Event listeners configurados com sucesso!");
+}
+
+// Exporta a função de setup
+module.exports = { setupListeners };
+</new_str>
+</changes>
+```
+```replit_final_file>
+// index.js — Bot completo com eventos e comandos unificados
+
+const {
+    makeWASocket,
+    fetchLatestBaileysVersion,
+    generateWAMessageFromContent,
+    downloadContentFromMessage
+} = require("@whiskeysockets/baileys");
+
+
+const path = require("path"); // <<< ESSENCIAL PARA path.joinv
+const fs = require("fs");
+const axios = require("axios");
+const os = require("os");
+const { writeExif } = require("./arquivos/sticker.js");
+const { sendImageAsSticker, sendVideoAsSticker } = require("./arquivos/rename.js");
+const Jimp = require("jimp");
+const pinterest = require('./Pinterest.js');
+const { igdl } = require('./Instagram.js');
+const settings = require('./settings/settings.json');
+const { Aki } = require('aki-api');
+const cloudscraper = require('cloudscraper');
+const UserAgent = require('user-agents');
+const moment = require('moment-timezone');
+
+// Sistema RPG - NeextCity
+const rpg = require('./arquivos/rpg.js');
+
+const antilinkFile = path.join(__dirname, "antilink.json");
+const akinatorFile = path.join(__dirname, "database/grupos/games/akinator.json");
+
+// Sistema Anti-Spam Completo
+const antiSpam = require("./arquivos/antispam.js");
+
+// Sistema de Registros
+const registros = require("./arquivos/registros.js");
+
+// importa banner + logger centralizados
+const { mostrarBanner, logMensagem } = require("./export");
+
+// importa funções auxiliares do menu
+const { obterSaudacao, contarGrupos, contarComandos } = require("./arquivos/funcoes/function.js");
+
+// Config do Bot - agora usando referências dinâmicas para permitir alterações em tempo real
+function obterConfiguracoes() {
+    try {
+        delete require.cache[require.resolve('./settings/settings.json')];
+        return require('./settings/settings.json');
+    } catch (err) {
+        console.error("❌ Erro ao carregar configurações:", err);
+        // Fallback para configurações padrão
+        return {
+            prefix: "/",
+            nomeDoBot: "GodDard",
+            nickDoDono: "Flash",
+            numeroDoDono: "5521993272080",
+            fotoDoBot: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg"
+        };
+    }
+}
+
+// Selinhos e quoted fake (mantive seu conteúdo)
+const selinho = {
+    key: { fromMe: false, participant: `13135550002@s.whatsapp.net`, remoteJid: 'status@broadcast' },
+    message: { contactMessage: { displayName: 'NEEXT LTDA', vcard: `BEGIN:VCARD\nVERSION:3.0\nN:Kuun;Flash;;;\nFN:Flash Kuun\nitem1.TEL;waid=13135550002:+1 (313) 555-0002\nitem1.X-ABLabel:Mobile\nEND:VCARD`, sendEphemeral: true } }
+};
+const selinho2 = {
+    key: { fromMe: false, participant: `553176011100@s.whatsapp.net`, remoteJid: 'status@broadcast' },
+    message: { contactMessage: { displayName: 'NEEXT LTDA', vcard: `BEGIN:VCARD\nVERSION:3.0\nN:un;Flh;;;\nFN:Kuun\nitem1.TEL;waid=553176011100:553176011100\nitem1.X-ABLabel:Mobile\nEND:VCARD`, sendEphemeral: true } }
+};
+const selomercadopago = {
+    key: { fromMe: false, participant: `5511988032872@s.whatsapp.net`, remoteJid: 'status@broadcast' },
+    message: { contactMessage: { displayName: 'NEEXT LTDA', vcard: `BEGIN:VCARD\nVERSION:3.0\nN:Mercado;Pago;;;\nFN:Mercado Pago\nitem1.TEL;waid=5511988032872:5511988032872\nitem1.X-ABLabel:Mobile\nEND:VCARD`, sendEphemeral: true } }
+};
+const selonubank = {
+    key: { fromMe: false, participant: `551151807064@s.whatsapp.net`, remoteJid: 'status@broadcast' },
+    message: { contactMessage: { displayName: 'NEEXT LTDA', vcard: `BEGIN:VCARD\nVERSION:3.0\nN:Nubank;Flash;;;\nFN:Nubank Kuun\nitem1.TEL;waid=551151807064:551151807064\nitem1.X-ABLabel:Mobile\nEND:VCARD`, sendEphemeral: true } }
+};
+const seloserasa = {
+    key: { fromMe: false, participant: `551128475131@s.whatsapp.net`, remoteJid: 'status@broadcast' },
+    message: { contactMessage: { displayName: 'NEEXT LTDA', vcard: `BEGIN:VCARD\nVERSION:3.0\nN:Serasa;Flash;;;\nFN:Serasa Kuun\nitem1.TEL;waid=551128475131:551128475131\nitem1.X-ABLabel:Mobile\nEND:VCARD`, sendEphemeral: true } }
+};
+const quotedCarrinho = {
+    key: { participant: "0@s.whatsapp.net", remoteJid: "0@s.whatsapp.net" },
+    message: { documentMessage: { title: "🛒 Neext Ltda", fileName: "Neext.pdf", mimetype: "application/pdf", fileLength: 999999, pageCount: 1 } }
+};
+
+// System NEEXT (status do sistema) para usar no grupo-status
+const quotedSerasaAPK = {
+    key: { participant: "0@s.whatsapp.net", remoteJid: "0@s.whatsapp.net" },
+    message: {
+        documentMessage: {
+            title: "🛡️ NEEXT System",
+            fileName: "serasa.apk",
+            mimetype: "application/vnd.android.package-archive",
+            fileLength: 549755813888000, // 500TB em bytes
+            pageCount: 0,
+            contactVcard: true
+        }
+    }
+};
+
+// APK Fake da NEEXT LTDA (1000GB) para usar no grupo-status
+const quotedNeextAPK = {
+    key: { participant: "0@s.whatsapp.net", remoteJid: "0@s.whatsapp.net" },
+    message: {
+        documentMessage: {
+            title: "📱 NEEXT LTDA",
+            fileName: "neext_ltda.apk",
+            mimetype: "application/vnd.android.package-archive",
+            fileLength: 1073741824000, // 1000GB em bytes
+            pageCount: 0,
+            contactVcard: true
+        }
+    }
+};
+
+// ContextInfo para fazer mensagens aparecerem como "enviada via anúncio"
+const contextAnuncio = {
+    externalAdReply: {
+        title: "© NEEXT LTDA",
+        body: "📱 Instagram: @neet.tk",
+        thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
+        mediaType: 1,
+        sourceUrl: "https://www.neext.online",
+        showAdAttribution: true
+    }
+};
+
+// Mensagens já processadas (evita duplicadas)
+const processedMessages = new Set();
+setInterval(() => processedMessages.clear(), 5 * 60 * 1000);
+
+// Variáveis do jogo Akinator
+let akinator = [];
+let jogo = { now: true, jogador: "" };
+
+// Classe para bypass do Cloudflare no Akinator
+class AkinatorCloudflareBypass {
+    constructor() {
+        this.userAgents = [
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0'
+        ];
+    }
+
+    getRandomUserAgent() {
+        return this.userAgents[Math.floor(Math.random() * this.userAgents.length)];
+    }
+
+    async createAkinator(region = 'en', retries = 3) {
+        for (let attempt = 1; attempt <= retries; attempt++) {
+            try {
+                console.log(`🧞‍♂️ Tentando conectar ao Akinator (tentativa ${attempt}/${retries})...`);
+
+                // Configura cloudscraper para contornar Cloudflare
+                const userAgent = this.getRandomUserAgent();
+
+                // Cria instância do Akinator
+                const aki = new Aki({
+                    region: region,
+                    childMode: false,
+                    // Configurações para bypass
+                    requestOptions: {
+                        headers: {
+                            'User-Agent': userAgent,
+                            'Accept': 'application/json, text/plain, */*',
+                            'Accept-Language': 'en-US,en;q=0.9',
+                            'Accept-Encoding': 'gzip, deflate, br',
+                            'Connection': 'keep-alive',
+                            'Upgrade-Insecure-Requests': '1',
+                            'Sec-Fetch-Dest': 'document',
+                            'Sec-Fetch-Mode': 'navigate',
+                            'Sec-Fetch-Site': 'none',
+                            'Cache-Control': 'max-age=0'
+                        },
+                        timeout: 30000
+                    }
+                });
+
+                // Aguarda um pouco antes de tentar
+                await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+
+                await aki.start();
+                console.log(`✅ Conectado ao Akinator com sucesso! Região: ${region}`);
+                return aki;
+
+            } catch (error) {
+                console.error(`❌ Tentativa ${attempt} falhou:`, error.message);
+
+                if (attempt === retries) {
+                    throw new Error(`Falha após ${retries} tentativas. Akinator temporariamente indisponível.`);
+                }
+
+                // Aguarda mais tempo a cada tentativa
+                await new Promise(resolve => setTimeout(resolve, 5000 * attempt));
+            }
+        }
+    }
+}
+
+// Carrega dados do Akinator
+function carregarAkinator() {
+    try {
+        if (!fs.existsSync(akinatorFile)) {
+            const dir = path.dirname(akinatorFile);
+            if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+            fs.writeFileSync(akinatorFile, "[]");
+        }
+        const data = fs.readFileSync(akinatorFile, "utf-8");
+        akinator = JSON.parse(data);
+        return akinator;
+    } catch (err) {
+        console.error("❌ Erro ao carregar akinator.json:", err);
+        akinator = [];
+        return [];
+    }
+}
+
+// Salva dados do Akinator
+function salvarAkinator() {
+    try {
+        fs.writeFileSync(akinatorFile, JSON.stringify(akinator, null, 2));
+    } catch (err) {
+        console.error("❌ Erro ao salvar akinator.json:", err);
+    }
+}
+
+// Inicializa dados do Akinator
+carregarAkinator();
+
+
+
+
+// Funções antigas removidas - agora usamos o sistema antiSpam completo
+
+// Função utilitária: extrai texto da mensagem
+function getMessageText(message) {
+    if (!message) return "";
+    if (message.conversation) return message.conversation;
+    if (message.extendedTextMessage?.text) return message.extendedTextMessage.text;
+    if (message.imageMessage?.caption) return message.imageMessage.caption;
+    if (message.videoMessage?.caption) return message.videoMessage.caption;
+    if (message.buttonsResponseMessage?.selectedButtonId) return message.buttonsResponseMessage.selectedButtonId;
+    if (message.listResponseMessage?.singleSelectReply?.selectedRowId) return message.listResponseMessage.singleSelectReply.selectedRowId;
+    if (message.ephemeralMessage?.message) return getMessageText(message.ephemeralMessage.message);
+    return "";
+}
+
+// Normaliza mensagem e retorna quoted
+function normalizeMessage(m) {
+    if (!m?.message) return { normalized: m, quoted: null };
+    let message = m.message;
+    if (message.ephemeralMessage) message = message.ephemeralMessage.message;
+    if (message.viewOnceMessage) message = message.viewOnceMessage.message;
+    const contextInfo = message.extendedTextMessage?.contextInfo || {};
+    const quoted = contextInfo.quotedMessage || null;
+    return { normalized\n  +---+\n  |   |\n      |\n      |\n      |\n      |\n=========```",
+                "```\n  +---+\n  |   |\n  O   |\n      |\n      |\n      |\n=========```",
+                "```\n  +---+\n  |   |\n  O   |\n  |   |\n      |\n      |\n=========```",
+                "```\n  +---+\n  |   |\n  O   |\n /|   |\n      |\n      |\n=========```",
+                "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n      |\n      |\n=========```",
+                "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n /    |\n      |\n=========```",
+                "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n=========```"
+            ];
+
+            await reply(sock, from,
+                `🎯 *JOGO DA FORCA INICIADO!*\n\n` +
+                `${desenhos[0]}\n\n` +
+                `📝 Palavra: ${palavraOculta}\n` +
+                `❌ Erros: ${erros}/6\n` +
+                `🔤 Letras usadas: Nenhuma\n\n` +
+                `💡 Digite uma letra para tentar adivinhar!\n` +
+                `⚠️ Apenas letras A-Z são aceitas`
+            );
+        }
+        break;
+
+        case "jogodavelha": {
+            // Verifica se modo gamer está ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const config = antiSpam.carregarConfigGrupo(from);
+            if (!config || !config.modogamer) {
+                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
+
+            if (!mentioned || mentioned.length === 0) {
+                await reply(sock, from, `❌ Marque alguém para jogar!\n\nExemplo: ${config.prefix}jogodavelha @usuario`);
+                break;
+            }
+
+            const oponente = mentioned[0];
+            if (oponente === sender) {
+                await reply(sock, from, "❌ Você não pode jogar contra si mesmo!");
+                break;
+            }
+
+            // Inicializa o jogo
+            global.jogoDaVelha = global.jogoDaVelha || {};
+            global.jogoDaVelha[from] = {
+                jogador1: sender,
+                jogador2: oponente,
+                vezDe: sender,
+                tabuleiro: ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"],
+                ativo: true
+            };
+
+            const tabuleiro =
+                `${global.jogoDaVelha[from].tabuleiro[0]} ${global.jogoDaVelha[from].tabuleiro[1]} ${global.jogoDaVelha[from].tabuleiro[2]}\n` +
+                `${global.jogoDaVelha[from].tabuleiro[3]} ${global.jogoDaVelha[from].tabuleiro[4]} ${global.jogoDaVelha[from].tabuleiro[5]}\n` +
+                `${global.jogoDaVelha[from].tabuleiro[6]} ${global.jogoDaVelha[from].tabuleiro[7]} ${global.jogoDaVelha[from].tabuleiro[8]}`;
+
+            await reply(sock, from,
+                `⭕ *JOGO DA VELHA INICIADO!*\n\n` +
+                `${tabuleiro}\n\n` +
+                `👤 Jogador 1: @${sender.split('@')[0]} (❌)\n` +
+                `👤 Jogador 2: @${oponente.split('@')[0]} (⭕)\n\n` +
+                `🎯 Vez de: @${sender.split('@')[0]}\n\n` +
+                `💡 Digite um número de 1 a 9 para fazer sua jogada!\n` +
+                `🔄 Use \`${config.prefix}resetjogodavelha\` para resetar o jogo`,
+                [sender, oponente]
+            );
+        }
+        break;
+
+        case "resetjogodavelha": {
+            // Verifica se modo gamer está ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const config = antiSpam.carregarConfigGrupo(from);
+            if (!config || !config.modogamer) {
+                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
+                break;
+            }
+
+            global.jogoDaVelha = global.jogoDaVelha || {};
+            if (!global.jogoDaVelha[from] || !global.jogoDaVelha[from].ativo) {
+                await reply(sock, from, "❌ Não há jogo da velha ativo neste grupo!");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const jogo = global.jogoDaVelha[from];
+
+            // Verifica se é um dos jogadores
+            if (sender !== jogo.jogador1 && sender !== jogo.jogador2) {
+                await reply(sock, from, "❌ Apenas os jogadores podem resetar o jogo!");
+                break;
+            }
+
+            delete global.jogoDaVelha[from];
+            await reply(sock, from, `🔄 *JOGO DA VELHA RESETADO!*\n\nO jogo foi cancelado por @${sender.split('@')[0]}`, [sender]);
+        }
+        break;
+
+        case "roletarussa": {
+            // Verifica se modo gamer está ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const config = antiSpam.carregarConfigGrupo(from);
+            if (!config || !config.modogamer) {
+                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
+
+            if (!mentioned || mentioned.length === 0) {
+                const configBot = obterConfiguracoes();
+                await reply(sock, from, `❌ Marque alguém para jogar roleta russa!\n\nExemplo: ${configBot.prefix}roletarussa @usuario`);
+                break;
+            }
+
+            const oponente = mentioned[0];
+            if (oponente === sender) {
+                await reply(sock, from, "❌ Você não pode jogar contra si mesmo!");
+                break;
+            }
+
+            // Inicializa o jogo
+            global.roletaRussa = global.roletaRussa || {};
+            global.roletaRussa[from] = {
+                jogador1: sender,
+                jogador2: oponente,
+                vezDe: sender,
+                balaFatal: Math.floor(Math.random() * 6) + 1, // Posição da bala (1-6)
+                tiroAtual: 1,
+                ativo: true
+            };
+
+            const configBot = obterConfiguracoes();
+            await sock.sendMessage(from, {
+                image: { url: "https://i.ibb.co/chZjfM9c/4756f4254a2ac3974c9b6f33842e8b58.jpg" },
+                caption:
+                    `🔫 *ROLETA RUSSA INICIADA!*\n\n` +
+                    `💀 A morte está à espreita...\n` +
+                    `🎯 6 câmaras, 1 bala fatal!\n\n` +
+                    `👤 Jogador 1: @${sender.split('@')[0]}\n` +
+                    `👤 Jogador 2: @${oponente.split('@')[0]}\n\n` +
+                    `🎲 Vez de: @${sender.split('@')[0]}\n\n` +
+                    `💥 **ESCOLHA SEU DESTINO:**\n` +
+                    `• \`${configBot.prefix}disparar\` - Puxar o gatilho (RISCO!)\n` +
+                    `• \`${configBot.prefix}passar\` - Passar a vez (SEGURO!)\n\n` +
+                    `🔄 Use \`${configBot.prefix}resetroleta\` para cancelar\n\n` +
+                    `⚠️ Coragem ou covardia? A escolha é sua...`,
+                mentions: [sender, oponente]
+            });
+        }
+        break;
+
+        case "resetroleta": {
+            // Verifica se modo gamer está ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const config = antiSpam.carregarConfigGrupo(from);
+            if (!config || !config.modogamer) {
+                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
+                break;
+            }
+
+            global.roletaRussa = global.roletaRussa || {};
+            if (!global.roletaRussa[from] || !global.roletaRussa[from].ativo) {
+                await reply(sock, from, "❌ Não há roleta russa ativa neste grupo!");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const jogo = global.roletaRussa[from];
+
+            // Verifica se é um dos jogadores
+            if (sender !== jogo.jogador1 && sender !== jogo.jogador2) {
+                await reply(sock, from, "❌ Apenas os jogadores podem cancelar o jogo!");
+                break;
+            }
+
+            delete global.roletaRussa[from];
+            await reply(sock, from, `🔄 *ROLETA RUSSA CANCELADA!*\n\nO jogo foi cancelado por @${sender.split('@')[0]}\n\n😮‍💨 Todos respiraram aliviados...`, [sender]);
+        }
+        break;
+
+        case "disparar": {
+            // Verifica se modo gamer está ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const config = antiSpam.carregarConfigGrupo(from);
+            if (!config || !config.modogamer) {
+                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
+                break;
+            }
+
+            global.roletaRussa = global.roletaRussa || {};
+            if (!global.roletaRussa[from] || !global.roletaRussa[from].ativo) {
+                await reply(sock, from, "❌ Não há roleta russa ativa neste grupo! Use `.roletarussa @usuario` para iniciar.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const jogo = global.roletaRussa[from];
+
+            // Verifica se é um dos jogadores
+            if (sender !== jogo.jogador1 && sender !== jogo.jogador2) {
+                await reply(sock, from, "❌ Apenas os jogadores podem disparar!");
+                break;
+            }
+
+            // Verifica se é a vez do jogador
+            if (sender !== jogo.vezDe) {
+                await reply(sock, from, `❌ Não é sua vez! É a vez de @${jogo.vezDe.split('@')[0]}`, [jogo.vezDe]);
+                break;
+            }
+
+            // Verifica se o jogo já deveria ter terminado (proteção contra loop infinito)
+            if (jogo.tiroAtual > 6) {
+                // Força final do jogo - alguém deve morrer
+                const vencedor = sender === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
+
+                // Baixa o GIF primeiro
+                const response = await axios.get("https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif", {
+                    responseType: 'arraybuffer',
+                    timeout: 10000
+                });
+                const gifBuffer = Buffer.from(response.data);
+
+                await sock.sendMessage(from, {
+                    video: gifBuffer,
+                    mimetype: "image/gif",
+                    gifPlayback: true,
+                    caption:
+                        `💥 *BANG! JOGO FORÇADO!* 💥\n\n` +
+                        `💀 @${sender.split('@')[0]} morreu na câmara extra! 🔫\n\n` +
+                        `🏆 *VENCEDOR:* @${vencedor.split('@')[0]} 🎉\n` +
+                        `📊 O jogo foi muito longo - fim forçado!\n\n` +
+                        `⚰️ Alguém tinha que morrer... 🌹\n` +
+                        `⏰ Jogo excedeu 6 turnos!`,
+                    mentions: [sender, vencedor]
+                });
+
+                delete global.roletaRussa[from];
+                break;
+            }
+
+            // Processa o disparo
+            console.log(`🔫 Tiro ${jogo.tiroAtual} - Bala fatal na posição ${jogo.balaFatal}`);
+
+            if (jogo.tiroAtual === jogo.balaFatal) {
+                // BANG! Jogador morreu
+                const vencedor = sender === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
+
+                // Envia GIF usando método simples
+                const gifEnviado = await enviarGif(
+                    sock,
+                    from,
+                    "https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif",
+                    `💥 *BANG! GAME OVER!* 💥\n\n` +
+                    `💀 @${sender.split('@')[0]} puxou a bala fatal e morreu! 🔫\n\n` +
+                    `🏆 *VENCEDOR:* @${vencedor.split('@')[0]} 🎉\n` +
+                    `📊 Tiro fatal: ${jogo.tiroAtual}/6\n\n` +
+                    `⚰️ RIP... que a terra te seja leve! 🌹\n` +
+                    `🎯 O destino foi selado!`,
+                    [sender, vencedor]
+                );
+
+                if (!gifEnviado) {
+                    await reply(sock, from,
+                        `💥 *BANG! GAME OVER!* 💥\n\n` +
+                        `💀 @${sender.split('@')[0]} puxou a bala fatal e morreu! 🔫\n\n` +
+                        `🏆 *VENCEDOR:* @${vencedor.split('@')[0]} 🎉\n` +
+                        `📊 Tiro fatal: ${jogo.tiroAtual}/6\n\n` +
+                        `⚰️ RIP... que a terra te seja leve! 🌹\n` +
+                        `🎯 O destino foi selado!`,
+                        [sender, vencedor]
+                    );
+                }
+
+                // Reset do jogo
+                delete global.roletaRussa[from];
+
+            } else {
+                // Clique! Jogador sobreviveu
+                const proximoJogador = sender === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
+                jogo.vezDe = proximoJogador;
+                jogo.tiroAtual++;
+
+                const sobrevivencia = [
+                    "escapou por pouco", "teve sorte desta vez", "a morte passou longe",
+                    "o destino poupou", "ainda não chegou sua hora", "sobreviveu mais uma vez"
+                ];
+                const frase = sobrevivencia[Math.floor(Math.random() * sobrevivencia.length)];
+
+                const configBot = obterConfiguracoes();
+
+                // Envia GIF usando método simples
+                const gifEnviado = await enviarGif(
+                    sock,
+                    from,
+                    "https://i.ibb.co/yFvQCn1p/3b7300aa2a120ec29a2b4de808f40a77.gif",
+                    `🔫 *CLIQUE!* Nada aconteceu... 😰\n\n` +
+                    `😅 @${sender.split('@')[0]} ${frase}!\n\n` +
+                    `🎲 *Próxima vez:* @${proximoJogador.split('@')[0]}\n` +
+                    `📊 Tiro: ${jogo.tiroAtual - 1}/6\n\n` +
+                    `💥 Digite \`${configBot.prefix}disparar\` para continuar!\n` +
+                    `⚡ A tensão aumenta...`,
+                    [sender, proximoJogador]
+                );
+
+                if (!gifEnviado) {
+                    await reply(sock, from,
+                        `🔫 *CLIQUE!* Nada aconteceu... 😰\n\n` +
+                        `😅 @${sender.split('@')[0]} ${frase}!\n\n` +
+                        `🎲 *Próxima vez:* @${proximoJogador.split('@')[0]}\n` +
+                        `📊 Tiro: ${jogo.tiroAtual - 1}/6\n\n` +
+                        `💥 Digite \`${configBot.prefix}disparar\` para continuar!\n` +
+                        `⚡ A tensão aumenta...`,
+                        [sender, proximoJogador]
+                    );
+                }
+            }
+        }
+        break;
+
+        default:
+            const config = obterConfiguracoes();
+            await reply(sock, from, `❌ Comando "${command}" não encontrado.\n\nDigite "prefixo" para ver meu prefixo ou "${config.prefix}ping" para testar.`);
+            break;
+    }
+}
+
+// Processa jogadas dos jogos ativos
+async function processarJogadas(sock, text, from, normalized) {
+    try {
+        const sender = normalized.key.participant || from;
+        const numero = parseInt(text.trim());
+
+        // Jogo da Velha
+        global.jogoDaVelha = global.jogoDaVelha || {};
+        if (global.jogoDaVelha[from] && global.jogoDaVelha[from].ativo) {
+            const jogo = global.jogoDaVelha[from];
+
+            // Verifica se é a vez do jogador
+            if (sender !== jogo.vezDe) {
+                return false; // Não é a vez dele, ignora
+            }
+
+            // Verifica se o número é válido (1-9)
+            if (numero >= 1 && numero <= 9) {
+                const posicao = numero - 1;
+
+                // Verifica se a posição está livre
+                if (jogo.tabuleiro[posicao].includes("️⃣")) {
+                    // Faz a jogada
+                    const simbolo = sender === jogo.jogador1 ? "❌" : "⭕";
+                    jogo.tabuleiro[posicao] = simbolo;
+
+                    // Verifica se ganhou
+                    const combinacoes = [
+                        [0,1,2], [3,4,5], [6,7,8], // linhas
+                        [0,3,6], [1,4,7], [2,5,8], // colunas
+                        [0,4,8], [2,4,6] // diagonais
+                    ];
+
+                    let ganhou = false;
+                    for (const combo of combinacoes) {
+                        if (combo.every(pos => jogo.tabuleiro[pos] === simbolo)) {
+                            ganhou = true;
+                            break;
+                        }
+                    }
+
+                    const tabuleiro =
+                        `${jogo.tabuleiro[0]} ${jogo.tabuleiro[1]} ${jogo.tabuleiro[2]}\n` +
+                        `${jogo.tabuleiro[3]} ${jogo.tabuleiro[4]} ${jogo.tabuleiro[5]}\n` +
+                        `${jogo.tabuleiro[6]} ${jogo.tabuleiro[7]} ${jogo.tabuleiro[8]}`;
+
+                    if (ganhou) {
+                        await reply(sock, from,
+                            `🏆 *JOGO DA VELHA - VITÓRIA!*\n\n` +
+                            `${tabuleiro}\n\n` +
+                            `🎉 @${sender.split('@')[0]} GANHOU!\n` +
+                            `🏅 Parabéns pelo jogo!`,
+                            [sender]
+                        );
+                        delete global.jogoDaVelha[from];
+                        return true;
+                    }
+
+                    // Verifica empate
+                    if (jogo.tabuleiro.every(pos => !pos.includes("️⃣"))) {
+                        await reply(sock, from,
+                            `🤝 *JOGO DA VELHA - EMPATE!*\n\n` +
+                            `${tabuleiro}\n\n` +
+                            `😅 Deu velha! Ninguém ganhou!`
+                        );
+                        delete global.jogoDaVelha[from];
+                        return true;
+                    }
+
+                    // Alterna vez
+                    jogo.vezDe = sender === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
+
+                    await reply(sock, from,
+                        `⭕ *JOGO DA VELHA*\n\n` +
+                        `${tabuleiro}\n\n` +
+                        `🎯 Vez de: @${jogo.vezDe.split('@')[0]}\n` +
+                        `💡 Digite um número de 1 a 9!`,
+                        [jogo.vezDe]
+                    );
+                    return true;
+                }
+            }
+        }
+
+        // Jogo da Forca
+        global.jogoDaForca = global.jogoDaForca || {};
+        if (global.jogoDaForca[from] && global.jogoDaForca[from].ativo) {
+            const jogo = global.jogoDaForca[from];
+            const letra = text.trim().toUpperCase();
+
+            // Verifica se é uma letra válida
+            if (letra.length === 1 && /[A-Z]/.test(letra)) {
+                if (jogo.letrasUsadas.includes(letra)) {
+                    await reply(sock, from, `⚠️ Letra **${letra}** já foi usada!`);
+                    return true;
+                }
+
+                jogo.letrasUsadas.push(letra);
+
+                if (jogo.palavra.includes(letra)) {
+                    // Acertou a letra
+                    let novaPalavraOculta = "";
+                    for (let i = 0; i < jogo.palavra.length; i++) {
+                        if (jogo.palavra[i] === letra || jogo.palavraOculta[i * 2] !== "_") {
+                            novaPalavraOculta += jogo.palavra[i] + " ";
+                        } else {
+                            novaPalavraOculta += "_ ";
+                        }
+                    }
+                    jogo.palavraOculta = novaPalavraOculta;
+
+                    // Verifica se ganhou
+                    if (!jogo.palavraOculta.includes("_")) {
+                        await reply(sock, from,
+                            `🎉 *PARABÉNS! VOCÊ GANHOU!*\n\n` +
+                            `🎯 Palavra: **${jogo.palavra}**\n` +
+                            `✅ Você adivinhou a palavra!\n` +
+                            `🔤 Letras usadas: ${jogo.letrasUsadas.join(", ")}`
+                        );
+                        delete global.jogoDaForca[from];
+                        return true;
+                    }
+
+                    await reply(sock, from,
+                        `✅ *BOA! Letra encontrada!*\n\n` +
+                        `📝 Palavra: ${jogo.palavraOculta}\n` +
+                        `❌ Erros: ${jogo.erros}/6\n` +
+                        `🔤 Letras usadas: ${jogo.letrasUsadas.join(", ")}`
+                    );
+                } else {
+                    // Errou a letra
+                    jogo.erros++;
+
+                    const desenhos = [
+                        "```\n  +---+\n  |   |\n      |\n      |\n      |\n      |\n=========```",
+                        "```\n  +---+\n  |   |\n  O   |\n      |\n      |\n      |\n=========```",
+                        "```\n  +---+\n  |   |\n  O   |\n  |   |\n      |\n      |\n=========```",
+                        "```\n  +---+\n  |   |\n  O   |\n /|   |\n      |\n      |\n=========```",
+                        "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n      |\n      |\n=========```",
+                        "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n /    |\n      |\n=========```",
+                        "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n=========
