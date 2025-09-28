@@ -5,5 +5,24 @@
       "jogadores": []
     }
   },
-  "jogadores": {}
+  "jogadores": {
+    "5521993272080": {
+      "nome": "flash",
+      "banco": {
+        "id": "bb",
+        "nome": "🟡 Banco do Brasil",
+        "emoji": "🟡"
+      },
+      "saldo": 330,
+      "registrado": "2025-09-28T18:53:24.824Z",
+      "ultimaPesca": 0,
+      "ultimaMineracao": 1759085649087,
+      "ultimoTrabalho": 1759085613951,
+      "ultimoAssalto": 0,
+      "pescasFeitas": 0,
+      "mineracoesFeitas": 1,
+      "trabalhosFeitos": 1,
+      "assaltosFeitos": 0
+    }
+  }
 }
