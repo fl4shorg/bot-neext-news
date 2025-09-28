@@ -1619,8 +1619,24 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 await reagirMensagem(sock, message, "⏳");
                 await reply(sock, from, "📥 Baixando vídeo do Instagram, aguarde...");
 
-                // Chama a API do Instagram
-                const result = await igdl(url);
+                // Chama a API do Instagram com tratamento robusto de erro
+                let result;
+                try {
+                    result = await igdl(url);
+                } catch (error) {
+                    await reagirMensagem(sock, message, "❌");
+                    
+                    if (error.message === 'TIMEOUT') {
+                        await reply(sock, from, "⏱️ Timeout na API do Instagram. A API está lenta, tente novamente em alguns minutos.");
+                    } else if (error.message === 'RATE_LIMITED') {
+                        await reply(sock, from, "🚫 Muitas tentativas na API. Aguarde alguns minutos antes de tentar novamente.");
+                    } else if (error.message === 'SERVER_ERROR') {
+                        await reply(sock, from, "🔧 API do Instagram temporariamente indisponível. Tente novamente mais tarde.");
+                    } else {
+                        await reply(sock, from, "❌ Erro ao conectar com a API do Instagram. Verifique o link e tente novamente.");
+                    }
+                    break;
+                }
 
                 if (!result.status || !result.data || result.data.length === 0) {
                     await reagirMensagem(sock, message, "❌");
