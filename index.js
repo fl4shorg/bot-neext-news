@@ -2000,6 +2000,12 @@ Seu ID foi salvo com segurança em nosso sistema!`;
         }
         break;
 
+        case "menuadm": {
+            const menus = require('./menus/menu.js');
+            await reply(sock, from, menus.obterMenuAdm());
+        }
+        break;
+
         case "menudono": {
             const menus = require('./menus/menu.js');
             await reply(sock, from, menus.obterMenuDono());
@@ -2902,6 +2908,112 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             } catch (err) {
                 console.error("❌ Erro ao alterar nome do grupo:", err);
                 await reply(sock, from, "❌ Erro ao alterar o nome do grupo. Verifique se o bot tem permissões de admin.");
+            }
+        }
+        break;
+
+        case "fotodobot": {
+            const sender = message.key.participant || from;
+            const ehDono = isDono(sender);
+
+            if (!ehDono) {
+                await reply(sock, from, "❌ Apenas o dono pode trocar a foto do bot.");
+                break;
+            }
+
+            // Verifica se há imagem anexada ou marcada
+            let mediaData = null;
+            if (message.message.imageMessage) {
+                mediaData = message.message.imageMessage;
+            } else if (quoted?.imageMessage) {
+                mediaData = quoted.imageMessage;
+            }
+
+            if (!mediaData) {
+                await reply(sock, from, "❌ Envie ou marque uma imagem para usar como foto do bot!");
+                break;
+            }
+
+            try {
+                await reagirMensagem(sock, message, "⏳");
+                
+                // Baixa a imagem
+                const buffer = await downloadContentFromMessage(mediaData, 'image');
+                let imageBuffer = Buffer.from([]);
+                for await (const chunk of buffer) {
+                    imageBuffer = Buffer.concat([imageBuffer, chunk]);
+                }
+
+                // Atualiza a foto do perfil do bot
+                await sock.updateProfilePicture(sock.user.id, imageBuffer);
+                
+                await reagirMensagem(sock, message, "✅");
+                await reply(sock, from, "✅ *FOTO DO BOT ALTERADA!*\n\nA foto de perfil do bot foi atualizada com sucesso!");
+                console.log(`📸 Foto do bot alterada por ${sender.split('@')[0]}`);
+            } catch (err) {
+                console.error("❌ Erro ao alterar foto do bot:", err);
+                await reagirMensagem(sock, message, "❌");
+                await reply(sock, from, "❌ Erro ao alterar a foto do bot. Tente novamente.");
+            }
+        }
+        break;
+
+        case "fotodogrupo": {
+            // Só funciona em grupos
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const ehAdmin = await isAdmin(sock, from, sender);
+            const ehDono = isDono(sender);
+
+            if (!ehAdmin && !ehDono) {
+                await reply(sock, from, "❌ Apenas admins podem usar este comando.");
+                break;
+            }
+
+            // Verifica se bot é admin
+            const botAdmin = await botEhAdmin(sock, from);
+            if (!botAdmin) {
+                await reply(sock, from, "❌ O bot precisa ser admin para alterar a foto do grupo.");
+                break;
+            }
+
+            // Verifica se há imagem anexada ou marcada
+            let mediaData = null;
+            if (message.message.imageMessage) {
+                mediaData = message.message.imageMessage;
+            } else if (quoted?.imageMessage) {
+                mediaData = quoted.imageMessage;
+            }
+
+            if (!mediaData) {
+                await reply(sock, from, "❌ Envie ou marque uma imagem para usar como foto do grupo!");
+                break;
+            }
+
+            try {
+                await reagirMensagem(sock, message, "⏳");
+                
+                // Baixa a imagem
+                const buffer = await downloadContentFromMessage(mediaData, 'image');
+                let imageBuffer = Buffer.from([]);
+                for await (const chunk of buffer) {
+                    imageBuffer = Buffer.concat([imageBuffer, chunk]);
+                }
+
+                // Atualiza a foto do grupo
+                await sock.updateProfilePicture(from, imageBuffer);
+                
+                await reagirMensagem(sock, message, "📸");
+                await reply(sock, from, "📸 *FOTO DO GRUPO ALTERADA!*\n\nA foto do grupo foi atualizada com sucesso!");
+                console.log(`📸 Foto do grupo ${from} alterada por ${sender.split('@')[0]}`);
+            } catch (err) {
+                console.error("❌ Erro ao alterar foto do grupo:", err);
+                await reagirMensagem(sock, message, "❌");
+                await reply(sock, from, "❌ Erro ao alterar a foto do grupo. Verifique se o bot tem permissões de admin.");
             }
         }
         break;

@@ -260,6 +260,60 @@ function obterMenuGamer() {
 }
 
 // ========================
+// MENU ADM (todos os comandos de administradores)
+// ========================
+function obterMenuAdm() {
+    const { prefix, nomeDoBot, nickDoDono } = obterConfiguracoes();
+    return `
+🛡️ *COMANDOS DE ADMINISTRADORES*
+
+⚠️ *Requer: Admin do grupo + Bot admin*
+
+🔗 *SISTEMA ANTI-SPAM:*
+• \`${prefix}x9 on/off\` - Anti-X9 Monitor
+• \`${prefix}antilink on/off\` - Anti-links
+• \`${prefix}anticontato on/off\` - Anti-contatos
+• \`${prefix}antidocumento on/off\` - Anti-documentos
+• \`${prefix}antivideo on/off\` - Anti-vídeos
+• \`${prefix}antiaudio on/off\` - Anti-áudios
+• \`${prefix}antisticker on/off\` - Anti-stickers
+• \`${prefix}antiflod on/off\` - Anti-flood
+• \`${prefix}antifake on/off\` - Anti-números fake
+
+📋 *LISTA NEGRA:*
+• \`${prefix}listanegra add @user\` - Adicionar usuário
+• \`${prefix}listanegra remove @user\` - Remover usuário
+• \`${prefix}listanegra list\` - Ver lista negra
+
+🗑️ *MODERAÇÃO:*
+• \`${prefix}del\` - Deleta mensagem marcada
+• \`${prefix}marca\` - Menciona todos os membros
+
+🔒 *CONTROLE DO GRUPO:*
+• \`${prefix}fechargrupo\` - Fecha o grupo
+• \`${prefix}abrirgrupo\` - Abre o grupo
+• \`${prefix}mudargrupo [nome]\` - Altera nome do grupo
+• \`${prefix}soloadmin\` - Só admin edita grupo
+• \`${prefix}resetlink\` - Gera novo link do grupo
+
+👥 *CONTROLE DE ENTRADA:*
+• \`${prefix}ativarsolicitacao\` - Ativa aprovação
+• \`${prefix}desativarsolicitacao\` - Desativa aprovação
+
+🎮 *CONFIGURAÇÕES:*
+• \`${prefix}modogamer on/off\` - Modo gamer
+• \`${prefix}grupo-status\` - Status do grupo
+
+📸 *PERSONALIZAÇÃO:*
+• \`${prefix}fotodogrupo\` - Troca foto do grupo
+• \`${prefix}fotodobot\` - Troca foto do bot
+
+━━━━━━━━━━━━━━━
+© NEEXT LTDA - ${nickDoDono}
+`;
+}
+
+// ========================
 // MENU ANTI-SPAM
 // ========================
 function obterMenuAnti() {
@@ -372,6 +426,7 @@ module.exports = {
     obterMenuPrincipal,
     obterMenuMembro,
     obterMenuAdmin,
+    obterMenuAdm,
     obterMenuDono,
     obterMenuDownload,
     obterMenuGamer,
