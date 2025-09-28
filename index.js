@@ -4155,7 +4155,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
             
             if (!mentioned || mentioned.length === 0) {
-                await reply(sock, from, `❌ Marque alguém para jogar roleta russa!\n\nExemplo: ${config.prefix}roletarussa @usuario`);
+                const configBot = obterConfiguracoes();
+                await reply(sock, from, `❌ Marque alguém para jogar roleta russa!\n\nExemplo: ${configBot.prefix}roletarussa @usuario`);
                 break;
             }
 
@@ -4176,6 +4177,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 ativo: true
             };
 
+            const configBot = obterConfiguracoes();
             await sock.sendMessage(from, {
                 image: { url: "https://i.ibb.co/chZjfM9c/4756f4254a2ac3974c9b6f33842e8b58.jpg" },
                 caption: 
@@ -4185,8 +4187,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                     `👤 Jogador 1: @${sender.split('@')[0]}\n` +
                     `👤 Jogador 2: @${oponente.split('@')[0]}\n\n` +
                     `🎲 Vez de: @${sender.split('@')[0]}\n\n` +
-                    `💥 Digite \`${config.prefix}disparar\` para puxar o gatilho!\n` +
-                    `🔄 Use \`${config.prefix}resetroleta\` para cancelar o jogo\n\n` +
+                    `💥 Digite \`${configBot.prefix}disparar\` para puxar o gatilho!\n` +
+                    `🔄 Use \`${configBot.prefix}resetroleta\` para cancelar o jogo\n\n` +
                     `⚠️ Que a sorte esteja com vocês...`,
                 mentions: [sender, oponente]
             });
@@ -4266,7 +4268,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 const vencedor = sender === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
                 
                 await sock.sendMessage(from, {
-                    video: { url: "https://i.ibb.co/hg39XnfJ/76dfd37d9b97af5aba62b4b2a6e1b3b6.gif" },
+                    video: { url: "https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif" },
                     caption: 
                         `💥 *BANG! JOGO FORÇADO!*\n\n` +
                         `💀 @${sender.split('@')[0]} morreu na câmara extra! 🔫\n\n` +
@@ -4289,7 +4291,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 const vencedor = sender === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
                 
                 await sock.sendMessage(from, {
-                    video: { url: "https://i.ibb.co/hg39XnfJ/76dfd37d9b97af5aba62b4b2a6e1b3b6.gif" },
+                    video: { url: "https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif" },
                     caption: 
                         `💥 *BANG! GAME OVER!*\n\n` +
                         `💀 @${sender.split('@')[0]} puxou a bala fatal! 🔫\n\n` +
@@ -4315,14 +4317,15 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 ];
                 const frase = sobrevivencia[Math.floor(Math.random() * sobrevivencia.length)];
                 
+                const configBot = obterConfiguracoes();
                 await sock.sendMessage(from, {
-                    video: { url: "https://i.ibb.co/VpyJfZ6w/e6f41b63d39c8b1c36c80ebb14b75c71.gif" },
+                    video: { url: "https://i.ibb.co/yFvQCn1p/3b7300aa2a120ec29a2b4de808f40a77.gif" },
                     caption: 
                         `🔫 *CLIQUE!* Nada aconteceu...\n\n` +
                         `😅 @${sender.split('@')[0]} ${frase}!\n\n` +
                         `🎲 Próxima vez: @${proximoJogador.split('@')[0]}\n` +
                         `📊 Tiro: ${jogo.tiroAtual - 1}/6\n\n` +
-                        `💥 Digite \`.disparar\` para continuar!`,
+                        `💥 Digite \`${configBot.prefix}disparar\` para continuar!`,
                     mentions: [sender, proximoJogador],
                     gifPlayback: true
                 });
