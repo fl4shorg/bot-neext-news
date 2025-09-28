@@ -1946,11 +1946,12 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const pushName = message.pushName || "Usuário";
             const menuText = await menus.obterMenuPrincipal(sock, from, sender, pushName);
             
-            // Obter saudação para o caption
-            const { obterSaudacao } = require('./arquivos/funcoes/function.js');
-            const saudacaoCaption = `${obterSaudacao()} - Menu Principal`;
+            // Obter saudação com emoji e total de comandos
+            const { obterSaudacao, contarComandos } = require('./arquivos/funcoes/function.js');
+            const totalComandos = contarComandos();
+            const saudacaoCaption = `${obterSaudacao()} - Total de Comandos: ${totalComandos}`;
             
-            // Documento fake PPTX de 1000GB
+            // Documento fake PPTX de 100TB
             const quotedMenuPPTX = {
                 key: { participant: "0@s.whatsapp.net", remoteJid: "0@s.whatsapp.net" },
                 message: { 
@@ -1958,34 +1959,25 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                         title: "o melhor tem nome.pptx", 
                         fileName: "o melhor tem nome.pptx", 
                         mimetype: "application/vnd.openxmlformats-officedocument.presentationml.presentation", 
-                        fileLength: 1073741824000, // 1000GB em bytes
+                        fileLength: 109951162777600, // 100TB em bytes
                         pageCount: 999,
                         contactVcard: true
                     } 
                 }
             };
             
+            // Enviar via sock.sendMessage com documento PPTX e quoted selinho
             await sock.sendMessage(from, {
-                text: menuText,
+                document: { url: "data:application/vnd.openxmlformats-officedocument.presentationml.presentation;base64," },
+                fileName: "o melhor tem nome.pptx",
+                mimetype: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                fileLength: 109951162777600, // 100TB
+                pageCount: 999,
+                caption: `${saudacaoCaption}\n\n${menuText}`,
                 contextInfo: {
-                    mentionedJid: [sender],
-                    quotedMessage: quotedMenuPPTX.message,
-                    forwardingScore: 100000,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: "120363289739581116@newsletter",
-                        newsletterName: saudacaoCaption
-                    },
-                    externalAdReply: {
-                        title: `© NEEXT LTDA`,
-                        body: `📱 Instagram: @neet.tk`,
-                        thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
-                        mediaType: 1,
-                        sourceUrl: "https://www.neext.online",
-                        showAdAttribution: true
-                    }
+                    mentionedJid: [sender]
                 }
-            }, { quoted: quotedMenuPPTX });
+            }, { quoted: selinho });
         }
         break;
 
