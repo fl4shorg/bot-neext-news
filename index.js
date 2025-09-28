@@ -3320,16 +3320,33 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const target = mentioned[0];
             
             try {
-                // Tenta enviar como video primeiro
+                // Baixa o GIF primeiro para garantir que funcione
+                const response = await axios.get("https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif", {
+                    responseType: 'arraybuffer',
+                    timeout: 10000
+                });
+                const gifBuffer = Buffer.from(response.data);
+                
+                // Envia como documento GIF (mais confiável)
                 await sock.sendMessage(from, {
-                    video: { url: "https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif" },
+                    document: gifBuffer,
+                    fileName: "assassinato.gif",
+                    mimetype: "image/gif",
                     caption: `💀 *ASSASSINATO!*\n\n@${sender.split('@')[0]} matou @${target.split('@')[0]}! ⚰️\n\n🩸 RIP... F no chat`,
                     mentions: [sender, target],
-                    gifPlayback: true
+                    contextInfo: {
+                        forwardingScore: 100000,
+                        isForwarded: true,
+                        forwardedNewsletterMessageInfo: {
+                            newsletterJid: "120363289739581116@newsletter",
+                            newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
+                        }
+                    }
                 });
             } catch (err) {
-                // Fallback para texto simples
-                await reply(sock, from, `💀 *ASSASSINATO!*\n\n@${sender.split('@')[0]} matou @${target.split('@')[0]}! ⚰️\n\n🩸 RIP... F no chat`, [sender, target]);
+                console.log("❌ Erro ao enviar GIF:", err.message);
+                // Fallback para texto com emoji
+                await reply(sock, from, `💀 *ASSASSINATO!*\n\n@${sender.split('@')[0]} matou @${target.split('@')[0]}! ⚰️\n\n🩸 RIP... F no chat\n\n💥 (GIF indisponível no momento)`, [sender, target]);
             }
         }
         break;
@@ -3360,14 +3377,32 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const target = mentioned[0];
             
             try {
+                // Baixa o GIF primeiro
+                const response = await axios.get("https://i.ibb.co/KpVxK1PB/9ab46702d1f0669a0ae40464b25568f2.gif", {
+                    responseType: 'arraybuffer',
+                    timeout: 10000
+                });
+                const gifBuffer = Buffer.from(response.data);
+                
+                // Envia como documento
                 await sock.sendMessage(from, {
-                    video: { url: "https://i.ibb.co/KpVxK1PB/9ab46702d1f0669a0ae40464b25568f2.gif" },
+                    document: gifBuffer,
+                    fileName: "tiro.gif",
+                    mimetype: "image/gif",
                     caption: `🔫 *TIRO CERTEIRO!*\n\n@${sender.split('@')[0]} atirou em @${target.split('@')[0]}! 💥\n\n🎯 Pegou em cheio!`,
                     mentions: [sender, target],
-                    gifPlayback: true
+                    contextInfo: {
+                        forwardingScore: 100000,
+                        isForwarded: true,
+                        forwardedNewsletterMessageInfo: {
+                            newsletterJid: "120363289739581116@newsletter",
+                            newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
+                        }
+                    }
                 });
             } catch (err) {
-                await reply(sock, from, `🔫 *TIRO CERTEIRO!*\n\n@${sender.split('@')[0]} atirou em @${target.split('@')[0]}! 💥\n\n🎯 Pegou em cheio!`, [sender, target]);
+                console.log("❌ Erro ao enviar GIF:", err.message);
+                await reply(sock, from, `🔫 *TIRO CERTEIRO!*\n\n@${sender.split('@')[0]} atirou em @${target.split('@')[0]}! 💥\n\n🎯 Pegou em cheio!\n\n💥 (GIF indisponível no momento)`, [sender, target]);
             }
         }
         break;
@@ -3483,16 +3518,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const target = mentioned[0];
             
-            try {
-                await sock.sendMessage(from, {
-                    video: { url: "https://i.ibb.co/yFvQCn1p/3b7300aa2a120ec29a2b4de808f40a77.gif" },
-                    caption: `💋 *BEIJINHO!*\n\n@${sender.split('@')[0]} deu um beijinho em @${target.split('@')[0]}! 😘\n\n💕 Que fofo!`,
-                    mentions: [sender, target],
-                    gifPlayback: true
-                });
-            } catch (err) {
-                await reply(sock, from, `💋 *BEIJINHO!*\n\n@${sender.split('@')[0]} deu um beijinho em @${target.split('@')[0]}! 😘\n\n💕 Que fofo!`, [sender, target]);
-            }
+            // Envia texto diretamente com emojis, mais confiável
+            await reply(sock, from, `💋 *BEIJINHO!*\n\n@${sender.split('@')[0]} deu um beijinho em @${target.split('@')[0]}! 😘\n\n💕 Que fofo! 💋💋💋`, [sender, target]);
         }
         break;
 
@@ -3521,16 +3548,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const target = mentioned[0];
             
-            try {
-                await sock.sendMessage(from, {
-                    video: { url: "https://i.ibb.co/2YCMjzRm/60dc462e373c72f3f9155d48c79b428e.gif" },
-                    caption: `🚗💨 *ATROPELAMENTO!*\n\n@${target.split('@')[0]} foi atropelado(a) por @${sender.split('@')[0]}! 🚑\n\n😵‍💫 Chamem o SAMU!`,
-                    mentions: [sender, target],
-                    gifPlayback: true
-                });
-            } catch (err) {
-                await reply(sock, from, `🚗💨 *ATROPELAMENTO!*\n\n@${target.split('@')[0]} foi atropelado(a) por @${sender.split('@')[0]}! 🚑\n\n😵‍💫 Chamem o SAMU!`, [sender, target]);
-            }
+            await reply(sock, from, `🚗💨 *ATROPELAMENTO!*\n\n@${target.split('@')[0]} foi atropelado(a) por @${sender.split('@')[0]}! 🚑\n\n😵‍💫 Chamem o SAMU! 🚨🚨🚨`, [sender, target]);
         }
         break;
 
@@ -3559,16 +3577,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const target = mentioned[0];
             
-            try {
-                await sock.sendMessage(from, {
-                    video: { url: "https://i.ibb.co/cKZh59pt/a0b90d2ad7ed5d684b582ef42a3bb7d7.gif" },
-                    caption: `🖕 *DEDO!*\n\n@${sender.split('@')[0]} fez dedo para @${target.split('@')[0]}! 😠\n\n🤬 Vai se lascar!`,
-                    mentions: [sender, target],
-                    gifPlayback: true
-                });
-            } catch (err) {
-                await reply(sock, from, `🖕 *DEDO!*\n\n@${sender.split('@')[0]} fez dedo para @${target.split('@')[0]}! 😠\n\n🤬 Vai se lascar!`, [sender, target]);
-            }
+            await reply(sock, from, `🖕 *DEDO!*\n\n@${sender.split('@')[0]} fez dedo para @${target.split('@')[0]}! 😠\n\n🤬 Vai se lascar! 🖕🖕🖕`, [sender, target]);
         }
         break;
 
@@ -3597,16 +3606,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const target = mentioned[0];
             
-            try {
-                await sock.sendMessage(from, {
-                    video: { url: "https://i.ibb.co/TDtD6FRG/b86f0e859c792c3adc32321e43e3141c.gif" },
-                    caption: `🍑 *SARRADA!*\n\n@${sender.split('@')[0]} deu uma sarrada em @${target.split('@')[0]}! 🔥\n\n😈 Que safadeza!`,
-                    mentions: [sender, target],
-                    gifPlayback: true
-                });
-            } catch (err) {
-                await reply(sock, from, `🍑 *SARRADA!*\n\n@${sender.split('@')[0]} deu uma sarrada em @${target.split('@')[0]}! 🔥\n\n😈 Que safadeza!`, [sender, target]);
-            }
+            await reply(sock, from, `🍑 *SARRADA!*\n\n@${sender.split('@')[0]} deu uma sarrada em @${target.split('@')[0]}! 🔥\n\n😈 Que safadeza! 🔥🔥🔥`, [sender, target]);
         }
         break;
 
