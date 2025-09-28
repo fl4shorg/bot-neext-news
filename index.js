@@ -18,6 +18,7 @@ const Jimp = require("jimp");
 const pinterest = require('./Pinterest.js');
 const { igdl } = require('./Instagram.js');
 const settings = require('./settings/settings.json');
+const envConfig = require('./config/environment.js');
 const { Aki } = require('aki-api');
 const cloudscraper = require('cloudscraper');
 const UserAgent = require('user-agents');
@@ -41,21 +42,25 @@ const { mostrarBanner, logMensagem } = require("./export");
 // importa funções auxiliares do menu
 const { obterSaudacao, contarGrupos, contarComandos } = require("./arquivos/funcoes/function.js");
 
-// Config do Bot - agora usando referências dinâmicas para permitir alterações em tempo real
+// Config do Bot - prioriza environment vars sobre settings.json
 function obterConfiguracoes() {
     try {
         delete require.cache[require.resolve('./settings/settings.json')];
-        return require('./settings/settings.json');
+        const settingsFile = require('./settings/settings.json');
+        
+        // Merge environment config with settings.json (env vars take priority)
+        return {
+            prefix: envConfig.botOwner.prefix || settingsFile.prefix || ".",
+            nomeDoBot: envConfig.botOwner.name || settingsFile.nomeDoBot || "WhatsApp Bot",
+            nickDoDono: envConfig.botOwner.nickname || settingsFile.nickDoDono || "Owner",
+            numeroDoDono: envConfig.botOwner.number || settingsFile.numeroDoDono || "PLACEHOLDER_NUMBER",
+            fotoDoBot: envConfig.media.botPhotoUrl || settingsFile.fotoDoBot || "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
+            idDoCanal: settingsFile.idDoCanal || "120363399209756764@g.us"
+        };
     } catch (err) {
         console.error("❌ Erro ao carregar configurações:", err);
-        // Fallback para configurações padrão
-        return {
-            prefix: "/",
-            nomeDoBot: "GodDard",
-            nickDoDono: "Flash",
-            numeroDoDono: "5521993272080",
-            fotoDoBot: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg"
-        };
+        // Fallback using environment config only
+        return envConfig.toLegacyFormat();
     }
 }
 
