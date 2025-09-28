@@ -2248,7 +2248,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             
             if (action === "on") {
                 if (rpg.toggleRPG(from, true)) {
-                    await reply(sock, from, "🎮 **RPG ATIVADO!**\n\n🏙️ **Bem-vindos à NeextCity!**\n\n Para começar sua jornada:\n• Digite **/registrar** para se registrar\n• Escolha seu banco favorito\n• Comece a pescar, minerar e trabalhar!\n\n✨ **Comandos disponíveis:**\n• `/pescar` - Pesque e ganhe gold\n• `/minerar` - Minere recursos valiosos\n• `/trabalhar` - Trabalhe por dinheiro\n• `/tigrinho` - Jogue no cassino\n• `/assalto` - Assalte outros jogadores\n• `/vermeusaldo` - Veja seu saldo\n• `/rank` - Ranking dos mais ricos");
+                    const configBot = obterConfiguracoes();
+                    await reply(sock, from, `🎮 **RPG ATIVADO!**\n\n🏙️ **Bem-vindos à NeextCity!**\n\n Para começar sua jornada:\n• Digite **${configBot.prefix}registrar** para se registrar\n• Escolha seu banco favorito\n• Comece a pescar, minerar e trabalhar!\n\n✨ **Comandos disponíveis:**\n• \`${configBot.prefix}pescar\` - Pesque e ganhe gold\n• \`${configBot.prefix}minerar\` - Minere recursos valiosos\n• \`${configBot.prefix}trabalhar\` - Trabalhe por dinheiro\n• \`${configBot.prefix}tigrinho\` - Jogue no cassino\n• \`${configBot.prefix}assalto\` - Assalte outros jogadores\n• \`${configBot.prefix}vermeusaldo\` - Veja seu saldo\n• \`${configBot.prefix}rank\` - Ranking dos mais ricos`);
                 } else {
                     await reply(sock, from, "❌ Erro ao ativar o RPG.");
                 }
@@ -2260,7 +2261,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 }
             } else {
                 const isAtivo = rpg.isRPGAtivo(from);
-                await reply(sock, from, `🎮 **STATUS DO RPG**\n\n${isAtivo ? "✅ ATIVO" : "❌ INATIVO"}\n\n💡 **Uso:** \`${config.prefix}rpg on/off\``);
+                const configBot = obterConfiguracoes();
+                await reply(sock, from, `🎮 **STATUS DO RPG**\n\n${isAtivo ? "✅ ATIVO" : "❌ INATIVO"}\n\n💡 **Uso:** \`${configBot.prefix}rpg on/off\``);
             }
         }
         break;
@@ -2274,7 +2276,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             // Verifica se RPG está ativo
             if (!rpg.isRPGAtivo(from)) {
-                await reply(sock, from, "❌ O RPG não está ativo neste grupo. Um admin deve ativar com `" + prefix + "rpg on`");
+                const configBot = obterConfiguracoes();
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo. Um admin deve ativar com `" + configBot.prefix + "rpg on`");
                 break;
             }
 
@@ -2295,7 +2298,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                     bancosText += `${index + 1}. ${banco.emoji} ${banco.nome}\n`;
                 });
                 
-                await reply(sock, from, `🏙️ **REGISTRO NA NEEXTCITY**\n\n${bancosText}\n💡 **Como usar:**\n\`${config.prefix}registrar [nome] [número_do_banco]\`\n\n📝 **Exemplo:**\n\`${config.prefix}registrar João 3\` (para Nubank)`);
+                const configBot = obterConfiguracoes();
+                await reply(sock, from, `🏙️ **REGISTRO NA NEEXTCITY**\n\n${bancosText}\n💡 **Como usar:**\n\`${configBot.prefix}registrar [nome] [número_do_banco]\`\n\n📝 **Exemplo:**\n\`${configBot.prefix}registrar João 3\` (para Nubank)`);
                 break;
             }
 
@@ -3291,10 +3295,9 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const target = mentioned[0];
             await sock.sendMessage(from, {
-                video: { url: "https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif" },
+                image: { url: "https://i.ibb.co/DgWJjjK/58712ef364b6fdef5ae9bcbb48fc0fdb.jpg" },
                 caption: `💀 *ASSASSINATO!*\n\n@${sender.split('@')[0]} matou @${target.split('@')[0]}! ⚰️\n\n🩸 RIP... F no chat`,
-                mentions: [sender, target],
-                gifPlayback: true
+                mentions: [sender, target]
             });
         }
         break;
@@ -3322,10 +3325,9 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const target = mentioned[0];
             await sock.sendMessage(from, {
-                video: { url: "https://i.ibb.co/KpVxK1PB/9ab46702d1f0669a0ae40464b25568f2.gif" },
+                image: { url: "https://i.ibb.co/KpVxK1PB/9ab46702d1f0669a0ae40464b25568f2.jpg" },
                 caption: `🔫 *TIRO CERTEIRO!*\n\n@${sender.split('@')[0]} atirou em @${target.split('@')[0]}! 💥\n\n🎯 Pegou em cheio!`,
-                mentions: [sender, target],
-                gifPlayback: true
+                mentions: [sender, target]
             });
         }
         break;
@@ -3439,10 +3441,9 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const target = mentioned[0];
             await sock.sendMessage(from, {
-                video: { url: "https://i.ibb.co/yFvQCn1p/3b7300aa2a120ec29a2b4de808f40a77.gif" },
+                image: { url: "https://i.ibb.co/yFvQCn1p/3b7300aa2a120ec29a2b4de808f40a77.jpg" },
                 caption: `💋 *BEIJINHO!*\n\n@${sender.split('@')[0]} deu um beijinho em @${target.split('@')[0]}! 😘\n\n💕 Que fofo!`,
-                mentions: [sender, target],
-                gifPlayback: true
+                mentions: [sender, target]
             });
         }
         break;
@@ -3470,10 +3471,9 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const target = mentioned[0];
             await sock.sendMessage(from, {
-                video: { url: "https://i.ibb.co/2YCMjzRm/60dc462e373c72f3f9155d48c79b428e.gif" },
+                image: { url: "https://i.ibb.co/2YCMjzRm/60dc462e373c72f3f9155d48c79b428e.jpg" },
                 caption: `🚗💨 *ATROPELAMENTO!*\n\n@${target.split('@')[0]} foi atropelado(a) por @${sender.split('@')[0]}! 🚑\n\n😵‍💫 Chamem o SAMU!`,
-                mentions: [sender, target],
-                gifPlayback: true
+                mentions: [sender, target]
             });
         }
         break;
@@ -3501,10 +3501,9 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const target = mentioned[0];
             await sock.sendMessage(from, {
-                video: { url: "https://i.ibb.co/cKZh59pt/a0b90d2ad7ed5d684b582ef42a3bb7d7.gif" },
+                image: { url: "https://i.ibb.co/cKZh59pt/a0b90d2ad7ed5d684b582ef42a3bb7d7.jpg" },
                 caption: `🖕 *DEDO!*\n\n@${sender.split('@')[0]} fez dedo para @${target.split('@')[0]}! 😠\n\n🤬 Vai se lascar!`,
-                mentions: [sender, target],
-                gifPlayback: true
+                mentions: [sender, target]
             });
         }
         break;
@@ -3532,10 +3531,9 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const target = mentioned[0];
             await sock.sendMessage(from, {
-                video: { url: "https://i.ibb.co/TDtD6FRG/b86f0e859c792c3adc32321e43e3141c.gif" },
+                image: { url: "https://i.ibb.co/TDtD6FRG/b86f0e859c792c3adc32321e43e3141c.jpg" },
                 caption: `🍑 *SARRADA!*\n\n@${sender.split('@')[0]} deu uma sarrada em @${target.split('@')[0]}! 🔥\n\n😈 Que safadeza!`,
-                mentions: [sender, target],
-                gifPlayback: true
+                mentions: [sender, target]
             });
         }
         break;
