@@ -383,6 +383,131 @@ function obterMenuRPG() {
 }
 
 // ========================
+// MENU STICKERS (figurinhas)
+// ========================
+function obterMenuSticker() {
+    const { prefix, nomeDoBot, nickDoDono } = obterConfiguracoes();
+    return `
+🏷️ *MENU DE STICKERS*
+
+✨ *CRIAR STICKERS:*
+• \`${prefix}s\` - Converte mídia em sticker
+• \`${prefix}sticker\` - Criar sticker de imagem/vídeo
+• \`${prefix}attp [texto]\` - Sticker de texto animado
+• \`${prefix}ttp [texto]\` - Sticker de texto simples
+
+🎨 *EDITAR STICKERS:*
+• \`${prefix}rename [pack|author]\` - Renomear sticker
+• \`${prefix}take [pack] [author]\` - Roubar sticker
+• \`${prefix}toimg\` - Converter sticker em imagem
+
+🎭 *STICKERS ESPECIAIS:*
+• \`${prefix}emoji [emoji]\` - Sticker de emoji
+• \`${prefix}semoji [emoji]\` - Sticker emoji simples
+
+📝 *COMO USAR:*
+• Envie uma imagem/vídeo com \`${prefix}s\`
+• Marque um sticker e use \`${prefix}take\`
+• Use \`${prefix}rename\` para personalizar
+
+━━━━━━━━━━━━━━━
+© NEEXT LTDA - ${nickDoDono}
+`;
+}
+
+// ========================
+// MENU BRINCADEIRAS (coming soon)
+// ========================
+function obterMenuBrincadeira() {
+    const { prefix, nomeDoBot, nickDoDono } = obterConfiguracoes();
+    return `
+🎉 *MENU BRINCADEIRAS*
+
+⚠️ *EM DESENVOLVIMENTO*
+
+🚧 Este menu está sendo finalizado e em breve terá:
+
+🎭 **Comandos de Diversão:**
+• Roleta de perguntas
+• Verdade ou desafio
+• Simulador de namorados
+• Gerador de casais aleatórios
+
+🎲 **Interações Divertidas:**
+• Perguntas para o grupo
+• Desafios aleatórios
+• Brincadeiras de grupo
+
+📅 **Status:** Em desenvolvimento
+⏰ **Previsão:** Próxima atualização
+
+━━━━━━━━━━━━━━━
+© NEEXT LTDA - ${nickDoDono}
+`;
+}
+
+// ========================
+// MENU HENTAI (coming soon)
+// ========================
+function obterMenuHentai() {
+    const { prefix, nomeDoBot, nickDoDono } = obterConfiguracoes();
+    return `
+🔞 *MENU HENTAI*
+
+⚠️ *EM DESENVOLVIMENTO*
+
+🚧 Este menu está sendo finalizado e em breve terá:
+
+🎨 **Conteúdo Artístico:**
+• Imagens de anime
+• Wallpapers temáticos
+• Arte digital
+
+⚠️ **Importante:**
+• Conteúdo será adequado às diretrizes
+• Uso responsável obrigatório
+• Apenas em grupos privados
+
+📅 **Status:** Em desenvolvimento
+⏰ **Previsão:** Próxima atualização
+
+━━━━━━━━━━━━━━━
+© NEEXT LTDA - ${nickDoDono}
+`;
+}
+
+// ========================
+// MENU DONO AVANÇADO (coming soon)
+// ========================
+function obterMenuDonoAvancado() {
+    const { prefix, nomeDoBot, nickDoDono } = obterConfiguracoes();
+    return `
+👑 *MENU DONO AVANÇADO*
+
+⚠️ *EM DESENVOLVIMENTO*
+
+🚧 Este menu está sendo finalizado e em breve terá:
+
+🔧 **Controle Total:**
+• Backup de configurações
+• Gerenciamento de grupos em massa
+• Logs detalhados do sistema
+• Controle de usuários globais
+
+⚙️ **Configurações Avançadas:**
+• Auto-moderação inteligente
+• Respostas automáticas personalizadas
+• Sistema de recompensas
+
+📅 **Status:** Em desenvolvimento
+⏰ **Previsão:** Próxima atualização
+
+━━━━━━━━━━━━━━━
+© NEEXT LTDA - ${nickDoDono}
+`;
+}
+
+// ========================
 // GUIA DE CONFIGURAÇÃO
 // ========================
 function obterConfigurarBot() {
@@ -432,5 +557,9 @@ module.exports = {
     obterMenuGamer,
     obterMenuAnti,
     obterMenuRPG,
+    obterMenuSticker,
+    obterMenuBrincadeira,
+    obterMenuHentai,
+    obterMenuDonoAvancado,
     obterConfigurarBot
 };

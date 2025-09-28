@@ -2024,6 +2024,49 @@ Seu ID foi salvo com segurança em nosso sistema!`;
         }
         break;
 
+        case "menudownload": {
+            const menus = require('./menus/menu.js');
+            await reply(sock, from, menus.obterMenuDownload());
+        }
+        break;
+
+        case "menusticker": 
+        case "menufigurinhas": {
+            const menus = require('./menus/menu.js');
+            await reply(sock, from, menus.obterMenuSticker());
+        }
+        break;
+
+        case "menurpg": {
+            const menus = require('./menus/menu.js');
+            await reply(sock, from, menus.obterMenuRPG());
+        }
+        break;
+
+        case "menubrincadeira": {
+            const menus = require('./menus/menu.js');
+            await sock.sendMessage(from, { 
+                text: menus.obterMenuBrincadeira()
+            }, { quoted: message });
+        }
+        break;
+
+        case "menuhentai": {
+            const menus = require('./menus/menu.js');
+            await sock.sendMessage(from, { 
+                text: menus.obterMenuHentai()
+            }, { quoted: message });
+        }
+        break;
+
+        case "menudono": {
+            const menus = require('./menus/menu.js');
+            await sock.sendMessage(from, { 
+                text: menus.obterMenuDonoAvancado()
+            }, { quoted: message });
+        }
+        break;
+
         case "menuanti": {
             const menus = require('./menus/menu.js');
             await reply(sock, from, menus.obterMenuAnti());
@@ -4289,7 +4332,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
         default:
             const config = obterConfiguracoes();
-            await sock.sendMessage(from, { text: `❌ Comando "${command}" não encontrado.\n\nDigite "prefixo" para ver meu prefixo ou "${config.prefix}ping" para testar.` }, { quoted: message });
+            await reply(sock, from, `❌ Comando "${command}" não encontrado.\n\nDigite "prefixo" para ver meu prefixo ou "${config.prefix}ping" para testar.`);
             break;
     }
 }
