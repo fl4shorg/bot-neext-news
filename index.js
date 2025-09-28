@@ -43,8 +43,20 @@ const { obterSaudacao, contarGrupos, contarComandos } = require("./arquivos/func
 
 // Config do Bot - agora usando referências dinâmicas para permitir alterações em tempo real
 function obterConfiguracoes() {
-    delete require.cache[require.resolve('./settings/settings.json')];
-    return require('./settings/settings.json');
+    try {
+        delete require.cache[require.resolve('./settings/settings.json')];
+        return require('./settings/settings.json');
+    } catch (err) {
+        console.error("❌ Erro ao carregar configurações:", err);
+        // Fallback para configurações padrão
+        return {
+            prefix: "/",
+            nomeDoBot: "GodDard",
+            nickDoDono: "Flash",
+            numeroDoDono: "5521993272080",
+            fotoDoBot: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg"
+        };
+    }
 }
 
 // Selinhos e quoted fake (mantive seu conteúdo)
@@ -251,19 +263,28 @@ function normalizeMessage(m) {
 
 // Função reply genérica
 async function reply(sock, from, text, mentions = []) {
-    try { await sock.sendMessage(from, { 
-        text,
-        contextInfo: {
-            forwardingScore: 100000,
-            isForwarded: true,
-            forwardedNewsletterMessageInfo: {
-                newsletterJid: "120363289739581116@newsletter",
-                newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
-            }
-        },
-        mentions
-    }); }
-    catch (err) { console.error("❌ Erro ao enviar reply:", err); }
+    try { 
+        await sock.sendMessage(from, { 
+            text,
+            contextInfo: {
+                forwardingScore: 100000,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: "120363289739581116@newsletter",
+                    newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
+                }
+            },
+            mentions
+        }); 
+    } catch (err) { 
+        console.error("❌ Erro ao enviar reply:", err.message || err);
+        // Tenta envio mais simples em caso de erro
+        try {
+            await sock.sendMessage(from, { text, mentions });
+        } catch (secondErr) {
+            console.error("❌ Falha no fallback reply:", secondErr.message || secondErr);
+        }
+    }
 }
 
 // Reage a qualquer mensagem com emoji
@@ -3168,7 +3189,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const config = antiSpam.carregarConfigGrupo(from);
             if (!config || !config.modogamer) {
-                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
+                const botConfig = obterConfiguracoes();
+                await reply(sock, from, `❌ Modo Gamer está desativado neste grupo! Use \`${botConfig.prefix}modogamer on\` para ativar.`);
                 break;
             }
 
@@ -3281,7 +3303,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const config = antiSpam.carregarConfigGrupo(from);
             if (!config || !config.modogamer) {
-                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
+                const botConfig = obterConfiguracoes();
+                await reply(sock, from, `❌ Modo Gamer está desativado neste grupo! Use \`${botConfig.prefix}modogamer on\` para ativar.`);
                 break;
             }
 
@@ -3289,20 +3312,25 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
             
             if (!mentioned || mentioned.length === 0) {
-                await reply(sock, from, `❌ Marque alguém para matar!\n\nExemplo: ${config.prefix}matar @usuario`);
+                const botConfig = obterConfiguracoes();
+                await reply(sock, from, `❌ Marque alguém para matar!\n\nExemplo: ${botConfig.prefix}matar @usuario`);
                 break;
             }
 
             const target = mentioned[0];
-            await sock.sendMessage(from, {
-                document: { 
-                    url: "https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif",
-                    mimetype: "image/gif",
-                    fileName: "matar.gif"
-                },
-                caption: `💀 *ASSASSINATO!*\n\n@${sender.split('@')[0]} matou @${target.split('@')[0]}! ⚰️\n\n🩸 RIP... F no chat`,
-                mentions: [sender, target]
-            });
+            
+            try {
+                // Tenta enviar como video primeiro
+                await sock.sendMessage(from, {
+                    video: { url: "https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif" },
+                    caption: `💀 *ASSASSINATO!*\n\n@${sender.split('@')[0]} matou @${target.split('@')[0]}! ⚰️\n\n🩸 RIP... F no chat`,
+                    mentions: [sender, target],
+                    gifPlayback: true
+                });
+            } catch (err) {
+                // Fallback para texto simples
+                await reply(sock, from, `💀 *ASSASSINATO!*\n\n@${sender.split('@')[0]} matou @${target.split('@')[0]}! ⚰️\n\n🩸 RIP... F no chat`, [sender, target]);
+            }
         }
         break;
 
@@ -3315,7 +3343,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const config = antiSpam.carregarConfigGrupo(from);
             if (!config || !config.modogamer) {
-                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
+                const botConfig = obterConfiguracoes();
+                await reply(sock, from, `❌ Modo Gamer está desativado neste grupo! Use \`${botConfig.prefix}modogamer on\` para ativar.`);
                 break;
             }
 
@@ -3323,20 +3352,23 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
             
             if (!mentioned || mentioned.length === 0) {
-                await reply(sock, from, `❌ Marque alguém para atirar!\n\nExemplo: ${config.prefix}atirar @usuario`);
+                const botConfig = obterConfiguracoes();
+                await reply(sock, from, `❌ Marque alguém para atirar!\n\nExemplo: ${botConfig.prefix}atirar @usuario`);
                 break;
             }
 
             const target = mentioned[0];
-            await sock.sendMessage(from, {
-                document: { 
-                    url: "https://i.ibb.co/KpVxK1PB/9ab46702d1f0669a0ae40464b25568f2.gif",
-                    mimetype: "image/gif",
-                    fileName: "atirar.gif"
-                },
-                caption: `🔫 *TIRO CERTEIRO!*\n\n@${sender.split('@')[0]} atirou em @${target.split('@')[0]}! 💥\n\n🎯 Pegou em cheio!`,
-                mentions: [sender, target]
-            });
+            
+            try {
+                await sock.sendMessage(from, {
+                    video: { url: "https://i.ibb.co/KpVxK1PB/9ab46702d1f0669a0ae40464b25568f2.gif" },
+                    caption: `🔫 *TIRO CERTEIRO!*\n\n@${sender.split('@')[0]} atirou em @${target.split('@')[0]}! 💥\n\n🎯 Pegou em cheio!`,
+                    mentions: [sender, target],
+                    gifPlayback: true
+                });
+            } catch (err) {
+                await reply(sock, from, `🔫 *TIRO CERTEIRO!*\n\n@${sender.split('@')[0]} atirou em @${target.split('@')[0]}! 💥\n\n🎯 Pegou em cheio!`, [sender, target]);
+            }
         }
         break;
 
@@ -3435,7 +3467,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const config = antiSpam.carregarConfigGrupo(from);
             if (!config || !config.modogamer) {
-                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
+                const botConfig = obterConfiguracoes();
+                await reply(sock, from, `❌ Modo Gamer está desativado neste grupo! Use \`${botConfig.prefix}modogamer on\` para ativar.`);
                 break;
             }
 
@@ -3443,20 +3476,23 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
             
             if (!mentioned || mentioned.length === 0) {
-                await reply(sock, from, `❌ Marque alguém para beijar!\n\nExemplo: ${config.prefix}beijar @usuario`);
+                const botConfig = obterConfiguracoes();
+                await reply(sock, from, `❌ Marque alguém para beijar!\n\nExemplo: ${botConfig.prefix}beijar @usuario`);
                 break;
             }
 
             const target = mentioned[0];
-            await sock.sendMessage(from, {
-                document: { 
-                    url: "https://i.ibb.co/yFvQCn1p/3b7300aa2a120ec29a2b4de808f40a77.gif",
-                    mimetype: "image/gif",
-                    fileName: "beijar.gif"
-                },
-                caption: `💋 *BEIJINHO!*\n\n@${sender.split('@')[0]} deu um beijinho em @${target.split('@')[0]}! 😘\n\n💕 Que fofo!`,
-                mentions: [sender, target]
-            });
+            
+            try {
+                await sock.sendMessage(from, {
+                    video: { url: "https://i.ibb.co/yFvQCn1p/3b7300aa2a120ec29a2b4de808f40a77.gif" },
+                    caption: `💋 *BEIJINHO!*\n\n@${sender.split('@')[0]} deu um beijinho em @${target.split('@')[0]}! 😘\n\n💕 Que fofo!`,
+                    mentions: [sender, target],
+                    gifPlayback: true
+                });
+            } catch (err) {
+                await reply(sock, from, `💋 *BEIJINHO!*\n\n@${sender.split('@')[0]} deu um beijinho em @${target.split('@')[0]}! 😘\n\n💕 Que fofo!`, [sender, target]);
+            }
         }
         break;
 
@@ -3469,7 +3505,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const config = antiSpam.carregarConfigGrupo(from);
             if (!config || !config.modogamer) {
-                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
+                const botConfig = obterConfiguracoes();
+                await reply(sock, from, `❌ Modo Gamer está desativado neste grupo! Use \`${botConfig.prefix}modogamer on\` para ativar.`);
                 break;
             }
 
@@ -3477,20 +3514,23 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
             
             if (!mentioned || mentioned.length === 0) {
-                await reply(sock, from, `❌ Marque alguém para atropelar!\n\nExemplo: ${config.prefix}atropelar @usuario`);
+                const botConfig = obterConfiguracoes();
+                await reply(sock, from, `❌ Marque alguém para atropelar!\n\nExemplo: ${botConfig.prefix}atropelar @usuario`);
                 break;
             }
 
             const target = mentioned[0];
-            await sock.sendMessage(from, {
-                document: { 
-                    url: "https://i.ibb.co/2YCMjzRm/60dc462e373c72f3f9155d48c79b428e.gif",
-                    mimetype: "image/gif",
-                    fileName: "atropelar.gif"
-                },
-                caption: `🚗💨 *ATROPELAMENTO!*\n\n@${target.split('@')[0]} foi atropelado(a) por @${sender.split('@')[0]}! 🚑\n\n😵‍💫 Chamem o SAMU!`,
-                mentions: [sender, target]
-            });
+            
+            try {
+                await sock.sendMessage(from, {
+                    video: { url: "https://i.ibb.co/2YCMjzRm/60dc462e373c72f3f9155d48c79b428e.gif" },
+                    caption: `🚗💨 *ATROPELAMENTO!*\n\n@${target.split('@')[0]} foi atropelado(a) por @${sender.split('@')[0]}! 🚑\n\n😵‍💫 Chamem o SAMU!`,
+                    mentions: [sender, target],
+                    gifPlayback: true
+                });
+            } catch (err) {
+                await reply(sock, from, `🚗💨 *ATROPELAMENTO!*\n\n@${target.split('@')[0]} foi atropelado(a) por @${sender.split('@')[0]}! 🚑\n\n😵‍💫 Chamem o SAMU!`, [sender, target]);
+            }
         }
         break;
 
@@ -3503,7 +3543,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const config = antiSpam.carregarConfigGrupo(from);
             if (!config || !config.modogamer) {
-                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
+                const botConfig = obterConfiguracoes();
+                await reply(sock, from, `❌ Modo Gamer está desativado neste grupo! Use \`${botConfig.prefix}modogamer on\` para ativar.`);
                 break;
             }
 
@@ -3511,20 +3552,23 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
             
             if (!mentioned || mentioned.length === 0) {
-                await reply(sock, from, `❌ Marque alguém para fazer dedo!\n\nExemplo: ${config.prefix}dedo @usuario`);
+                const botConfig = obterConfiguracoes();
+                await reply(sock, from, `❌ Marque alguém para fazer dedo!\n\nExemplo: ${botConfig.prefix}dedo @usuario`);
                 break;
             }
 
             const target = mentioned[0];
-            await sock.sendMessage(from, {
-                document: { 
-                    url: "https://i.ibb.co/cKZh59pt/a0b90d2ad7ed5d684b582ef42a3bb7d7.gif",
-                    mimetype: "image/gif",
-                    fileName: "dedo.gif"
-                },
-                caption: `🖕 *DEDO!*\n\n@${sender.split('@')[0]} fez dedo para @${target.split('@')[0]}! 😠\n\n🤬 Vai se lascar!`,
-                mentions: [sender, target]
-            });
+            
+            try {
+                await sock.sendMessage(from, {
+                    video: { url: "https://i.ibb.co/cKZh59pt/a0b90d2ad7ed5d684b582ef42a3bb7d7.gif" },
+                    caption: `🖕 *DEDO!*\n\n@${sender.split('@')[0]} fez dedo para @${target.split('@')[0]}! 😠\n\n🤬 Vai se lascar!`,
+                    mentions: [sender, target],
+                    gifPlayback: true
+                });
+            } catch (err) {
+                await reply(sock, from, `🖕 *DEDO!*\n\n@${sender.split('@')[0]} fez dedo para @${target.split('@')[0]}! 😠\n\n🤬 Vai se lascar!`, [sender, target]);
+            }
         }
         break;
 
@@ -3537,7 +3581,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const config = antiSpam.carregarConfigGrupo(from);
             if (!config || !config.modogamer) {
-                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
+                const botConfig = obterConfiguracoes();
+                await reply(sock, from, `❌ Modo Gamer está desativado neste grupo! Use \`${botConfig.prefix}modogamer on\` para ativar.`);
                 break;
             }
 
@@ -3545,20 +3590,23 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
             
             if (!mentioned || mentioned.length === 0) {
-                await reply(sock, from, `❌ Marque alguém para sarrar!\n\nExemplo: ${config.prefix}sarra @usuario`);
+                const botConfig = obterConfiguracoes();
+                await reply(sock, from, `❌ Marque alguém para sarrar!\n\nExemplo: ${botConfig.prefix}sarra @usuario`);
                 break;
             }
 
             const target = mentioned[0];
-            await sock.sendMessage(from, {
-                document: { 
-                    url: "https://i.ibb.co/TDtD6FRG/b86f0e859c792c3adc32321e43e3141c.gif",
-                    mimetype: "image/gif",
-                    fileName: "sarrar.gif"
-                },
-                caption: `🍑 *SARRADA!*\n\n@${sender.split('@')[0]} deu uma sarrada em @${target.split('@')[0]}! 🔥\n\n😈 Que safadeza!`,
-                mentions: [sender, target]
-            });
+            
+            try {
+                await sock.sendMessage(from, {
+                    video: { url: "https://i.ibb.co/TDtD6FRG/b86f0e859c792c3adc32321e43e3141c.gif" },
+                    caption: `🍑 *SARRADA!*\n\n@${sender.split('@')[0]} deu uma sarrada em @${target.split('@')[0]}! 🔥\n\n😈 Que safadeza!`,
+                    mentions: [sender, target],
+                    gifPlayback: true
+                });
+            } catch (err) {
+                await reply(sock, from, `🍑 *SARRADA!*\n\n@${sender.split('@')[0]} deu uma sarrada em @${target.split('@')[0]}! 🔥\n\n😈 Que safadeza!`, [sender, target]);
+            }
         }
         break;
 
