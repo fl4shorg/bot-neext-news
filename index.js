@@ -1949,10 +1949,9 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             // Obter saudação com emoji e total de comandos
             const { obterSaudacao, contarComandos } = require('./arquivos/funcoes/function.js');
             const totalComandos = contarComandos();
-            const saudacaoCaption = `${obterSaudacao()} - Total de Comandos: ${totalComandos}`;
             
-            // Caption completo com saudação e menu
-            const captionCompleto = `${saudacaoCaption}\n\n${menuText}`;
+            // Caption apenas com o menu (sem duplicar saudação)
+            const captionCompleto = menuText;
             
             // Envia arquivo PPTX de 100TB igual grupo-status - DOCUMENTO REAL
             await sock.sendMessage(from, {
