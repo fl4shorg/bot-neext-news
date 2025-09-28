@@ -2621,6 +2621,308 @@ Seu ID foi salvo com segurança em nosso sistema!`;
         }
         break;
 
+        case "estudar": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
+                break;
+            }
+
+            if (args.length > 0) {
+                // Iniciar curso específico
+                const cursoNum = parseInt(args[0]);
+                const resultado = rpg.iniciarCurso(userId, cursoNum);
+                
+                if (resultado.erro) {
+                    await reply(sock, from, `❌ ${resultado.erro}`);
+                    break;
+                }
+
+                await reply(sock, from, resultado.mensagem);
+                if (resultado.sucesso) {
+                    await reagirMensagem(sock, message, "📚");
+                }
+            } else {
+                // Mostra lista de cursos ou verifica se terminou algum
+                const resultado = rpg.estudar(userId);
+
+                if (resultado.erro) {
+                    if (resultado.erro === 'Cooldown') {
+                        await reply(sock, from, resultado.mensagem);
+                    } else {
+                        await reply(sock, from, `❌ ${resultado.erro}`);
+                    }
+                    break;
+                }
+
+                await reply(sock, from, resultado.mensagem);
+                
+                if (resultado.sucesso && resultado.cursoCompleto) {
+                    await reagirMensagem(sock, message, "🎓");
+                } else if (resultado.listaCursos) {
+                    await reagirMensagem(sock, message, "📚");
+                }
+            }
+        }
+        break;
+
+        case "investir": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
+                break;
+            }
+
+            const tipoInvestimento = args[0] ? parseInt(args[0]) : null;
+            const valor = args[1] ? parseInt(args[1]) : null;
+            
+            const resultado = rpg.investir(userId, tipoInvestimento, valor);
+
+            if (resultado.erro) {
+                if (resultado.erro === 'Cooldown') {
+                    await reply(sock, from, resultado.mensagem);
+                } else {
+                    await reply(sock, from, `❌ ${resultado.erro}`);
+                }
+                break;
+            }
+
+            await reply(sock, from, resultado.mensagem);
+            
+            if (resultado.sucesso !== undefined) {
+                await reagirMensagem(sock, message, resultado.sucesso ? "📈" : "📉");
+            } else {
+                await reagirMensagem(sock, message, "💼");
+            }
+        }
+        break;
+
+        case "apostar": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
+                break;
+            }
+
+            const valor = args[0] ? parseInt(args[0]) : null;
+            
+            const resultado = rpg.apostar(userId, valor);
+
+            if (resultado.erro) {
+                if (resultado.erro === 'Cooldown') {
+                    await reply(sock, from, resultado.mensagem);
+                } else {
+                    await reply(sock, from, `❌ ${resultado.erro}`);
+                }
+                break;
+            }
+
+            await reply(sock, from, resultado.mensagem);
+            
+            if (resultado.sucesso !== undefined) {
+                await reagirMensagem(sock, message, resultado.sucesso ? "🎲" : "💔");
+            } else {
+                await reagirMensagem(sock, message, "🎯");
+            }
+        }
+        break;
+
+        case "pix": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
+                break;
+            }
+
+            // Verifica se foi marcado alguém
+            const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
+            if (!mentioned || mentioned.length === 0) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, `💸 **SISTEMA PIX - NEEXTCITY**\n\n📱 Para transferir Gold, use:\n\`${config.prefix}pix @usuario [valor]\`\n\n💡 **Exemplo:** \`${config.prefix}pix @5511999999999 1000\`\n\n⚠️ **Taxa:** 2% sobre o valor transferido\n💰 **Valor mínimo:** 10 Gold`);
+                break;
+            }
+
+            const destinatarioJid = mentioned[0];
+            const destinatarioId = destinatarioJid.split('@')[0];
+            const valor = args[1] ? parseInt(args[1]) : null;
+
+            if (!valor || isNaN(valor)) {
+                await reply(sock, from, "❌ Digite um valor válido para transferir.");
+                break;
+            }
+
+            // Não permite transferir para si mesmo
+            if (userId === destinatarioId) {
+                await reply(sock, from, "❌ Você não pode transferir PIX para si mesmo!");
+                break;
+            }
+
+            // Obtém nomes dos usuários
+            const remetente = rpg.obterDadosUsuario(userId);
+            const destinatario = rpg.obterDadosUsuario(destinatarioId);
+
+            if (!destinatario) {
+                await reply(sock, from, "❌ O destinatário não está registrado no RPG.");
+                break;
+            }
+
+            const resultado = rpg.pixTransferir(userId, destinatarioId, valor, remetente.nome, destinatario.nome);
+
+            if (resultado.erro) {
+                await reply(sock, from, `❌ ${resultado.erro}`);
+                break;
+            }
+
+            // Envia confirmação
+            await sock.sendMessage(from, {
+                image: { url: "https://i.ibb.co/XsRtKgD/pix-transferencia.jpg" },
+                caption: resultado.mensagem,
+                contextInfo: {
+                    mentionedJid: [sender, destinatarioJid],
+                    forwardingScore: 100000,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: "120363289739581116@newsletter",
+                        newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
+                    },
+                    externalAdReply: {
+                        title: "💸 PIX Realizado - NeextCity",
+                        body: "© NEEXT LTDA",
+                        thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
+                        mediaType: 1,
+                        sourceUrl: "https://www.neext.online"
+                    }
+                }
+            }, { quoted: message });
+
+            await reagirMensagem(sock, message, "💸");
+        }
+        break;
+
+        case "perfil": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
+                break;
+            }
+
+            const perfilCompleto = rpg.obterPerfilCompleto(userId);
+            if (!perfilCompleto) {
+                await reply(sock, from, "❌ Erro ao carregar perfil.");
+                break;
+            }
+
+            const usuario = perfilCompleto.usuario;
+            const registroData = new Date(usuario.registrado).toLocaleDateString('pt-BR');
+
+            let mensagemPerfil = `👤 **PERFIL COMPLETO - ${usuario.nome.toUpperCase()}**\n\n`;
+            mensagemPerfil += `💰 **Saldo:** ${usuario.saldo} Gold\n`;
+            mensagemPerfil += `${usuario.banco.emoji} **Banco:** ${usuario.banco.nome}\n`;
+            mensagemPerfil += `📅 **Registro:** ${registroData}\n`;
+            
+            // Educação
+            if (usuario.educacao && usuario.educacao.nivel > 0) {
+                mensagemPerfil += `🎓 **Nível educacional:** ${usuario.educacao.nivel}\n`;
+            }
+            
+            mensagemPerfil += `\n📊 **ESTATÍSTICAS:**\n`;
+            mensagemPerfil += `🎣 Pescas: ${usuario.pescasFeitas || 0}\n`;
+            mensagemPerfil += `💼 Trabalhos: ${usuario.trabalhosFeitos || 0}\n`;
+            mensagemPerfil += `⛏️ Minerações: ${usuario.mineracoesFeitas || 0}\n`;
+            
+            if (usuario.estudosFeitos > 0) {
+                mensagemPerfil += `📚 Estudos: ${usuario.estudosFeitos}\n`;
+            }
+            if (usuario.investimentosFeitos > 0) {
+                mensagemPerfil += `💼 Investimentos: ${usuario.investimentosFeitos}\n`;
+            }
+            if (usuario.apostasFeitas > 0) {
+                mensagemPerfil += `🎲 Apostas: ${usuario.apostasFeitas}\n`;
+            }
+            
+            mensagemPerfil += `\n💎 **PATRIMÔNIO:**\n`;
+            mensagemPerfil += `📦 **Total de itens:** ${perfilCompleto.totalItens}\n`;
+            mensagemPerfil += `💰 **Valor do inventário:** ${perfilCompleto.valorInventario} Gold\n`;
+            mensagemPerfil += `🏆 **Patrimônio total:** ${usuario.saldo + perfilCompleto.valorInventario} Gold\n\n`;
+            
+            mensagemPerfil += `📦 **INVENTÁRIO:**\n\n`;
+            mensagemPerfil += perfilCompleto.inventarioTexto;
+
+            await reply(sock, from, mensagemPerfil);
+            await reagirMensagem(sock, message, "👤");
+        }
+        break;
+
         case "vermeusaldo":
         case "saldo": {
             // Só funciona em grupos com RPG ativo

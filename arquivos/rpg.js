@@ -228,6 +228,15 @@ const catalogoItens = {
             emoji: '🚗',
             beneficio: 'Habilita trabalho uber (+200 gold/viagem)'
         },
+        carro_esportivo: {
+            id: 'carro_esportivo',
+            nome: '🏎️ Carro Esportivo',
+            preco: 80000,
+            categoria: 'veiculos',
+            descricao: 'Velocidade e estilo',
+            emoji: '🏎️',
+            beneficio: 'Corridas de rua (+1000 gold/vitória)'
+        },
         caminhao: {
             id: 'caminhao',
             nome: '🚛 Caminhão',
@@ -236,6 +245,104 @@ const catalogoItens = {
             descricao: 'Para cargas pesadas',
             emoji: '🚛',
             beneficio: 'Trabalho caminhoneiro (+500 gold/viagem)'
+        },
+        barco: {
+            id: 'barco',
+            nome: '🛥️ Barco',
+            preco: 150000,
+            categoria: 'veiculos',
+            descricao: 'Navegação de luxo',
+            emoji: '🛥️',
+            beneficio: 'Trabalho capitão (+600 gold/viagem)'
+        },
+        aviao: {
+            id: 'aviao',
+            nome: '✈️ Avião Particular',
+            preco: 500000,
+            categoria: 'veiculos',
+            descricao: 'Luxo máximo nos céus',
+            emoji: '✈️',
+            beneficio: 'Trabalho piloto (+800 gold/voo)'
+        }
+    },
+    
+    // NEGÓCIOS E EMPRESAS
+    negocios: {
+        lanchonete: {
+            id: 'lanchonete',
+            nome: '🍔 Lanchonete',
+            preco: 50000,
+            categoria: 'negocios',
+            descricao: 'Negócio de alimentação',
+            emoji: '🍔',
+            beneficio: 'Renda passiva: +400 gold/dia'
+        },
+        academia: {
+            id: 'academia',
+            nome: '💪 Academia',
+            preco: 80000,
+            categoria: 'negocios',
+            descricao: 'Centro de fitness',
+            emoji: '💪',
+            beneficio: 'Renda passiva: +600 gold/dia'
+        },
+        empresa: {
+            id: 'empresa',
+            nome: '🏢 Empresa',
+            preco: 200000,
+            categoria: 'negocios',
+            descricao: 'Grande corporação',
+            emoji: '🏢',
+            beneficio: 'Habilita trabalho CEO (+1200 gold/dia)'
+        },
+        banco: {
+            id: 'banco',
+            nome: '🏦 Banco',
+            preco: 1000000,
+            categoria: 'negocios',
+            descricao: 'Instituição financeira',
+            emoji: '🏦',
+            beneficio: 'Renda passiva: +5000 gold/dia'
+        }
+    },
+    
+    // TECNOLOGIA E SETUP
+    tecnologia: {
+        smartphone: {
+            id: 'smartphone',
+            nome: '📱 Smartphone',
+            preco: 2000,
+            categoria: 'tecnologia',
+            descricao: 'Celular moderno',
+            emoji: '📱',
+            beneficio: '+10% eficiência em trabalhos'
+        },
+        computador: {
+            id: 'computador',
+            nome: '💻 Computador',
+            preco: 8000,
+            categoria: 'tecnologia',
+            descricao: 'PC para trabalho',
+            emoji: '💻',
+            beneficio: 'Habilita trabalho programador'
+        },
+        setup_stream: {
+            id: 'setup_stream',
+            nome: '📹 Setup de Stream',
+            preco: 25000,
+            categoria: 'tecnologia',
+            descricao: 'Equipamentos para streaming',
+            emoji: '📹',
+            beneficio: 'Habilita trabalho streamer (+300 gold/stream)'
+        },
+        servidor: {
+            id: 'servidor',
+            nome: '🖥️ Servidor',
+            preco: 100000,
+            categoria: 'tecnologia',
+            descricao: 'Servidor dedicado',
+            emoji: '🖥️',
+            beneficio: 'Renda passiva: +1000 gold/dia'
         }
     }
 };
@@ -289,7 +396,31 @@ const trabalhos = [
     { nome: 'Entregador', salario: 120, emoji: '🏍️', requisito: 'moto' },
     { nome: 'Uber', salario: 200, emoji: '🚗', requisito: 'carro' },
     { nome: 'Caminhoneiro', salario: 500, emoji: '🚛', requisito: 'caminhao' },
-    { nome: 'Fazendeiro', salario: 180, emoji: '🚜', requisito: 'fazenda' }
+    { nome: 'Fazendeiro', salario: 180, emoji: '🚜', requisito: 'fazenda' },
+    { nome: 'Piloto', salario: 800, emoji: '✈️', requisito: 'aviao' },
+    { nome: 'Capitão de Barco', salario: 600, emoji: '🛥️', requisito: 'barco' },
+    { nome: 'CEO', salario: 1200, emoji: '🏢', requisito: 'empresa' },
+    { nome: 'Streamer', salario: 300, emoji: '📹', requisito: 'setup_stream' }
+];
+
+// Cursos e educação disponíveis
+const cursos = [
+    { nome: 'Ensino Médio', salario: 50, duracao: 30, emoji: '🎓', nivel: 1 },
+    { nome: 'Curso Técnico', salario: 100, duracao: 45, emoji: '🔧', nivel: 2 },
+    { nome: 'Graduação', salario: 200, duracao: 60, emoji: '👨‍🎓', nivel: 3 },
+    { nome: 'Pós-Graduação', salario: 350, duracao: 90, emoji: '🎖️', nivel: 4 },
+    { nome: 'Mestrado', salario: 500, duracao: 120, emoji: '📜', nivel: 5 },
+    { nome: 'Doutorado', salario: 800, duracao: 180, emoji: '🏆', nivel: 6 }
+];
+
+// Investimentos disponíveis
+const investimentos = [
+    { nome: 'Poupança', multiplicador: 1.05, risco: 5, emoji: '🏦', minimo: 1000 },
+    { nome: 'Tesouro Direto', multiplicador: 1.15, risco: 10, emoji: '🏛️', minimo: 2000 },
+    { nome: 'CDB', multiplicador: 1.25, risco: 15, emoji: '💳', minimo: 5000 },
+    { nome: 'Ações', multiplicador: 1.50, risco: 40, emoji: '📈', minimo: 10000 },
+    { nome: 'Forex', multiplicador: 2.00, risco: 60, emoji: '💱', minimo: 20000 },
+    { nome: 'Crypto', multiplicador: 3.00, risco: 80, emoji: '₿', minimo: 15000 }
 ];
 
 // Imagens do sistema
@@ -382,6 +513,9 @@ function ensureUserDefaults(usuario) {
         entregasFeitas: usuario.entregasFeitas || 0,
         corridasFeitas: usuario.corridasFeitas || 0,
         coletasFeitas: usuario.coletasFeitas || 0,
+        estudosFeitos: usuario.estudosFeitos || 0,
+        investimentosFeitos: usuario.investimentosFeitos || 0,
+        apostasFeitas: usuario.apostasFeitas || 0,
         
         // Última vez que fez cada atividade
         ultimaPesca: usuario.ultimaPesca || 0,
@@ -393,6 +527,9 @@ function ensureUserDefaults(usuario) {
         ultimaEntrega: usuario.ultimaEntrega || 0,
         ultimaCorrida: usuario.ultimaCorrida || 0,
         ultimaColeta: usuario.ultimaColeta || 0,
+        ultimoEstudo: usuario.ultimoEstudo || 0,
+        ultimoInvestimento: usuario.ultimoInvestimento || 0,
+        ultimaAposta: usuario.ultimaAposta || 0,
         
         // Sistema de limites diários
         limites: usuario.limites || {},
@@ -404,6 +541,16 @@ function ensureUserDefaults(usuario) {
         // Histórico de PIX
         pixEnviados: usuario.pixEnviados || [],
         pixRecebidos: usuario.pixRecebidos || [],
+        
+        // Sistema educacional
+        educacao: usuario.educacao || {
+            nivel: 0,
+            cursosCompletos: [],
+            estudandoAtualmente: null
+        },
+        
+        // Investimentos ativos
+        investimentosAtivos: usuario.investimentosAtivos || [],
         
         // Estatísticas especiais
         totalGanho: usuario.totalGanho || 0,
@@ -1169,6 +1316,431 @@ function obterRanking() {
     return { mensagem: ranking };
 }
 
+// ==================== SISTEMA DE EDUCAÇÃO ====================
+// Função para estudar
+function estudar(userId) {
+    return withLock(async () => {
+        const dados = carregarDadosRPG();
+        let usuario = dados.jogadores[userId];
+        if (!usuario) return { erro: 'Usuário não registrado' };
+        
+        usuario = ensureUserDefaults(usuario);
+        
+        // Verifica cooldown (20 minutos)
+        const cooldown = verificarCooldown(usuario.ultimoEstudo, 20 * 60 * 1000);
+        if (cooldown > 0) {
+            return { 
+                erro: 'Cooldown', 
+                tempo: formatarTempo(cooldown),
+                mensagem: `📚 Você precisa esperar **${formatarTempo(cooldown)}** para estudar novamente!`
+            };
+        }
+        
+        // Verifica se já está estudando um curso
+        if (usuario.educacao.estudandoAtualmente) {
+            const cursoAtual = cursos.find(c => c.nome === usuario.educacao.estudandoAtualmente.nome);
+            const tempoRestante = usuario.educacao.estudandoAtualmente.tempoFim - Date.now();
+            
+            if (tempoRestante > 0) {
+                return {
+                    erro: 'Já estudando',
+                    mensagem: `📚 Você já está estudando **${cursoAtual.nome}**!\n⏰ Tempo restante: **${formatarTempo(tempoRestante)}**`
+                };
+            } else {
+                // Curso finalizado
+                const salario = cursoAtual.salario;
+                usuario.saldo += salario;
+                usuario.totalGanho += salario;
+                usuario.educacao.nivel = cursoAtual.nivel;
+                usuario.educacao.cursosCompletos.push(cursoAtual.nome);
+                usuario.educacao.estudandoAtualmente = null;
+                
+                dados.jogadores[userId] = usuario;
+                salvarDadosRPG(dados);
+                
+                return {
+                    sucesso: true,
+                    cursoCompleto: true,
+                    curso: cursoAtual,
+                    mensagem: `🎓 **CURSO FINALIZADO!** ✅\n\n` +
+                             `${cursoAtual.emoji} **${cursoAtual.nome}**\n` +
+                             `💰 **Recompensa:** ${salario} Gold\n` +
+                             `📈 **Novo nível educacional:** ${cursoAtual.nivel}\n` +
+                             `🏦 **Saldo:** ${usuario.saldo} Gold\n\n` +
+                             `🎯 Use \`.estudar\` novamente para iniciar outro curso!`
+                };
+            }
+        }
+        
+        // Mostra cursos disponíveis
+        const proximoNivel = usuario.educacao.nivel + 1;
+        const cursosDisponiveis = cursos.filter(c => c.nivel <= proximoNivel);
+        
+        let listaCursos = '';
+        cursosDisponiveis.forEach((curso, index) => {
+            const jaFez = usuario.educacao.cursosCompletos.includes(curso.nome);
+            listaCursos += `${index + 1}. ${curso.emoji} **${curso.nome}**\n` +
+                          `   💰 Recompensa: ${curso.salario} Gold\n` +
+                          `   ⏰ Duração: ${curso.duracao} minutos\n` +
+                          `   ${jaFez ? '✅ Já concluído' : '📚 Disponível'}\n\n`;
+        });
+        
+        return {
+            listaCursos: true,
+            mensagem: `📚 **SISTEMA DE EDUCAÇÃO - NEEXTCITY**\n\n` +
+                     `🎓 **Seu nível educacional:** ${usuario.educacao.nivel}\n` +
+                     `📜 **Cursos concluídos:** ${usuario.educacao.cursosCompletos.length}\n\n` +
+                     `📋 **CURSOS DISPONÍVEIS:**\n\n${listaCursos}` +
+                     `💡 **Como usar:** \`.estudar [número]\`\n` +
+                     `📝 **Exemplo:** \`.estudar 2\``
+        };
+    });
+}
+
+// Iniciar curso específico
+function iniciarCurso(userId, cursoNum) {
+    return withLock(async () => {
+        const dados = carregarDadosRPG();
+        let usuario = dados.jogadores[userId];
+        if (!usuario) return { erro: 'Usuário não registrado' };
+        
+        usuario = ensureUserDefaults(usuario);
+        
+        const proximoNivel = usuario.educacao.nivel + 1;
+        const cursosDisponiveis = cursos.filter(c => c.nivel <= proximoNivel);
+        const curso = cursosDisponiveis[cursoNum - 1];
+        
+        if (!curso) return { erro: 'Curso não encontrado' };
+        
+        const jaFez = usuario.educacao.cursosCompletos.includes(curso.nome);
+        if (jaFez && curso.nivel <= usuario.educacao.nivel) {
+            return { erro: 'Você já concluiu este curso' };
+        }
+        
+        // Inicia o curso
+        usuario.educacao.estudandoAtualmente = {
+            nome: curso.nome,
+            tempoFim: Date.now() + (curso.duracao * 60 * 1000)
+        };
+        usuario.ultimoEstudo = Date.now();
+        usuario.estudosFeitos++;
+        
+        dados.jogadores[userId] = usuario;
+        salvarDadosRPG(dados);
+        
+        return {
+            sucesso: true,
+            curso: curso,
+            mensagem: `📚 **ESTUDO INICIADO!** ✅\n\n` +
+                     `${curso.emoji} **${curso.nome}**\n` +
+                     `⏰ **Duração:** ${curso.duracao} minutos\n` +
+                     `💰 **Recompensa ao completar:** ${curso.salario} Gold\n\n` +
+                     `📖 Você está estudando... Volte em ${curso.duracao} minutos!`
+        };
+    });
+}
+
+// ==================== SISTEMA DE INVESTIMENTOS ====================
+// Função para investir
+function investir(userId, tipoInvestimento, valor) {
+    return withLock(async () => {
+        const dados = carregarDadosRPG();
+        let usuario = dados.jogadores[userId];
+        if (!usuario) return { erro: 'Usuário não registrado' };
+        
+        usuario = ensureUserDefaults(usuario);
+        
+        // Verifica cooldown (30 minutos)
+        const cooldown = verificarCooldown(usuario.ultimoInvestimento, 30 * 60 * 1000);
+        if (cooldown > 0) {
+            return { 
+                erro: 'Cooldown', 
+                tempo: formatarTempo(cooldown),
+                mensagem: `💼 Você precisa esperar **${formatarTempo(cooldown)}** para investir novamente!`
+            };
+        }
+        
+        if (!tipoInvestimento || !valor) {
+            let listaInvestimentos = '';
+            investimentos.forEach((inv, index) => {
+                listaInvestimentos += `${index + 1}. ${inv.emoji} **${inv.nome}**\n` +
+                                    `   📈 Multiplicador: ${inv.multiplicador}x\n` +
+                                    `   ⚠️ Risco: ${inv.risco}%\n` +
+                                    `   💰 Mínimo: ${inv.minimo} Gold\n\n`;
+            });
+            
+            return {
+                listaInvestimentos: true,
+                mensagem: `💼 **SISTEMA DE INVESTIMENTOS - NEEXTCITY**\n\n` +
+                         `💰 **Seu saldo:** ${usuario.saldo} Gold\n` +
+                         `📊 **Investimentos ativos:** ${usuario.investimentosAtivos.length}\n\n` +
+                         `📋 **OPÇÕES DISPONÍVEIS:**\n\n${listaInvestimentos}` +
+                         `💡 **Como usar:** \`.investir [número] [valor]\`\n` +
+                         `📝 **Exemplo:** \`.investir 1 5000\``
+            };
+        }
+        
+        const investimento = investimentos[tipoInvestimento - 1];
+        if (!investimento) return { erro: 'Tipo de investimento inválido' };
+        
+        valor = parseInt(valor);
+        if (isNaN(valor) || valor < investimento.minimo) {
+            return { erro: `Valor mínimo para ${investimento.nome} é ${investimento.minimo} Gold` };
+        }
+        
+        if (usuario.saldo < valor) {
+            return { erro: `Saldo insuficiente! Você tem ${usuario.saldo} Gold` };
+        }
+        
+        // Calcula resultado
+        const sucesso = Math.random() * 100 > investimento.risco;
+        let ganho = 0;
+        
+        if (sucesso) {
+            ganho = Math.floor(valor * (investimento.multiplicador - 1));
+            usuario.saldo += ganho;
+            usuario.totalGanho += ganho;
+        } else {
+            usuario.saldo -= valor;
+            ganho = -valor;
+        }
+        
+        usuario.ultimoInvestimento = Date.now();
+        usuario.investimentosFeitos++;
+        
+        dados.jogadores[userId] = usuario;
+        salvarDadosRPG(dados);
+        
+        return {
+            sucesso: sucesso,
+            investimento: investimento,
+            valor: valor,
+            ganho: ganho,
+            mensagem: sucesso ? 
+                `📈 **INVESTIMENTO LUCROU!** ✅\n\n` +
+                `${investimento.emoji} **${investimento.nome}**\n` +
+                `💰 **Investido:** ${valor} Gold\n` +
+                `💵 **Lucro:** +${ganho} Gold\n` +
+                `🏦 **Saldo atual:** ${usuario.saldo} Gold\n\n` +
+                `🎉 Parabéns pelo investimento bem-sucedido!` :
+                `📉 **INVESTIMENTO FALHOU!** ❌\n\n` +
+                `${investimento.emoji} **${investimento.nome}**\n` +
+                `💰 **Perdido:** ${valor} Gold\n` +
+                `🏦 **Saldo atual:** ${usuario.saldo} Gold\n\n` +
+                `😔 Infelizmente desta vez não deu certo...`
+        };
+    });
+}
+
+// ==================== SISTEMA DE APOSTAS ====================
+// Função para apostar
+function apostar(userId, valor) {
+    return withLock(async () => {
+        const dados = carregarDadosRPG();
+        let usuario = dados.jogadores[userId];
+        if (!usuario) return { erro: 'Usuário não registrado' };
+        
+        usuario = ensureUserDefaults(usuario);
+        
+        // Verifica cooldown (15 minutos)
+        const cooldown = verificarCooldown(usuario.ultimaAposta, 15 * 60 * 1000);
+        if (cooldown > 0) {
+            return { 
+                erro: 'Cooldown', 
+                tempo: formatarTempo(cooldown),
+                mensagem: `🎲 Você precisa esperar **${formatarTempo(cooldown)}** para apostar novamente!`
+            };
+        }
+        
+        if (!valor) {
+            return {
+                info: true,
+                mensagem: `🎲 **SISTEMA DE APOSTAS - NEEXTCITY**\n\n` +
+                         `💰 **Seu saldo:** ${usuario.saldo} Gold\n` +
+                         `🎯 **Apostas feitas:** ${usuario.apostasFeitas}\n\n` +
+                         `🎮 **Como funciona:**\n` +
+                         `• 50% chance de ganhar 2x o valor\n` +
+                         `• 50% chance de perder tudo\n` +
+                         `• Valor mínimo: 100 Gold\n` +
+                         `• Valor máximo: 10,000 Gold\n\n` +
+                         `💡 **Como usar:** \`.apostar [valor]\`\n` +
+                         `📝 **Exemplo:** \`.apostar 1000\``
+            };
+        }
+        
+        valor = parseInt(valor);
+        if (isNaN(valor) || valor < 100) {
+            return { erro: 'Valor mínimo para apostar é 100 Gold' };
+        }
+        
+        if (valor > 10000) {
+            return { erro: 'Valor máximo para apostar é 10,000 Gold' };
+        }
+        
+        if (usuario.saldo < valor) {
+            return { erro: `Saldo insuficiente! Você tem ${usuario.saldo} Gold` };
+        }
+        
+        // 50% de chance de ganhar
+        const ganhou = Math.random() >= 0.5;
+        
+        usuario.ultimaAposta = Date.now();
+        usuario.apostasFeitas++;
+        
+        if (ganhou) {
+            const ganho = valor;
+            usuario.saldo += ganho;
+            usuario.totalGanho += ganho;
+            
+            dados.jogadores[userId] = usuario;
+            salvarDadosRPG(dados);
+            
+            return {
+                sucesso: true,
+                valor: valor,
+                ganho: ganho,
+                mensagem: `🎲 **APOSTA VENCEDORA!** ✅\n\n` +
+                         `💰 **Apostado:** ${valor} Gold\n` +
+                         `💵 **Ganho:** +${ganho} Gold\n` +
+                         `🏦 **Saldo atual:** ${usuario.saldo} Gold\n\n` +
+                         `🎉 Parabéns! Você dobrou seu dinheiro!`
+            };
+        } else {
+            usuario.saldo -= valor;
+            
+            dados.jogadores[userId] = usuario;
+            salvarDadosRPG(dados);
+            
+            return {
+                sucesso: false,
+                valor: valor,
+                mensagem: `🎲 **APOSTA PERDIDA!** ❌\n\n` +
+                         `💰 **Perdido:** ${valor} Gold\n` +
+                         `🏦 **Saldo atual:** ${usuario.saldo} Gold\n\n` +
+                         `😔 Que pena! Melhor sorte na próxima!`
+            };
+        }
+    });
+}
+
+// ==================== PERFIL COMPLETO ====================
+// Função para mostrar perfil completo com inventário
+function obterPerfilCompleto(userId) {
+    const usuario = obterDadosUsuario(userId);
+    if (!usuario) return null;
+    
+    // Conta total de itens
+    let totalItens = 0;
+    let valorInventario = 0;
+    let perfilTexto = '';
+    
+    // Propriedades
+    if (Object.keys(usuario.propriedades).length > 0) {
+        perfilTexto += `🏠 **PROPRIEDADES:**\n`;
+        Object.keys(usuario.propriedades).forEach(itemId => {
+            const quantidade = usuario.propriedades[itemId];
+            const item = catalogoItens.propriedades[itemId];
+            if (item && quantidade > 0) {
+                perfilTexto += `${item.emoji} ${item.nome} (${quantidade}x)\n`;
+                totalItens += quantidade;
+                valorInventario += item.preco * quantidade;
+            }
+        });
+        perfilTexto += '\n';
+    }
+    
+    // Veículos
+    const veiculosUsuario = Object.keys(usuario.inventario).filter(id => catalogoItens.veiculos[id]);
+    if (veiculosUsuario.length > 0) {
+        perfilTexto += `🚗 **VEÍCULOS:**\n`;
+        veiculosUsuario.forEach(itemId => {
+            const quantidade = usuario.inventario[itemId];
+            const item = catalogoItens.veiculos[itemId];
+            if (item && quantidade > 0) {
+                perfilTexto += `${item.emoji} ${item.nome} (${quantidade}x)\n`;
+                totalItens += quantidade;
+                valorInventario += item.preco * quantidade;
+            }
+        });
+        perfilTexto += '\n';
+    }
+    
+    // Negócios
+    const negociosUsuario = Object.keys(usuario.inventario).filter(id => catalogoItens.negocios[id]);
+    if (negociosUsuario.length > 0) {
+        perfilTexto += `🏢 **NEGÓCIOS:**\n`;
+        negociosUsuario.forEach(itemId => {
+            const quantidade = usuario.inventario[itemId];
+            const item = catalogoItens.negocios[itemId];
+            if (item && quantidade > 0) {
+                perfilTexto += `${item.emoji} ${item.nome} (${quantidade}x)\n`;
+                totalItens += quantidade;
+                valorInventario += item.preco * quantidade;
+            }
+        });
+        perfilTexto += '\n';
+    }
+    
+    // Tecnologia
+    const tecnologiaUsuario = Object.keys(usuario.inventario).filter(id => catalogoItens.tecnologia[id]);
+    if (tecnologiaUsuario.length > 0) {
+        perfilTexto += `📱 **TECNOLOGIA:**\n`;
+        tecnologiaUsuario.forEach(itemId => {
+            const quantidade = usuario.inventario[itemId];
+            const item = catalogoItens.tecnologia[itemId];
+            if (item && quantidade > 0) {
+                perfilTexto += `${item.emoji} ${item.nome} (${quantidade}x)\n`;
+                totalItens += quantidade;
+                valorInventario += item.preco * quantidade;
+            }
+        });
+        perfilTexto += '\n';
+    }
+    
+    // Animais
+    const animaisUsuario = Object.keys(usuario.inventario).filter(id => catalogoItens.animais[id]);
+    if (animaisUsuario.length > 0) {
+        perfilTexto += `🐾 **ANIMAIS:**\n`;
+        animaisUsuario.forEach(itemId => {
+            const quantidade = usuario.inventario[itemId];
+            const item = catalogoItens.animais[itemId];
+            if (item && quantidade > 0) {
+                perfilTexto += `${item.emoji} ${item.nome} (${quantidade}x)\n`;
+                totalItens += quantidade;
+                valorInventario += item.preco * quantidade;
+            }
+        });
+        perfilTexto += '\n';
+    }
+    
+    // Ferramentas
+    const ferramentasUsuario = Object.keys(usuario.inventario).filter(id => catalogoItens.ferramentas[id]);
+    if (ferramentasUsuario.length > 0) {
+        perfilTexto += `🔧 **FERRAMENTAS:**\n`;
+        ferramentasUsuario.forEach(itemId => {
+            const quantidade = usuario.inventario[itemId];
+            const item = catalogoItens.ferramentas[itemId];
+            if (item && quantidade > 0) {
+                perfilTexto += `${item.emoji} ${item.nome} (${quantidade}x)\n`;
+                totalItens += quantidade;
+                valorInventario += item.preco * quantidade;
+            }
+        });
+        perfilTexto += '\n';
+    }
+    
+    if (totalItens === 0) {
+        perfilTexto = '📦 **Inventário vazio**\nVá à loja para comprar seus primeiros itens!\n\n';
+    }
+    
+    return {
+        usuario: usuario,
+        inventarioTexto: perfilTexto,
+        totalItens: totalItens,
+        valorInventario: valorInventario
+    };
+}
+
 module.exports = {
     carregarDadosRPG,
     salvarDadosRPG,
@@ -1184,5 +1756,16 @@ module.exports = {
     jogarTigrinho,
     assaltar,
     obterRanking,
-    bancos
+    estudar,
+    iniciarCurso,
+    investir,
+    apostar,
+    obterPerfilCompleto,
+    pixTransferir,
+    comprarItem,
+    verificarCooldown,
+    formatarTempo,
+    verificarCooldownDiario,
+    bancos,
+    catalogoItens
 };
