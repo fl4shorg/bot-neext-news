@@ -1940,6 +1940,9 @@ Seu ID foi salvo com segurança em nosso sistema!`;
         break;
 
         case "menu": {
+            // Reação de carregando
+            await reagirMensagem(sock, message, "⏳");
+            
             // Importa menus organizados
             const menus = require('./menus/menu.js');
             const sender = message.key.participant || from;
@@ -1979,6 +1982,9 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                     quotedMessage: quotedSerasaAPK.message
                 }
             }, { quoted: selinho });
+            
+            // Reação de sucesso após enviar o menu
+            await reagirMensagem(sock, message, "🐦‍🔥");
         }
         break;
 
