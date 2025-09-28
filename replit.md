@@ -188,3 +188,34 @@ O bot é executado automaticamente via Workflow do Replit:
 - **Deployment Target**: VM (para conexão persistente)
 - **Comando de Produção**: `node main.js`
 - **Status**: Pronto para deploy
+
+## Configuração para Replit
+Este projeto foi configurado para funcionar no ambiente Replit com as seguintes otimizações:
+
+### ✅ Configuração Realizada
+- **Workflow Configurado**: Bot executa via `node main.js` no console
+- **Dependências Instaladas**: Todas as dependências do package.json instaladas com sucesso
+- **Arquivos Corrompidos Corrigidos**: Removidos duplicatas e erros de sintaxe do index.js
+- **Configuração de Segurança**: Settings.json configurado com valores seguros (placeholders)
+- **Estrutura de Pastas**: Todas as pastas necessárias criadas automaticamente
+
+### 🔐 Configuração de Ambiente
+Para usar o bot, configure as seguintes variáveis de ambiente baseadas no arquivo `.env.example`:
+
+- `BOT_OWNER_NUMBER`: Seu número de WhatsApp (formato: 5527999999999)
+- `BOT_OWNER_NICKNAME`: Seu apelido
+- `BOT_NAME`: Nome do bot
+- `BOT_PREFIX`: Prefixo dos comandos (padrão: .)
+- `BOT_PHOTO_URL`: URL da foto do bot
+
+### 🚀 Como Iniciar no Replit
+1. O bot inicia automaticamente quando o projeto é executado
+2. Na primeira execução, escolha o método de conexão:
+   - **QR Code**: Para conectar via computador
+   - **Pareamento**: Para conectar via celular (digite seu número)
+3. Após conectar, o bot ficará online e processará comandos automaticamente
+
+### 📁 Arquivos de Sessão
+- Pasta `conexao/`: Contém arquivos de sessão do WhatsApp (gerados automaticamente)
+- Estes arquivos mantêm a sessão ativa entre reinicializações
+- **Importante**: Não compartilhar estes arquivos pois contêm credenciais de acesso
