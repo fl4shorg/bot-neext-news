@@ -4187,9 +4187,11 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                     `👤 Jogador 1: @${sender.split('@')[0]}\n` +
                     `👤 Jogador 2: @${oponente.split('@')[0]}\n\n` +
                     `🎲 Vez de: @${sender.split('@')[0]}\n\n` +
-                    `💥 Digite \`${configBot.prefix}disparar\` para puxar o gatilho!\n` +
-                    `🔄 Use \`${configBot.prefix}resetroleta\` para cancelar o jogo\n\n` +
-                    `⚠️ Que a sorte esteja com vocês...`,
+                    `💥 **ESCOLHA SEU DESTINO:**\n` +
+                    `• \`${configBot.prefix}disparar\` - Puxar o gatilho (RISCO!)\n` +
+                    `• \`${configBot.prefix}passar\` - Passar a vez (SEGURO!)\n\n` +
+                    `🔄 Use \`${configBot.prefix}resetroleta\` para cancelar\n\n` +
+                    `⚠️ Coragem ou covardia? A escolha é sua...`,
                 mentions: [sender, oponente]
             });
         }
