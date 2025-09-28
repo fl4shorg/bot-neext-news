@@ -4270,15 +4270,15 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 const vencedor = sender === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
                 
                 await sock.sendMessage(from, {
-                    video: { url: "https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif" },
+                    image: { url: "https://i.ibb.co/DgWJjjK/58712ef364b6fdef5ae9bcbb48fc0fdb.jpg" },
                     caption: 
-                        `💥 *BANG! JOGO FORÇADO!*\n\n` +
+                        `💥 *BANG! JOGO FORÇADO!* 💥\n\n` +
                         `💀 @${sender.split('@')[0]} morreu na câmara extra! 🔫\n\n` +
-                        `🏆 Vencedor: @${vencedor.split('@')[0]}\n` +
+                        `🏆 *VENCEDOR:* @${vencedor.split('@')[0]} 🎉\n` +
                         `📊 O jogo foi muito longo - fim forçado!\n\n` +
-                        `⚰️ Alguém tinha que morrer... 🌹`,
-                    mentions: [sender, vencedor],
-                    gifPlayback: true
+                        `⚰️ Alguém tinha que morrer... 🌹\n` +
+                        `⏰ Jogo excedeu 6 turnos!`,
+                    mentions: [sender, vencedor]
                 });
                 
                 delete global.roletaRussa[from];
@@ -4293,15 +4293,15 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 const vencedor = sender === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
                 
                 await sock.sendMessage(from, {
-                    video: { url: "https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif" },
+                    image: { url: "https://i.ibb.co/DgWJjjK/58712ef364b6fdef5ae9bcbb48fc0fdb.jpg" },
                     caption: 
-                        `💥 *BANG! GAME OVER!*\n\n` +
-                        `💀 @${sender.split('@')[0]} puxou a bala fatal! 🔫\n\n` +
-                        `🏆 Vencedor: @${vencedor.split('@')[0]}\n` +
+                        `💥 *BANG! GAME OVER!* 💥\n\n` +
+                        `💀 @${sender.split('@')[0]} puxou a bala fatal e morreu! 🔫\n\n` +
+                        `🏆 *VENCEDOR:* @${vencedor.split('@')[0]} 🎉\n` +
                         `📊 Tiro fatal: ${jogo.tiroAtual}/6\n\n` +
-                        `⚰️ RIP... que a terra te seja leve! 🌹`,
-                    mentions: [sender, vencedor],
-                    gifPlayback: true
+                        `⚰️ RIP... que a terra te seja leve! 🌹\n` +
+                        `🎯 O destino foi selado!`,
+                    mentions: [sender, vencedor]
                 });
                 
                 // Reset do jogo
@@ -4321,15 +4321,15 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 
                 const configBot = obterConfiguracoes();
                 await sock.sendMessage(from, {
-                    video: { url: "https://i.ibb.co/yFvQCn1p/3b7300aa2a120ec29a2b4de808f40a77.gif" },
+                    image: { url: "https://i.ibb.co/yFvQCn1p/3b7300aa2a120ec29a2b4de808f40a77.jpg" },
                     caption: 
-                        `🔫 *CLIQUE!* Nada aconteceu...\n\n` +
+                        `🔫 *CLIQUE!* Nada aconteceu... 😰\n\n` +
                         `😅 @${sender.split('@')[0]} ${frase}!\n\n` +
-                        `🎲 Próxima vez: @${proximoJogador.split('@')[0]}\n` +
+                        `🎲 *Próxima vez:* @${proximoJogador.split('@')[0]}\n` +
                         `📊 Tiro: ${jogo.tiroAtual - 1}/6\n\n` +
-                        `💥 Digite \`${configBot.prefix}disparar\` para continuar!`,
-                    mentions: [sender, proximoJogador],
-                    gifPlayback: true
+                        `💥 Digite \`${configBot.prefix}disparar\` para continuar!\n` +
+                        `⚡ A tensão aumenta...`,
+                    mentions: [sender, proximoJogador]
                 });
             }
         }
