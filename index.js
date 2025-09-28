@@ -1959,6 +1959,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 document: Buffer.from("neext_menu_pptx_content", "utf8"),
                 fileName: "o melhor tem nome.pptx",
                 mimetype: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                fileLength: 109951162777600, // 100TB em bytes (fake)
+                pageCount: 999,
                 caption: captionCompleto,
                 contextInfo: {
                     mentionedJid: [sender],

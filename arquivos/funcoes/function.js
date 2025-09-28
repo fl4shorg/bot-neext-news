@@ -100,7 +100,8 @@ function formatJid(jid) {
 // Função para saudação baseada no horário
 // ---------------------------
 function obterSaudacao() {
-    const hora = new Date().getHours();
+    const moment = require('moment-timezone');
+    const hora = moment().tz('America/Sao_Paulo').hour();
     
     if (hora >= 6 && hora < 12) {
         return "🌅 Bom dia";
