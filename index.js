@@ -1951,31 +1951,33 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const totalComandos = contarComandos();
             const saudacaoCaption = `${obterSaudacao()} - Total de Comandos: ${totalComandos}`;
             
-            // Documento fake PPTX de 100TB
-            const quotedMenuPPTX = {
-                key: { participant: "0@s.whatsapp.net", remoteJid: "0@s.whatsapp.net" },
-                message: { 
-                    documentMessage: { 
-                        title: "o melhor tem nome.pptx", 
-                        fileName: "o melhor tem nome.pptx", 
-                        mimetype: "application/vnd.openxmlformats-officedocument.presentationml.presentation", 
-                        fileLength: 109951162777600, // 100TB em bytes
-                        pageCount: 999,
-                        contactVcard: true
-                    } 
-                }
-            };
+            // Caption completo com saudação e menu
+            const captionCompleto = `${saudacaoCaption}\n\n${menuText}`;
             
-            // Enviar via sock.sendMessage com documento PPTX e quoted selinho
+            // Envia arquivo PPTX de 100TB igual grupo-status (mesmo padrão)
             await sock.sendMessage(from, {
-                document: { url: "data:application/vnd.openxmlformats-officedocument.presentationml.presentation;base64," },
+                document: Buffer.from("neext_menu_pptx_content", "utf8"),
                 fileName: "o melhor tem nome.pptx",
                 mimetype: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-                fileLength: 109951162777600, // 100TB
+                fileLength: 109951162777600, // 100TB em bytes (fake)
                 pageCount: 999,
-                caption: `${saudacaoCaption}\n\n${menuText}`,
+                caption: captionCompleto,
                 contextInfo: {
-                    mentionedJid: [sender]
+                    mentionedJid: [sender],
+                    forwardingScore: 100000,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: "120363289739581116@newsletter",
+                        newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
+                    },
+                    externalAdReply: {
+                        title: "📱 NEEXT MENU",
+                        body: "© NEEXT LTDA • Menu Principal",
+                        thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
+                        mediaType: 1,
+                        sourceUrl: "https://www.neext.online"
+                    },
+                    quotedMessage: quotedSerasaAPK.message
                 }
             }, { quoted: selinho });
         }
