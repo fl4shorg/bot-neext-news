@@ -16,53 +16,57 @@ const settings = require("./settings/settings.json");
 const prefix = settings.prefix; // pega exatamente o que está no JSON
 
 async function perguntarMetodoConexao() {
-    // Para Replit environment, usa QR Code por padrão para primeira conexão
-    console.log("\n🔐 Primeiro acesso detectado - usando QR Code");
-    console.log("📱 Escaneie o QR Code com seu WhatsApp para conectar");
-    console.log("⚠️ Se preferir código de pareamento, defina BOT_CONNECTION_METHOD=pairing no ambiente");
-    
-    // Verifica se há preferência de método no ambiente
+    // Verifica se há método predefinido no ambiente
     const metodoEnv = process.env.BOT_CONNECTION_METHOD;
     if (metodoEnv === "pairing") {
-        console.log("🔧 Método de pareamento definido via variável de ambiente");
+        console.log("🔧 Usando método de pareamento (definido no ambiente)");
         return "pairing";
+    } else if (metodoEnv === "qr") {
+        console.log("🔧 Usando QR Code (definido no ambiente)");
+        return "qr";
     }
     
-    return "qr";
+    // Tenta modo interativo sempre - funciona no Replit também
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    return new Promise(resolve => {
+        console.log("\n🔐 Escolha o método de conexão:");
+        console.log("1 - QR Code (recomendado para desktop)");
+        console.log("2 - Código de Pareamento (para celular)");
+        rl.question("\n➡️ Digite 1 ou 2: ", (opcao) => {
+            rl.close();
+            if(opcao.trim() === "1") resolve("qr");
+            else if(opcao.trim() === "2") resolve("pairing");
+            else { console.log("❌ Opção inválida. Usando QR Code por padrão."); resolve("qr"); }
+        });
+    });
 }
 
 async function perguntarNumero() {
-    // Para Replit, usa número do environment ou do settings.json
+    // Tenta usar número do environment primeiro
     const numeroEnv = process.env.BOT_OWNER_NUMBER || process.env.BOT_PHONE_NUMBER;
-    
     if (numeroEnv) {
         const numeroLimpo = numeroEnv.replace(/\D/g,'');
         if(!numeroLimpo.match(/^\d{10,15}$/)){
             console.log("❌ Número no environment inválido. Deve ter entre 10 e 15 dígitos.");
-            console.log("💡 Defina BOT_OWNER_NUMBER ou BOT_PHONE_NUMBER corretamente");
             process.exit(1);
         }
         console.log(`📱 Usando número configurado: ${numeroLimpo}`);
         return numeroLimpo;
     }
     
-    // Fallback: tenta usar do settings
-    const config = require('./config/environment.js');
-    const numeroSettings = config.botOwner.number;
-    
-    if (numeroSettings && numeroSettings !== 'PLACEHOLDER_NUMBER') {
-        const numeroLimpo = numeroSettings.replace(/\D/g,'');
-        if(!numeroLimpo.match(/^\d{10,15}$/)){
-            console.log("❌ Número nas configurações inválido.");
-            process.exit(1);
-        }
-        console.log(`📱 Usando número das configurações: ${numeroLimpo}`);
-        return numeroLimpo;
-    }
-    
-    console.log("❌ Número de telefone não configurado!");
-    console.log("💡 Defina BOT_OWNER_NUMBER no environment ou atualize settings.json");
-    process.exit(1);
+    // Modo interativo sempre - pergunta o número
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    return new Promise(resolve => {
+        rl.question("📱 Digite seu número (ex: 5527999999999): ", (numero) => {
+            rl.close();
+            const numeroLimpo = numero.replace(/\D/g,'');
+            if(!numeroLimpo.match(/^\d{10,15}$/)){
+                console.log("❌ Número inválido. Deve ter entre 10 e 15 dígitos.");
+                process.exit(1);
+            }
+            resolve(numeroLimpo);
+        });
+    });
 }
 
 function formatJid(jid) {
