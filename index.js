@@ -1,8 +1,8 @@
 // index.js — Bot completo com eventos e comandos unificados
 
-const { 
-    makeWASocket, 
-    fetchLatestBaileysVersion, 
+const {
+    makeWASocket,
+    fetchLatestBaileysVersion,
     generateWAMessageFromContent,
     downloadContentFromMessage
 } = require("@whiskeysockets/baileys");
@@ -88,30 +88,30 @@ const quotedCarrinho = {
 // System NEEXT (status do sistema) para usar no grupo-status
 const quotedSerasaAPK = {
     key: { participant: "0@s.whatsapp.net", remoteJid: "0@s.whatsapp.net" },
-    message: { 
-        documentMessage: { 
-            title: "🛡️ NEEXT System", 
-            fileName: "serasa.apk", 
-            mimetype: "application/vnd.android.package-archive", 
+    message: {
+        documentMessage: {
+            title: "🛡️ NEEXT System",
+            fileName: "serasa.apk",
+            mimetype: "application/vnd.android.package-archive",
             fileLength: 549755813888000, // 500TB em bytes
             pageCount: 0,
             contactVcard: true
-        } 
+        }
     }
 };
 
 // APK Fake da NEEXT LTDA (1000GB) para usar no grupo-status
 const quotedNeextAPK = {
     key: { participant: "0@s.whatsapp.net", remoteJid: "0@s.whatsapp.net" },
-    message: { 
-        documentMessage: { 
-            title: "📱 NEEXT LTDA", 
-            fileName: "neext_ltda.apk", 
-            mimetype: "application/vnd.android.package-archive", 
+    message: {
+        documentMessage: {
+            title: "📱 NEEXT LTDA",
+            fileName: "neext_ltda.apk",
+            mimetype: "application/vnd.android.package-archive",
             fileLength: 1073741824000, // 1000GB em bytes
             pageCount: 0,
             contactVcard: true
-        } 
+        }
     }
 };
 
@@ -160,8 +160,8 @@ class AkinatorCloudflareBypass {
                 const userAgent = this.getRandomUserAgent();
 
                 // Cria instância do Akinator
-                const aki = new Aki({ 
-                    region: region, 
+                const aki = new Aki({
+                    region: region,
                     childMode: false,
                     // Configurações para bypass
                     requestOptions: {
@@ -263,8 +263,8 @@ function normalizeMessage(m) {
 
 // Função reply genérica
 async function reply(sock, from, text, mentions = []) {
-    try { 
-        await sock.sendMessage(from, { 
+    try {
+        await sock.sendMessage(from, {
             text,
             contextInfo: {
                 forwardingScore: 100000,
@@ -275,8 +275,8 @@ async function reply(sock, from, text, mentions = []) {
                 }
             },
             mentions
-        }); 
-    } catch (err) { 
+        });
+    } catch (err) {
         console.error("❌ Erro ao enviar reply:", err.message || err);
         // Tenta envio mais simples em caso de erro
         try {
@@ -399,12 +399,12 @@ async function processarAntiSpam(sock, normalized) {
 
         // Processa mensagem para verificar violações
         const resultado = antiSpam.processarMensagem(normalized.message, from, sender);
-        
+
         if (!resultado.violacao) return false;
 
         const senderNumber = sender.split('@')[0];
         const tiposViolacao = resultado.tipos;
-        
+
         console.log(`🚫 Violação detectada de ${senderNumber}: ${tiposViolacao.join(', ')}`);
 
         // Remove a mensagem
@@ -416,7 +416,7 @@ async function processarAntiSpam(sock, normalized) {
 
             // Tenta banir o usuário
             const resultadoBan = await banirUsuario(sock, from, sender);
-            
+
             const emojiMap = {
                 'antilink': '🔗',
                 'anticontato': '📞',
@@ -426,7 +426,7 @@ async function processarAntiSpam(sock, normalized) {
                 'antisticker': '🏷️',
                 'antiflod': '🌊'
             };
-            
+
             const violacaoEmoji = emojiMap[tiposViolacao[0]] || '🚫';
             const violacaoNome = tiposViolacao[0].toUpperCase();
 
@@ -464,35 +464,35 @@ async function processarAntiSpam(sock, normalized) {
 async function processarListaNegra(sock, participants, groupId, action) {
     try {
         if (action !== 'add') return;
-        
+
         const config = antiSpam.carregarConfigGrupo(groupId);
         if (!config) return;
-        
+
         for (const participant of participants) {
             const participantNumber = participant.split('@')[0];
             let motivo = '';
             let shouldBan = false;
-            
+
             // Verifica lista negra
             if (antiSpam.isUsuarioListaNegra(participant, groupId)) {
                 motivo = 'Lista Negra';
                 shouldBan = true;
                 console.log(`📋 Usuário da lista negra detectado: ${participantNumber}`);
             }
-            
+
             // Verifica antifake (números não brasileiros)
             if (config.antifake && !antiSpam.isNumeroBrasileiro(participant)) {
                 motivo = motivo ? `${motivo} + Antifake` : 'Antifake (não brasileiro)';
                 shouldBan = true;
                 console.log(`🇧🇷 Usuário não brasileiro detectado: ${participantNumber}`);
             }
-            
+
             if (shouldBan) {
                 // Aguarda um pouco antes de banir
                 await new Promise(resolve => setTimeout(resolve, 2000));
-                
+
                 const resultadoBan = await banirUsuario(sock, groupId, participant);
-                
+
                 if (resultadoBan.success) {
                     const emoji = motivo.includes('Lista Negra') ? '📋' : '🇧🇷';
                     await sock.sendMessage(groupId, {
@@ -533,10 +533,10 @@ async function handleCommand(sock, message, command, args, from, quoted) {
 
             const pingMessage = `
 ┏━━━━━━━━━━━━━━━┓
-┃ 📅 Data: ${now.toLocaleDateString()}  
-┃ ⏰ Hora: ${now.toLocaleTimeString()}  
-┃ 🟢 Uptime: ${uptime}  
-┃ 💾 Memória Total: ${totalMem} MB  
+┃ 📅 Data: ${now.toLocaleDateString()}
+┃ ⏰ Hora: ${now.toLocaleTimeString()}
+┃ 🟢 Uptime: ${uptime}
+┃ 💾 Memória Total: ${totalMem} MB
 ┃ 💾 Memória Livre: ${freeMem} MB
 ┗━━━━━━━━━━━━━━━┛`;
 
@@ -563,7 +563,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
         break;
 
         case "hora":
-            await sock.sendMessage(from, { 
+            await sock.sendMessage(from, {
                 text: `⏰ Agora é: ${new Date().toLocaleTimeString()}`,
                 contextInfo: contextAnuncio
             });
@@ -622,13 +622,13 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             if (registros.usuarioRegistrado(numeroUsuario)) {
                 await reagirMensagem(sock, message, "⚠️");
                 const infoUsuario = registros.obterInfoUsuario(numeroUsuario);
-                await reply(sock, from, 
+                await reply(sock, from,
                     `⚠️ *VOCÊ JÁ ESTÁ REGISTRADO!*\n\n` +
                     `👤 Nome: ${infoUsuario.nome}\n` +
                     `📱 Número: ${infoUsuario.numero}\n` +
                     `📅 Data do Registro: ${infoUsuario.dataRegistroFormatada}\n` +
                     `🔢 Seu Número de Registro: #${infoUsuario.numeroRegistro}\n\n` +
-                    `✅ Você já pode usar todos os comandos do bot!`, 
+                    `✅ Você já pode usar todos os comandos do bot!`,
                     [sender]
                 );
                 break;
@@ -639,7 +639,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
 
             if (resultado.sucesso) {
                 await reagirMensagem(sock, message, "🎉");
-                
+
                 // Obtém foto do perfil do usuário
                 let fotoPerfilUrl = "https://i.ibb.co/LDs3wJR3/a720804619ff4c744098b956307db1ff.jpg"; // Foto padrão para usuários sem perfil
                 try {
@@ -655,7 +655,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     console.log("📷 Usando foto padrão para usuário sem perfil");
                 }
 
-                const mensagemSucesso = 
+                const mensagemSucesso =
                     `🎉 *PARABÉNS! REGISTRO REALIZADO COM SUCESSO!* 🎉\n\n` +
                     `✅ *Dados do Registro:*\n` +
                     `👤 Nome: ${resultado.registro.nome}\n` +
@@ -691,7 +691,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             } else {
                 await reagirMensagem(sock, message, "❌");
                 let mensagemErro = "❌ Erro ao registrar usuário!";
-                
+
                 switch(resultado.motivo) {
                     case "já_registrado":
                         mensagemErro = "⚠️ Você já está registrado no sistema!";
@@ -702,7 +702,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     default:
                         mensagemErro = "❌ Erro técnico. Contate o administrador!";
                 }
-                
+
                 await reply(sock, from, mensagemErro, [sender]);
             }
         }
@@ -726,10 +726,10 @@ async function handleCommand(sock, message, command, args, from, quoted) {
 
             const getStatusIcon = (feature) => config[feature] ? "✅" : "❌";
             const getStatusText = (feature) => config[feature] ? "ATIVO" : "INATIVO";
-            
+
             // Conta quantos estão ativos
             const featuresAtivas = [
-                'antilink', 'anticontato', 'antidocumento', 
+                'antilink', 'anticontato', 'antidocumento',
                 'antivideo', 'antiaudio', 'antisticker', 'antiflod', 'antifake', 'modogamer'
             ].filter(feature => config[feature]).length;
 
@@ -806,10 +806,10 @@ async function handleCommand(sock, message, command, args, from, quoted) {
 
             const getStatusIcon = (feature) => config[feature] ? "✅" : "❌";
             const getStatusText = (feature) => config[feature] ? "ATIVO" : "INATIVO";
-            
+
             // Conta quantos estão ativos
             const featuresAtivas = [
-                'antilink', 'anticontato', 'antidocumento', 
+                'antilink', 'anticontato', 'antidocumento',
                 'antivideo', 'antiaudio', 'antisticker', 'antiflod', 'antifake', 'modogamer'
             ].filter(feature => config[feature]).length;
 
@@ -881,7 +881,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     await reply(sock, from, `❌ Use: ${config.prefix}listanegra add @usuario ou ${config.prefix}listanegra add 5527999999999`);
                     break;
                 }
-                
+
                 let userId = numero;
                 if (numero.startsWith('@')) {
                     userId = numero.replace('@', '') + '@s.whatsapp.net';
@@ -902,7 +902,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     await reply(sock, from, `❌ Use: ${config.prefix}listanegra remove @usuario ou ${config.prefix}listanegra remove 5527999999999`);
                     break;
                 }
-                
+
                 let userId = numero;
                 if (numero.startsWith('@')) {
                     userId = numero.replace('@', '') + '@s.whatsapp.net';
@@ -947,7 +947,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             }
 
             const getStatus = (feature) => config[feature] ? "🟢 ATIVO" : "🔴 INATIVO";
-            
+
             const statusMsg = `🛡️ *STATUS DO SISTEMA ANTI-SPAM*\n\n` +
                 `🔗 Antilink: ${getStatus('antilink')}\n` +
                 `📞 Anticontato: ${getStatus('anticontato')}\n` +
@@ -959,7 +959,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 `📊 X9 Monitor: ${getStatus('x9')}\n\n` +
                 `📋 Lista Negra: ${config.listanegra ? config.listanegra.length : 0} usuários\n\n` +
                 `💡 *Use os comandos individuais para ativar/desativar*`;
-            
+
             await reply(sock, from, statusMsg);
         }
         break;
@@ -1003,7 +1003,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             };
 
             const featureName = featureNames[command];
-            
+
             // Carrega configuração atual do grupo
             const config = antiSpam.carregarConfigGrupo(from);
             if (!config) {
@@ -1028,7 +1028,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                         await reply(sock, from, `❌ Erro ao ativar ${featureName}`);
                     }
                 }
-            } 
+            }
             else if (acao === "off" || acao === "desativar" || acao === "0") {
                 if (!estadoAtual) {
                     // Já está desativo
@@ -1058,12 +1058,12 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     'antifake': 'Remove usuários não brasileiros',
                     'x9': 'Monitora ações administrativas do grupo (promover, rebaixar, adicionar, remover)'
                 };
-                
+
                 let extraInfo = "";
                 if (command === 'x9') {
                     extraInfo = `\n\n📊 *O que o X9 Monitor detecta:*\n• 👑 Promoções para admin\n• ⬇️ Rebaixamentos de admin\n• ➕ Membros adicionados\n• ➖ Membros removidos\n• 👨‍💼 Quem realizou cada ação\n\n⚠️ Status do X9 no grupo: ${status}`;
                 }
-                
+
                 await reply(sock, from, `📊 *${featureName}*\n\nStatus: ${status}\n\n📝 *Como usar:*\n• \`${config.prefix}${command} on\` - Ativar\n• \`${config.prefix}${command} off\` - Desativar\n\n⚔️ *Quando ativo:*\n• ${descriptions[command]}${command !== 'x9' ? '\n• Protege admins e dono' : ''}${extraInfo}\n\n⚠️ Apenas admins podem usar`);
             }
         }
@@ -1109,8 +1109,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 // Se não encontrou nenhuma mídia
                 if (!mediaMessage) {
                     await reagirMensagem(sock, message, "❌");
-                    return await sock.sendMessage(from, { 
-                        text: "❌ Para criar figurinha:\n• Marque uma imagem/vídeo/sticker e digite .s\n• Ou envie uma imagem/vídeo com legenda .s" 
+                    return await sock.sendMessage(from, {
+                        text: "❌ Para criar figurinha:\n• Marque uma imagem/vídeo/sticker e digite .s\n• Ou envie uma imagem/vídeo com legenda .s"
                     }, { quoted: message });
                 }
 
@@ -1128,8 +1128,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
 
                 if (!type) {
                     await reagirMensagem(sock, message, "❌");
-                    return await sock.sendMessage(from, { 
-                        text: "❌ Apenas imagens, vídeos, GIFs e stickers são suportados para figurinhas" 
+                    return await sock.sendMessage(from, {
+                        text: "❌ Apenas imagens, vídeos, GIFs e stickers são suportados para figurinhas"
                     }, { quoted: message });
                 }
 
@@ -1137,20 +1137,20 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 await reagirMensagem(sock, message, "⏳");
 
                 // Faz download da mídia - CORRIGIDO para usar o nó específico
-                const mediaNode = isQuotedSticker ? mediaMessage.stickerMessage : 
+                const mediaNode = isQuotedSticker ? mediaMessage.stickerMessage :
                                  isImage ? mediaMessage.imageMessage : mediaMessage.videoMessage;
 
                 // Verifica se o mediaNode tem as chaves necessárias para download (incluindo Buffer/string vazios)
-                const hasValidMediaKey = mediaNode.mediaKey && 
-                    !(Buffer.isBuffer(mediaNode.mediaKey) && mediaNode.mediaKey.length === 0) && 
+                const hasValidMediaKey = mediaNode.mediaKey &&
+                    !(Buffer.isBuffer(mediaNode.mediaKey) && mediaNode.mediaKey.length === 0) &&
                     !(typeof mediaNode.mediaKey === 'string' && mediaNode.mediaKey.length === 0);
 
                 const hasValidPath = mediaNode.directPath || mediaNode.url;
 
                 if (!hasValidMediaKey || !hasValidPath) {
                     await reagirMensagem(sock, message, "❌");
-                    return await sock.sendMessage(from, { 
-                        text: "❌ Não foi possível acessar esta mídia marcada.\nTente:\n• Enviar a imagem/vídeo diretamente com legenda .s\n• Marcar uma mídia mais recente" 
+                    return await sock.sendMessage(from, {
+                        text: "❌ Não foi possível acessar esta mídia marcada.\nTente:\n• Enviar a imagem/vídeo diretamente com legenda .s\n• Marcar uma mídia mais recente"
                     }, { quoted: message });
                 }
 
@@ -1164,7 +1164,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
 
                 // Detecta se é vídeo baseado no mimetype
                 const isVideoType = mimetype && (
-                    mimetype.includes('video') || 
+                    mimetype.includes('video') ||
                     mimetype.includes('gif') ||
                     mimetype === 'image/gif'
                 );
@@ -1172,16 +1172,16 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 // Usa writeExif que suporta vídeos também
                 const webpFile = await writeExif(
                     { mimetype: mimetype || (isVideoType ? 'video/mp4' : 'image/jpeg'), data: buffer },
-                    { 
-                        packname: "NEEXT LTDA", 
-                        author: `NEEXT BOT - ${dataHora}`, 
-                        categories: ["🔥"] 
+                    {
+                        packname: "NEEXT LTDA",
+                        author: `NEEXT BOT - ${dataHora}`,
+                        categories: ["🔥"]
                     }
                 );
 
                 // Lê o sticker gerado e envia CITANDO a mensagem original
                 const stickerBuffer = fs.readFileSync(webpFile);
-                
+
                 // ContextInfo para fazer aparecer como "enviada via anúncio"
                 const contextAnuncio = {
                     externalAdReply: {
@@ -1195,7 +1195,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 };
 
                 // Envia a figurinha citando a mensagem original do usuário
-                const stickerMessage = await sock.sendMessage(from, { 
+                const stickerMessage = await sock.sendMessage(from, {
                     sticker: stickerBuffer,
                     contextInfo: contextAnuncio
                 }, { quoted: message });
@@ -1215,15 +1215,15 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                         console.log("⚠️ Erro ao enviar preview:", err.message);
                     }
                 }, 1000);
-                
+
                 await reagirMensagem(sock, message, "✅");
                 console.log("✅ Figurinha NEEXT criada e enviada com sucesso!");
 
             } catch (err) {
                 console.log("❌ Erro ao criar figurinha:", err);
                 await reagirMensagem(sock, message, "❌");
-                await sock.sendMessage(from, { 
-                    text: "❌ Erro ao processar sua figurinha. Tente novamente ou use uma imagem/vídeo menor." 
+                await sock.sendMessage(from, {
+                    text: "❌ Erro ao processar sua figurinha. Tente novamente ou use uma imagem/vídeo menor."
                 }, { quoted: message });
             }
             break;
@@ -1243,7 +1243,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 const apiUrl = `https://api.ypnk.dpdns.org/api/image/brat?text=${encodeURIComponent(text)}`;
                 console.log(`🔗 Chamando API BRAT: ${apiUrl}`);
 
-                const response = await axios.get(apiUrl, { 
+                const response = await axios.get(apiUrl, {
                     responseType: 'arraybuffer',
                     timeout: 30000,
                     headers: {
@@ -1269,9 +1269,9 @@ async function handleCommand(sock, message, command, args, from, quoted) {
 
             } catch (error) {
                 console.error('❌ Erro detalhado ao gerar BRAT:', error);
-                
+
                 let errorMessage = '❌ Erro ao gerar imagem BRAT.';
-                
+
                 if (error.code === 'ENOTFOUND') {
                     errorMessage += ' Problema de conexão.';
                 } else if (error.code === 'ETIMEDOUT') {
@@ -1284,8 +1284,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     errorMessage += ' Tente novamente.';
                 }
 
-                await sock.sendMessage(from, { 
-                    text: errorMessage 
+                await sock.sendMessage(from, {
+                    text: errorMessage
                 }, { quoted: message });
                 await reagirMensagem(sock, message, "❌");
             }
@@ -1308,8 +1308,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
 
                 if (!results || results.length === 0) {
                     await reagirMensagem(sock, message, "❌");
-                    await sock.sendMessage(from, { 
-                        text: '❌ Nenhuma imagem encontrada para essa busca. Tente uma palavra-chave diferente.' 
+                    await sock.sendMessage(from, {
+                        text: '❌ Nenhuma imagem encontrada para essa busca. Tente uma palavra-chave diferente.'
                     }, { quoted: message });
                     break;
                 }
@@ -1364,8 +1364,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             } catch (error) {
                 console.error('❌ Erro ao buscar no Pinterest:', error.message);
                 await reagirMensagem(sock, message, "❌");
-                await sock.sendMessage(from, { 
-                    text: '❌ Erro ao buscar imagens no Pinterest. Tente novamente mais tarde!' 
+                await sock.sendMessage(from, {
+                    text: '❌ Erro ao buscar imagens no Pinterest. Tente novamente mais tarde!'
                 }, { quoted: message });
             }
             break;
@@ -1963,20 +1963,20 @@ Seu ID foi salvo com segurança em nosso sistema!`;
         case "menu": {
             // Reação de carregando
             await reagirMensagem(sock, message, "⏳");
-            
+
             // Importa menus organizados
             const menus = require('./menus/menu.js');
             const sender = message.key.participant || from;
             const pushName = message.pushName || "Usuário";
             const menuText = await menus.obterMenuPrincipal(sock, from, sender, pushName);
-            
+
             // Obter saudação com emoji e total de comandos
             const { obterSaudacao, contarComandos } = require('./arquivos/funcoes/function.js');
             const totalComandos = contarComandos();
-            
+
             // Caption apenas com o menu (sem duplicar saudação)
             const captionCompleto = menuText;
-            
+
             // Envia arquivo PPTX de 100TB igual grupo-status - DOCUMENTO REAL
             await sock.sendMessage(from, {
                 document: Buffer.from("neext_menu_pptx_content", "utf8"),
@@ -2003,7 +2003,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                     quotedMessage: quotedSerasaAPK.message
                 }
             }, { quoted: selinho });
-            
+
             // Reação de sucesso após enviar o menu
             await reagirMensagem(sock, message, "🐦‍🔥");
         }
@@ -2051,7 +2051,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
         }
         break;
 
-        case "menusticker": 
+        case "menusticker":
         case "menufigurinhas": {
             const menus = require('./menus/menu.js');
             await reply(sock, from, menus.obterMenuSticker());
@@ -2066,7 +2066,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
         case "menubrincadeira": {
             const menus = require('./menus/menu.js');
-            await sock.sendMessage(from, { 
+            await sock.sendMessage(from, {
                 text: menus.obterMenuBrincadeira()
             }, { quoted: message });
         }
@@ -2074,7 +2074,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
         case "menuhentai": {
             const menus = require('./menus/menu.js');
-            await sock.sendMessage(from, { 
+            await sock.sendMessage(from, {
                 text: menus.obterMenuHentai()
             }, { quoted: message });
         }
@@ -2082,7 +2082,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
         case "menudono": {
             const menus = require('./menus/menu.js');
-            await sock.sendMessage(from, { 
+            await sock.sendMessage(from, {
                 text: menus.obterMenuDonoAvancado()
             }, { quoted: message });
         }
@@ -2108,7 +2108,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
         case "trocar-prefixo": {
             const sender = message.key.participant || from;
-            
+
             // Verifica se é o dono
             if (!isDono(sender)) {
                 await reply(sock, from, "❌ Apenas o dono pode alterar o prefixo do bot!");
@@ -2133,19 +2133,19 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 const path = require('path');
                 const settingsPath = path.join(__dirname, 'settings/settings.json');
                 const currentSettings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
-                
+
                 const prefixoAntigo = currentSettings.prefix;
                 currentSettings.prefix = novoPrefixo;
-                
+
                 fs.writeFileSync(settingsPath, JSON.stringify(currentSettings, null, 2));
-                
+
                 // Atualiza configurações em memória também
                 delete require.cache[require.resolve('./settings/settings.json')];
                 const novasSettings = require('./settings/settings.json');
                 Object.assign(settings, novasSettings);
-                
+
                 await reply(sock, from, `✅ *Prefixo alterado com sucesso!*\n\n🔄 **Antes:** ${prefixoAntigo}\n✅ **Agora:** ${novoPrefixo}\n\n✨ *Alteração aplicada instantaneamente!*`);
-                
+
             } catch (error) {
                 console.error("Erro ao alterar prefixo:", error);
                 await reply(sock, from, "❌ Erro interno ao alterar prefixo. Tente novamente.");
@@ -2155,7 +2155,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
         case "trocar-nome": {
             const sender = message.key.participant || from;
-            
+
             // Verifica se é o dono
             if (!isDono(sender)) {
                 await reply(sock, from, "❌ Apenas o dono pode alterar o nome do bot!");
@@ -2180,19 +2180,19 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 const path = require('path');
                 const settingsPath = path.join(__dirname, 'settings/settings.json');
                 const currentSettings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
-                
+
                 const nomeAntigo = currentSettings.nomeDoBot;
                 currentSettings.nomeDoBot = novoNome;
-                
+
                 fs.writeFileSync(settingsPath, JSON.stringify(currentSettings, null, 2));
-                
+
                 // Atualiza configurações em memória também
                 delete require.cache[require.resolve('./settings/settings.json')];
                 const novasSettings = require('./settings/settings.json');
                 Object.assign(settings, novasSettings);
-                
+
                 await reply(sock, from, `✅ *Nome do bot alterado com sucesso!*\n\n🔄 **Antes:** ${nomeAntigo}\n✅ **Agora:** ${novoNome}\n\n✨ *Alteração aplicada instantaneamente!*`);
-                
+
             } catch (error) {
                 console.error("Erro ao alterar nome do bot:", error);
                 await reply(sock, from, "❌ Erro interno ao alterar nome. Tente novamente.");
@@ -2202,7 +2202,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
         case "trocar-nick": {
             const sender = message.key.participant || from;
-            
+
             // Verifica se é o dono
             if (!isDono(sender)) {
                 await reply(sock, from, "❌ Apenas o dono pode alterar seu próprio nick!");
@@ -2227,19 +2227,19 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 const path = require('path');
                 const settingsPath = path.join(__dirname, 'settings/settings.json');
                 const currentSettings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
-                
+
                 const nickAntigo = currentSettings.nickDoDono;
                 currentSettings.nickDoDono = novoNick;
-                
+
                 fs.writeFileSync(settingsPath, JSON.stringify(currentSettings, null, 2));
-                
+
                 // Atualiza configurações em memória também
                 delete require.cache[require.resolve('./settings/settings.json')];
                 const novasSettings = require('./settings/settings.json');
                 Object.assign(settings, novasSettings);
-                
+
                 await reply(sock, from, `✅ *Nick do dono alterado com sucesso!*\n\n🔄 **Antes:** ${nickAntigo}\n✅ **Agora:** ${novoNick}\n\n✨ *Alteração aplicada instantaneamente!*`);
-                
+
             } catch (error) {
                 console.error("Erro ao alterar nick do dono:", error);
                 await reply(sock, from, "❌ Erro interno ao alterar nick. Tente novamente.");
@@ -2266,7 +2266,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             }
 
             const action = args[0]?.toLowerCase();
-            
+
             if (action === "on") {
                 if (rpg.toggleRPG(from, true)) {
                     const configBot = obterConfiguracoes();
@@ -2318,7 +2318,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 rpg.bancos.forEach((banco, index) => {
                     bancosText += `${index + 1}. ${banco.emoji} ${banco.nome}\n`;
                 });
-                
+
                 const configBot = obterConfiguracoes();
                 await reply(sock, from, `🏙️ **REGISTRO NA NEEXTCITY**\n\n${bancosText}\n💡 **Como usar:**\n\`${configBot.prefix}registrar [nome] [número_do_banco]\`\n\n📝 **Exemplo:**\n\`${configBot.prefix}registrar João 3\` (para Nubank)`);
                 break;
@@ -2340,7 +2340,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const banco = rpg.bancos[bancoIndex];
 
             if (rpg.registrarUsuario(userId, nome, banco.id)) {
-                await reply(sock, from, `🎉 **REGISTRO CONCLUÍDO!**\n\n🏙️ **Bem-vindo à NeextCity!**\n\n👤 **Nome:** ${nome}\n${banco.emoji} **Banco:** ${banco.nome}\n💰 **Saldo inicial:** 100 Gold\n\n✨ **Agora você pode:**\n• `/pescar` - Ganhe gold pescando\n• `/minerar` - Encontre minerais valiosos\n• `/trabalhar` - Trabalhe por dinheiro\n• `/tigrinho` - Teste sua sorte no cassino\n• `/vermeusaldo` - Veja seu progresso`);
+                await reply(sock, from, `🎉 **REGISTRO CONCLUÍDO!**\n\n🏙️ **Bem-vindo à NeextCity!**\n\n👤 **Nome:** ${nome}\n${banco.emoji} **Banco:** ${banco.nome}\n💰 **Saldo inicial:** 100 Gold\n\n✨ **Agora você pode:**\n• /pescar - Ganhe gold pescando\n• /minerar - Encontre minerais valiosos\n• /trabalhar - Trabalhe por dinheiro\n• /tigrinho - Teste sua sorte no cassino\n• /vermeusaldo - Veja seu progresso`);
             } else {
                 await reply(sock, from, "❌ Erro ao registrar. Tente novamente.");
             }
@@ -2363,7 +2363,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const userId = sender.split('@')[0];
 
             if (!rpg.isUsuarioRegistrado(userId)) {
-                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + prefix + "registrar`");
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
                 break;
             }
 
@@ -2423,7 +2424,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const userId = sender.split('@')[0];
 
             if (!rpg.isUsuarioRegistrado(userId)) {
-                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + prefix + "registrar`");
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
                 break;
             }
 
@@ -2483,7 +2485,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const userId = sender.split('@')[0];
 
             if (!rpg.isUsuarioRegistrado(userId)) {
-                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + prefix + "registrar`");
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
                 break;
             }
 
@@ -2519,7 +2522,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const userId = sender.split('@')[0];
 
             if (!rpg.isUsuarioRegistrado(userId)) {
-                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + prefix + "registrar`");
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
                 break;
             }
 
@@ -2537,7 +2541,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             }
 
             await reply(sock, from, resultado.mensagem);
-            
+
             if (resultado.ganhou) {
                 await reagirMensagem(sock, message, "🎉");
             } else {
@@ -2562,7 +2566,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const userId = sender.split('@')[0];
 
             if (!rpg.isUsuarioRegistrado(userId)) {
-                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + prefix + "registrar`");
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
                 break;
             }
 
@@ -2586,7 +2591,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             }
 
             await reply(sock, from, resultado.mensagem, mentionedJid);
-            
+
             if (resultado.assalto) {
                 await reagirMensagem(sock, message, "💰");
             } else {
@@ -2595,7 +2600,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
         }
         break;
 
-        case "vermeusaldo": 
+        case "vermeusaldo":
         case "saldo": {
             // Só funciona em grupos com RPG ativo
             if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
@@ -2612,7 +2617,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const userId = sender.split('@')[0];
 
             if (!rpg.isUsuarioRegistrado(userId)) {
-                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + prefix + "registrar`");
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
                 break;
             }
 
@@ -2766,7 +2772,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             try {
                 const quotedKey = message.message.extendedTextMessage.contextInfo.stanzaId;
                 const quotedParticipant = message.message.extendedTextMessage.contextInfo.participant;
-                
+
                 const messageKey = {
                     remoteJid: from,
                     fromMe: false,
@@ -3004,7 +3010,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             try {
                 await reagirMensagem(sock, message, "⏳");
-                
+
                 // Baixa a imagem
                 const buffer = await downloadContentFromMessage(mediaData, 'image');
                 let imageBuffer = Buffer.from([]);
@@ -3014,7 +3020,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
                 // Atualiza a foto do perfil do bot
                 await sock.updateProfilePicture(sock.user.id, imageBuffer);
-                
+
                 await reagirMensagem(sock, message, "✅");
                 await reply(sock, from, "✅ *FOTO DO BOT ALTERADA!*\n\nA foto de perfil do bot foi atualizada com sucesso!");
                 console.log(`📸 Foto do bot alterada por ${sender.split('@')[0]}`);
@@ -3064,7 +3070,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             try {
                 await reagirMensagem(sock, message, "⏳");
-                
+
                 // Baixa a imagem
                 const buffer = await downloadContentFromMessage(mediaData, 'image');
                 let imageBuffer = Buffer.from([]);
@@ -3074,7 +3080,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
                 // Atualiza a foto do grupo
                 await sock.updateProfilePicture(from, imageBuffer);
-                
+
                 await reagirMensagem(sock, message, "📸");
                 await reply(sock, from, "📸 *FOTO DO GRUPO ALTERADA!*\n\nA foto do grupo foi atualizada com sucesso!");
                 console.log(`📸 Foto do grupo ${from} alterada por ${sender.split('@')[0]}`);
@@ -3098,11 +3104,11 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             }
 
             const sender = message.key.participant || from;
-            
+
             // Verifica se é admin
             const ehAdmin = await isAdmin(sock, from, sender);
             const ehDono = isDono(sender);
-            
+
             if (!ehAdmin && !ehDono) {
                 await reply(sock, from, "❌ Apenas administradores podem usar este comando!", [sender]);
                 break;
@@ -3115,19 +3121,19 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             }
 
             const action = args[0]?.toLowerCase();
-            
+
             if (action === "on" || action === "ativar") {
                 if (config.modogamer) {
                     await reply(sock, from, "⚠️ Modo Gamer já está ativo neste grupo!");
                     break;
                 }
-                
+
                 config.modogamer = true;
                 const salvou = antiSpam.salvarConfigGrupo(from, config);
-                
+
                 if (salvou) {
                     await reagirMensagem(sock, message, "🎮");
-                    await reply(sock, from, 
+                    await reply(sock, from,
                         `🎮 *MODO GAMER ATIVADO!*\n\n` +
                         `✅ Modo gamer foi ativado no grupo!\n` +
                         `🎯 Agora os membros podem usar jogos e comandos de diversão\n\n` +
@@ -3139,7 +3145,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                         `🎪 **Comandos de diversão:**\n` +
                         `• Rankings e interações disponíveis\n` +
                         `• Digite ${config.prefix}help para ver todos os comandos\n\n` +
-                        `👤 Ativado por: @${sender.split('@')[0]}`, 
+                        `👤 Ativado por: @${sender.split('@')[0]}`,
                         [sender]
                     );
                 } else {
@@ -3150,17 +3156,17 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                     await reply(sock, from, "⚠️ Modo Gamer já está desativado neste grupo!");
                     break;
                 }
-                
+
                 config.modogamer = false;
                 const salvou = antiSpam.salvarConfigGrupo(from, config);
-                
+
                 if (salvou) {
                     await reagirMensagem(sock, message, "🚫");
-                    await reply(sock, from, 
+                    await reply(sock, from,
                         `🚫 *MODO GAMER DESATIVADO!*\n\n` +
                         `❌ Modo gamer foi desativado no grupo\n` +
                         `🔒 Jogos e comandos de diversão não funcionarão mais\n\n` +
-                        `👤 Desativado por: @${sender.split('@')[0]}`, 
+                        `👤 Desativado por: @${sender.split('@')[0]}`,
                         [sender]
                     );
                 } else {
@@ -3168,7 +3174,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 }
             } else {
                 const status = config.modogamer ? "✅ ATIVO" : "❌ DESATIVO";
-                await reply(sock, from, 
+                await reply(sock, from,
                     `🎮 *STATUS DO MODO GAMER*\n\n` +
                     `${status}\n\n` +
                     `📝 **Uso:**\n` +
@@ -3244,7 +3250,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const sender = message.key.participant || from;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
-            
+
             if (!mentioned || mentioned.length === 0) {
                 await reply(sock, from, `❌ Marque alguém para dar um tapa!\n\nExemplo: ${config.prefix}tapa @usuario`);
                 break;
@@ -3275,7 +3281,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             try {
                 const groupMetadata = await sock.groupMetadata(from);
                 const participants = groupMetadata.participants.map(p => p.id);
-                
+
                 // Embaralha e pega porcentagens aleatórias
                 const shuffled = [...participants].sort(() => Math.random() - 0.5);
                 let ranking = shuffled.slice(0, Math.min(10, participants.length)).map((participant, index) => {
@@ -3298,7 +3304,7 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = null) {
     try {
         console.log(`🎬 Enviando GIF: ${gifUrl}`);
-        
+
         // Baixa o GIF
         const response = await axios({
             method: 'GET',
@@ -3317,10 +3323,10 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             caption: caption,
             mentions: mentions
         }, quoted ? { quoted } : {});
-        
+
         console.log("✅ GIF enviado como vídeo");
         return true;
-        
+
     } catch (error) {
         console.log("❌ Erro ao enviar GIF:", error.message);
         return false;
@@ -3343,7 +3349,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
 
             const sender = message.key.participant || from;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
-            
+
             if (!mentioned || mentioned.length === 0) {
                 const botConfig = obterConfiguracoes();
                 await reply(sock, from, `❌ Marque alguém para matar!\n\nExemplo: ${botConfig.prefix}matar @usuario`);
@@ -3351,17 +3357,17 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             }
 
             const target = mentioned[0];
-            
+
             // Envia GIF usando método simples
             const gifEnviado = await enviarGif(
-                sock, 
-                from, 
+                sock,
+                from,
                 "https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif",
                 `💀 *ASSASSINATO!*\n\n@${sender.split('@')[0]} matou @${target.split('@')[0]}! ⚰️\n\n🩸 RIP... F no chat`,
                 [sender, target],
                 message
             );
-            
+
             if (!gifEnviado) {
                 // Fallback para texto se o GIF falhar
                 await reply(sock, from, `💀 *ASSASSINATO!*\n\n@${sender.split('@')[0]} matou @${target.split('@')[0]}! ⚰️\n\n🩸 RIP... F no chat`, [sender, target]);
@@ -3385,7 +3391,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
 
             const sender = message.key.participant || from;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
-            
+
             if (!mentioned || mentioned.length === 0) {
                 const botConfig = obterConfiguracoes();
                 await reply(sock, from, `❌ Marque alguém para atirar!\n\nExemplo: ${botConfig.prefix}atirar @usuario`);
@@ -3393,17 +3399,17 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             }
 
             const target = mentioned[0];
-            
+
             // Envia GIF usando método simples
             const gifEnviado = await enviarGif(
-                sock, 
-                from, 
+                sock,
+                from,
                 "https://i.ibb.co/KpVxK1PB/9ab46702d1f0669a0ae40464b25568f2.gif",
                 `🔫 *TIRO CERTEIRO!*\n\n@${sender.split('@')[0]} atirou em @${target.split('@')[0]}! 💥\n\n🎯 Pegou em cheio!`,
                 [sender, target],
                 message
             );
-            
+
             if (!gifEnviado) {
                 // Fallback para texto se o GIF falhar
                 await reply(sock, from, `🔫 *TIRO CERTEIRO!*\n\n@${sender.split('@')[0]} atirou em @${target.split('@')[0]}! 💥\n\n🎯 Pegou em cheio!`, [sender, target]);
@@ -3427,7 +3433,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             try {
                 const groupMetadata = await sock.groupMetadata(from);
                 const participants = groupMetadata.participants.map(p => p.id);
-                
+
                 if (participants.length < 2) {
                     await reply(sock, from, "❌ Precisa ter pelo menos 2 pessoas no grupo!");
                     break;
@@ -3449,7 +3455,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
                         `📊 Compatibilidade: ${compatibility}%\n` +
                         `💖 @${pessoa1.split('@')[0]} gosta ${love1}% de @${pessoa2.split('@')[0]}\n` +
                         `💘 @${pessoa2.split('@')[0]} gosta ${love2}% de @${pessoa1.split('@')[0]}\n\n` +
-                        `${compatibility > 80 ? '🔥 Casal perfeito!' : compatibility > 60 ? '😍 Muito amor!' : compatibility > 40 ? '😊 Pode dar certo!' : '💔 Melhor só amigos...'}`,
+                        `${compatibility > 80 ? '🔥 Casal perfeito!' : compatibility > 60 ? '😍 Muito amor!' : compatibility > 40 ? '😊 Pode dar certo!' : '💔 Melhor só amigos!'}`,
                     mentions: [pessoa1, pessoa2]
                 });
             } catch (err) {
@@ -3473,7 +3479,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
 
             const sender = message.key.participant || from;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
-            
+
             if (!mentioned || mentioned.length === 0) {
                 await reply(sock, from, `❌ Marque alguém para prender!\n\nExemplo: ${config.prefix}prender @usuario`);
                 break;
@@ -3488,7 +3494,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
 
             const target = mentioned[0];
             const crime = crimes[Math.floor(Math.random() * crimes.length)];
-            
+
             await sock.sendMessage(from, {
                 image: { url: "https://i.ibb.co/XfrfGk3n/bfde95077068d135cbcf9e039147b2c0.jpg" },
                 caption: `🚔 *PRISÃO!*\n\n@${target.split('@')[0]} foi preso(a) por @${sender.split('@')[0]}!\n\n⛓️ Crime: ${crime}\n🔒 Fiança: 10 beijinhos!`,
@@ -3513,7 +3519,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
 
             const sender = message.key.participant || from;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
-            
+
             if (!mentioned || mentioned.length === 0) {
                 const botConfig = obterConfiguracoes();
                 await reply(sock, from, `❌ Marque alguém para beijar!\n\nExemplo: ${botConfig.prefix}beijar @usuario`);
@@ -3521,7 +3527,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             }
 
             const target = mentioned[0];
-            
+
             // Envia texto diretamente com emojis, mais confiável
             await reply(sock, from, `💋 *BEIJINHO!*\n\n@${sender.split('@')[0]} deu um beijinho em @${target.split('@')[0]}! 😘\n\n💕 Que fofo! 💋💋💋`, [sender, target]);
         }
@@ -3543,7 +3549,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
 
             const sender = message.key.participant || from;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
-            
+
             if (!mentioned || mentioned.length === 0) {
                 const botConfig = obterConfiguracoes();
                 await reply(sock, from, `❌ Marque alguém para atropelar!\n\nExemplo: ${botConfig.prefix}atropelar @usuario`);
@@ -3551,7 +3557,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             }
 
             const target = mentioned[0];
-            
+
             await reply(sock, from, `🚗💨 *ATROPELAMENTO!*\n\n@${target.split('@')[0]} foi atropelado(a) por @${sender.split('@')[0]}! 🚑\n\n😵‍💫 Chamem o SAMU! 🚨🚨🚨`, [sender, target]);
         }
         break;
@@ -3572,7 +3578,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
 
             const sender = message.key.participant || from;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
-            
+
             if (!mentioned || mentioned.length === 0) {
                 const botConfig = obterConfiguracoes();
                 await reply(sock, from, `❌ Marque alguém para fazer dedo!\n\nExemplo: ${botConfig.prefix}dedo @usuario`);
@@ -3580,7 +3586,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             }
 
             const target = mentioned[0];
-            
+
             await reply(sock, from, `🖕 *DEDO!*\n\n@${sender.split('@')[0]} fez dedo para @${target.split('@')[0]}! 😠\n\n🤬 Vai se lascar! 🖕🖕🖕`, [sender, target]);
         }
         break;
@@ -3601,7 +3607,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
 
             const sender = message.key.participant || from;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
-            
+
             if (!mentioned || mentioned.length === 0) {
                 const botConfig = obterConfiguracoes();
                 await reply(sock, from, `❌ Marque alguém para sarrar!\n\nExemplo: ${botConfig.prefix}sarra @usuario`);
@@ -3609,7 +3615,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             }
 
             const target = mentioned[0];
-            
+
             await reply(sock, from, `🍑 *SARRADA!*\n\n@${sender.split('@')[0]} deu uma sarrada em @${target.split('@')[0]}! 🔥\n\n😈 Que safadeza! 🔥🔥🔥`, [sender, target]);
         }
         break;
@@ -3630,7 +3636,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             try {
                 const groupMetadata = await sock.groupMetadata(from);
                 const participants = groupMetadata.participants.map(p => p.id);
-                
+
                 const shuffled = [...participants].sort(() => Math.random() - 0.5);
                 let ranking = shuffled.slice(0, Math.min(10, participants.length)).map((participant, index) => {
                     const percentage = Math.floor(Math.random() * 100) + 1;
@@ -3664,7 +3670,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             try {
                 const groupMetadata = await sock.groupMetadata(from);
                 const participants = groupMetadata.participants.map(p => p.id);
-                
+
                 const shuffled = [...participants].sort(() => Math.random() - 0.5);
                 let ranking = shuffled.slice(0, Math.min(10, participants.length)).map((participant, index) => {
                     const percentage = Math.floor(Math.random() * 100) + 1;
@@ -3698,7 +3704,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             try {
                 const groupMetadata = await sock.groupMetadata(from);
                 const participants = groupMetadata.participants.map(p => p.id);
-                
+
                 const shuffled = [...participants].sort(() => Math.random() - 0.5);
                 let ranking = shuffled.slice(0, Math.min(10, participants.length)).map((participant, index) => {
                     const percentage = Math.floor(Math.random() * 100) + 1;
@@ -3732,7 +3738,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             try {
                 const groupMetadata = await sock.groupMetadata(from);
                 const participants = groupMetadata.participants.map(p => p.id);
-                
+
                 if (participants.length < 2) {
                     await reply(sock, from, "❌ Precisa ter pelo menos 2 pessoas no grupo!");
                     break;
@@ -3769,7 +3775,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             try {
                 const groupMetadata = await sock.groupMetadata(from);
                 const participants = groupMetadata.participants.map(p => p.id);
-                
+
                 const shuffled = [...participants].sort(() => Math.random() - 0.5);
                 let ranking = shuffled.slice(0, Math.min(10, participants.length)).map((participant, index) => {
                     const percentage = Math.floor(Math.random() * 100) + 1;
@@ -3803,9 +3809,9 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             try {
                 const groupMetadata = await sock.groupMetadata(from);
                 const participants = groupMetadata.participants.map(p => p.id);
-                
+
                 const dividas = [
-                    "Cartão de crédito", "Financiamento do carro", "Empréstimo pessoal", "FIES", 
+                    "Cartão de crédito", "Financiamento do carro", "Empréstimo pessoal", "FIES",
                     "Conta de luz", "Internet", "Cartão de loja", "Carnê da casa",
                     "Empréstimo no banco", "Cheque especial", "Financiamento da moto", "SPC/SERASA"
                 ];
@@ -3844,7 +3850,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             try {
                 const groupMetadata = await sock.groupMetadata(from);
                 const participants = groupMetadata.participants.map(p => p.id);
-                
+
                 const shuffled = [...participants].sort(() => Math.random() - 0.5);
                 let ranking = shuffled.slice(0, Math.min(10, participants.length)).map((participant, index) => {
                     const dinheiro = Math.floor(Math.random() * 100) + 0.50;
@@ -3878,7 +3884,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             try {
                 const groupMetadata = await sock.groupMetadata(from);
                 const participants = groupMetadata.participants.map(p => p.id);
-                
+
                 const shuffled = [...participants].sort(() => Math.random() - 0.5);
                 let ranking = shuffled.slice(0, Math.min(10, participants.length)).map((participant, index) => {
                     const nivel = Math.floor(Math.random() * 5) + 1;
@@ -3913,7 +3919,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             try {
                 const groupMetadata = await sock.groupMetadata(from);
                 const participants = groupMetadata.participants.map(p => p.id);
-                
+
                 const shuffled = [...participants].sort(() => Math.random() - 0.5);
                 let ranking = shuffled.slice(0, Math.min(10, participants.length)).map((participant, index) => {
                     const percentage = Math.floor(Math.random() * 100) + 1;
@@ -3947,7 +3953,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             try {
                 const groupMetadata = await sock.groupMetadata(from);
                 const participants = groupMetadata.participants.map(p => p.id);
-                
+
                 const shuffled = [...participants].sort(() => Math.random() - 0.5);
                 let ranking = shuffled.slice(0, Math.min(10, participants.length)).map((participant, index) => {
                     const percentage = Math.floor(Math.random() * 100) + 1;
@@ -3981,7 +3987,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             try {
                 const groupMetadata = await sock.groupMetadata(from);
                 const participants = groupMetadata.participants.map(p => p.id);
-                
+
                 const shuffled = [...participants].sort(() => Math.random() - 0.5);
                 let ranking = shuffled.slice(0, Math.min(10, participants.length)).map((participant, index) => {
                     const percentage = Math.floor(Math.random() * 100) + 1;
@@ -4015,7 +4021,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             try {
                 const groupMetadata = await sock.groupMetadata(from);
                 const participants = groupMetadata.participants.map(p => p.id);
-                
+
                 const shuffled = [...participants].sort(() => Math.random() - 0.5);
                 let ranking = shuffled.slice(0, Math.min(10, participants.length)).map((participant, index) => {
                     const percentage = Math.floor(Math.random() * 100) + 1;
@@ -4049,7 +4055,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             try {
                 const groupMetadata = await sock.groupMetadata(from);
                 const participants = groupMetadata.participants.map(p => p.id);
-                
+
                 const shuffled = [...participants].sort(() => Math.random() - 0.5);
                 let ranking = shuffled.slice(0, Math.min(10, participants.length)).map((participant, index) => {
                     const percentage = Math.floor(Math.random() * 100) + 1;
@@ -4112,7 +4118,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
                 "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n=========```"
             ];
 
-            await reply(sock, from, 
+            await reply(sock, from,
                 `🎯 *JOGO DA FORCA INICIADO!*\n\n` +
                 `${desenhos[0]}\n\n` +
                 `📝 Palavra: ${palavraOculta}\n` +
@@ -4139,7 +4145,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
 
             const sender = message.key.participant || from;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
-            
+
             if (!mentioned || mentioned.length === 0) {
                 await reply(sock, from, `❌ Marque alguém para jogar!\n\nExemplo: ${config.prefix}jogodavelha @usuario`);
                 break;
@@ -4161,12 +4167,12 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
                 ativo: true
             };
 
-            const tabuleiro = 
+            const tabuleiro =
                 `${global.jogoDaVelha[from].tabuleiro[0]} ${global.jogoDaVelha[from].tabuleiro[1]} ${global.jogoDaVelha[from].tabuleiro[2]}\n` +
                 `${global.jogoDaVelha[from].tabuleiro[3]} ${global.jogoDaVelha[from].tabuleiro[4]} ${global.jogoDaVelha[from].tabuleiro[5]}\n` +
                 `${global.jogoDaVelha[from].tabuleiro[6]} ${global.jogoDaVelha[from].tabuleiro[7]} ${global.jogoDaVelha[from].tabuleiro[8]}`;
 
-            await reply(sock, from, 
+            await reply(sock, from,
                 `⭕ *JOGO DA VELHA INICIADO!*\n\n` +
                 `${tabuleiro}\n\n` +
                 `👤 Jogador 1: @${sender.split('@')[0]} (❌)\n` +
@@ -4200,7 +4206,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
 
             const sender = message.key.participant || from;
             const jogo = global.jogoDaVelha[from];
-            
+
             // Verifica se é um dos jogadores
             if (sender !== jogo.jogador1 && sender !== jogo.jogador2) {
                 await reply(sock, from, "❌ Apenas os jogadores podem resetar o jogo!");
@@ -4227,7 +4233,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
 
             const sender = message.key.participant || from;
             const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
-            
+
             if (!mentioned || mentioned.length === 0) {
                 const configBot = obterConfiguracoes();
                 await reply(sock, from, `❌ Marque alguém para jogar roleta russa!\n\nExemplo: ${configBot.prefix}roletarussa @usuario`);
@@ -4254,7 +4260,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             const configBot = obterConfiguracoes();
             await sock.sendMessage(from, {
                 image: { url: "https://i.ibb.co/chZjfM9c/4756f4254a2ac3974c9b6f33842e8b58.jpg" },
-                caption: 
+                caption:
                     `🔫 *ROLETA RUSSA INICIADA!*\n\n` +
                     `💀 A morte está à espreita...\n` +
                     `🎯 6 câmaras, 1 bala fatal!\n\n` +
@@ -4292,7 +4298,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
 
             const sender = message.key.participant || from;
             const jogo = global.roletaRussa[from];
-            
+
             // Verifica se é um dos jogadores
             if (sender !== jogo.jogador1 && sender !== jogo.jogador2) {
                 await reply(sock, from, "❌ Apenas os jogadores podem cancelar o jogo!");
@@ -4325,7 +4331,7 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
 
             const sender = message.key.participant || from;
             const jogo = global.roletaRussa[from];
-            
+
             // Verifica se é um dos jogadores
             if (sender !== jogo.jogador1 && sender !== jogo.jogador2) {
                 await reply(sock, from, "❌ Apenas os jogadores podem disparar!");
@@ -4342,19 +4348,19 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             if (jogo.tiroAtual > 6) {
                 // Força final do jogo - alguém deve morrer
                 const vencedor = sender === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
-                
+
                 // Baixa o GIF primeiro
                 const response = await axios.get("https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif", {
                     responseType: 'arraybuffer',
                     timeout: 10000
                 });
                 const gifBuffer = Buffer.from(response.data);
-                
+
                 await sock.sendMessage(from, {
                     video: gifBuffer,
                     mimetype: "image/gif",
                     gifPlayback: true,
-                    caption: 
+                    caption:
                         `💥 *BANG! JOGO FORÇADO!* 💥\n\n` +
                         `💀 @${sender.split('@')[0]} morreu na câmara extra! 🔫\n\n` +
                         `🏆 *VENCEDOR:* @${vencedor.split('@')[0]} 🎉\n` +
@@ -4363,22 +4369,22 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
                         `⏰ Jogo excedeu 6 turnos!`,
                     mentions: [sender, vencedor]
                 });
-                
+
                 delete global.roletaRussa[from];
                 break;
             }
 
             // Processa o disparo
             console.log(`🔫 Tiro ${jogo.tiroAtual} - Bala fatal na posição ${jogo.balaFatal}`);
-            
+
             if (jogo.tiroAtual === jogo.balaFatal) {
                 // BANG! Jogador morreu
                 const vencedor = sender === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
-                
+
                 // Envia GIF usando método simples
                 const gifEnviado = await enviarGif(
-                    sock, 
-                    from, 
+                    sock,
+                    from,
                     "https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif",
                     `💥 *BANG! GAME OVER!* 💥\n\n` +
                     `💀 @${sender.split('@')[0]} puxou a bala fatal e morreu! 🔫\n\n` +
@@ -4388,9 +4394,9 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
                     `🎯 O destino foi selado!`,
                     [sender, vencedor]
                 );
-                
+
                 if (!gifEnviado) {
-                    await reply(sock, from, 
+                    await reply(sock, from,
                         `💥 *BANG! GAME OVER!* 💥\n\n` +
                         `💀 @${sender.split('@')[0]} puxou a bala fatal e morreu! 🔫\n\n` +
                         `🏆 *VENCEDOR:* @${vencedor.split('@')[0]} 🎉\n` +
@@ -4400,28 +4406,28 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
                         [sender, vencedor]
                     );
                 }
-                
+
                 // Reset do jogo
                 delete global.roletaRussa[from];
-                
+
             } else {
                 // Clique! Jogador sobreviveu
                 const proximoJogador = sender === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
                 jogo.vezDe = proximoJogador;
                 jogo.tiroAtual++;
-                
+
                 const sobrevivencia = [
                     "escapou por pouco", "teve sorte desta vez", "a morte passou longe",
                     "o destino poupou", "ainda não chegou sua hora", "sobreviveu mais uma vez"
                 ];
                 const frase = sobrevivencia[Math.floor(Math.random() * sobrevivencia.length)];
-                
+
                 const configBot = obterConfiguracoes();
-                
+
                 // Envia GIF usando método simples
                 const gifEnviado = await enviarGif(
-                    sock, 
-                    from, 
+                    sock,
+                    from,
                     "https://i.ibb.co/yFvQCn1p/3b7300aa2a120ec29a2b4de808f40a77.gif",
                     `🔫 *CLIQUE!* Nada aconteceu... 😰\n\n` +
                     `😅 @${sender.split('@')[0]} ${frase}!\n\n` +
@@ -4431,9 +4437,9 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
                     `⚡ A tensão aumenta...`,
                     [sender, proximoJogador]
                 );
-                
+
                 if (!gifEnviado) {
-                    await reply(sock, from, 
+                    await reply(sock, from,
                         `🔫 *CLIQUE!* Nada aconteceu... 😰\n\n` +
                         `😅 @${sender.split('@')[0]} ${frase}!\n\n` +
                         `🎲 *Próxima vez:* @${proximoJogador.split('@')[0]}\n` +
@@ -4459,34 +4465,34 @@ async function processarJogadas(sock, text, from, normalized) {
     try {
         const sender = normalized.key.participant || from;
         const numero = parseInt(text.trim());
-        
+
         // Jogo da Velha
         global.jogoDaVelha = global.jogoDaVelha || {};
         if (global.jogoDaVelha[from] && global.jogoDaVelha[from].ativo) {
             const jogo = global.jogoDaVelha[from];
-            
+
             // Verifica se é a vez do jogador
             if (sender !== jogo.vezDe) {
                 return false; // Não é a vez dele, ignora
             }
-            
+
             // Verifica se o número é válido (1-9)
             if (numero >= 1 && numero <= 9) {
                 const posicao = numero - 1;
-                
+
                 // Verifica se a posição está livre
                 if (jogo.tabuleiro[posicao].includes("️⃣")) {
                     // Faz a jogada
                     const simbolo = sender === jogo.jogador1 ? "❌" : "⭕";
                     jogo.tabuleiro[posicao] = simbolo;
-                    
+
                     // Verifica se ganhou
                     const combinacoes = [
                         [0,1,2], [3,4,5], [6,7,8], // linhas
                         [0,3,6], [1,4,7], [2,5,8], // colunas
                         [0,4,8], [2,4,6] // diagonais
                     ];
-                    
+
                     let ganhou = false;
                     for (const combo of combinacoes) {
                         if (combo.every(pos => jogo.tabuleiro[pos] === simbolo)) {
@@ -4494,14 +4500,14 @@ async function processarJogadas(sock, text, from, normalized) {
                             break;
                         }
                     }
-                    
-                    const tabuleiro = 
+
+                    const tabuleiro =
                         `${jogo.tabuleiro[0]} ${jogo.tabuleiro[1]} ${jogo.tabuleiro[2]}\n` +
                         `${jogo.tabuleiro[3]} ${jogo.tabuleiro[4]} ${jogo.tabuleiro[5]}\n` +
                         `${jogo.tabuleiro[6]} ${jogo.tabuleiro[7]} ${jogo.tabuleiro[8]}`;
-                    
+
                     if (ganhou) {
-                        await reply(sock, from, 
+                        await reply(sock, from,
                             `🏆 *JOGO DA VELHA - VITÓRIA!*\n\n` +
                             `${tabuleiro}\n\n` +
                             `🎉 @${sender.split('@')[0]} GANHOU!\n` +
@@ -4511,10 +4517,10 @@ async function processarJogadas(sock, text, from, normalized) {
                         delete global.jogoDaVelha[from];
                         return true;
                     }
-                    
+
                     // Verifica empate
                     if (jogo.tabuleiro.every(pos => !pos.includes("️⃣"))) {
-                        await reply(sock, from, 
+                        await reply(sock, from,
                             `🤝 *JOGO DA VELHA - EMPATE!*\n\n` +
                             `${tabuleiro}\n\n` +
                             `😅 Deu velha! Ninguém ganhou!`
@@ -4522,654 +4528,18 @@ async function processarJogadas(sock, text, from, normalized) {
                         delete global.jogoDaVelha[from];
                         return true;
                     }
-                    
+
                     // Alterna vez
                     jogo.vezDe = sender === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
-                    
-                    await reply(sock, from, 
+
+                    await reply(sock, from,
                         `⭕ *JOGO DA VELHA*\n\n` +
                         `${tabuleiro}\n\n` +
                         `🎯 Vez de: @${jogo.vezDe.split('@')[0]}\n` +
-                        `💡 Digite um número de 1 a 9!`,
-                        [jogo.vezDe]
-                    );
-                    return true;
-                } else {
-                    await reply(sock, from, `❌ Posição ${numero} já ocupada! Escolha outra.`);
-                    return true;
-                }
-            }
-        }
-        
-        // Jogo da Forca
-        global.jogoDaForca = global.jogoDaForca || {};
-        if (global.jogoDaForca[from] && global.jogoDaForca[from].ativo) {
-            const jogo = global.jogoDaForca[from];
-            const letra = text.toUpperCase().trim();
-            
-            // Verifica se é uma letra válida
-            if (letra.length === 1 && /[A-Z]/.test(letra)) {
-                if (jogo.letrasUsadas.includes(letra)) {
-                    await reply(sock, from, `❌ Letra "${letra}" já foi usada!`);
-                    return true;
-                }
-                
-                jogo.letrasUsadas.push(letra);
-                
-                const desenhos = [
-                    "```\n  +---+\n  |   |\n      |\n      |\n      |\n      |\n=========```",
+                        `💡 Digite um número de 1\n  +---+\n  |   |\n      |\n      |\n      |\n      |\n=========```",
                     "```\n  +---+\n  |   |\n  O   |\n      |\n      |\n      |\n=========```",
                     "```\n  +---+\n  |   |\n  O   |\n  |   |\n      |\n      |\n=========```",
                     "```\n  +---+\n  |   |\n  O   |\n /|   |\n      |\n      |\n=========```",
                     "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n      |\n      |\n=========```",
                     "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n /    |\n      |\n=========```",
-                    "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n=========```"
-                ];
-                
-                if (jogo.palavra.includes(letra)) {
-                    // Acertou a letra
-                    let palavraOculta = "";
-                    for (const char of jogo.palavra) {
-                        if (jogo.letrasUsadas.includes(char)) {
-                            palavraOculta += char + " ";
-                        } else {
-                            palavraOculta += "_ ";
-                        }
-                    }
-                    
-                    jogo.palavraOculta = palavraOculta;
-                    
-                    // Verifica se ganhou
-                    if (!palavraOculta.includes("_")) {
-                        await reply(sock, from, 
-                            `🏆 *JOGO DA FORCA - VITÓRIA!*\n\n` +
-                            `${desenhos[jogo.erros]}\n\n` +
-                            `🎉 Palavra: ${jogo.palavra}\n` +
-                            `✅ @${sender.split('@')[0]} ganhou!`,
-                            [sender]
-                        );
-                        delete global.jogoDaForca[from];
-                        return true;
-                    }
-                    
-                    await reply(sock, from, 
-                        `✅ *ACERTOU A LETRA "${letra}"!*\n\n` +
-                        `${desenhos[jogo.erros]}\n\n` +
-                        `📝 Palavra: ${palavraOculta}\n` +
-                        `❌ Erros: ${jogo.erros}/6\n` +
-                        `🔤 Letras usadas: ${jogo.letrasUsadas.join(", ")}\n\n` +
-                        `💡 Continue tentando!`
-                    );
-                    return true;
-                } else {
-                    // Errou a letra
-                    jogo.erros++;
-                    
-                    if (jogo.erros >= 6) {
-                        await reply(sock, from, 
-                            `💀 *JOGO DA FORCA - GAME OVER!*\n\n` +
-                            `${desenhos[6]}\n\n` +
-                            `😵 Você foi enforcado!\n` +
-                            `📝 A palavra era: ${jogo.palavra}\n` +
-                            `💔 Mais sorte na próxima!`
-                        );
-                        delete global.jogoDaForca[from];
-                        return true;
-                    }
-                    
-                    await reply(sock, from, 
-                        `❌ *ERROU A LETRA "${letra}"!*\n\n` +
-                        `${desenhos[jogo.erros]}\n\n` +
-                        `📝 Palavra: ${jogo.palavraOculta}\n` +
-                        `❌ Erros: ${jogo.erros}/6\n` +
-                        `🔤 Letras usadas: ${jogo.letrasUsadas.join(", ")}\n\n` +
-                        `💡 Continue tentando!`
-                    );
-                    return true;
-                }
-            }
-        }
-        
-        return false; // Nenhum jogo ativo ou entrada inválida
-    } catch (err) {
-        console.log("Erro ao processar jogadas:", err);
-        return false;
-    }
-}
-
-// Função para responder palavras-chave sem prefixo
-async function responderPalavrasChave(sock, text, from, normalized) {
-    const msg = text.toLowerCase();
-
-    if (msg === "prefixo") {
-        // Reage à mensagem
-        await reagirMensagem(sock, normalized, "🏮");
-        // Envia reply QUOTANDO a mensagem original
-        await reply(sock, from, `🤖 Olá! Meu prefixo é: ${config.prefix}`);
-        return true;
-    }
-
-    if (msg === "ola") {
-        await reagirMensagem(sock, normalized, "👋");
-        await reply(sock, from, "Olá! Como posso ajudar?");
-        return true;
-    }
-
-    // você pode adicionar mais palavras-chave aqui
-    // ex: if(msg === "ajuda") { ... }
-
-    return false;
-}
-
-// Processa respostas do jogo Akinator
-async function processarRespostaAkinator(sock, text, from, normalized) {
-    try {
-        // Só funciona em grupos
-        if (!from.endsWith('@g.us') && !from.endsWith('@lid')) return false;
-
-        // Verifica se há um jogo ativo neste grupo
-        const gameData = akinator.find(game => game.id === from);
-        if (!gameData || gameData.finish === 1 || !gameData.aki) return false;
-
-        const sender = normalized.key.participant || from;
-
-        // Verifica se é a pessoa que iniciou o jogo
-        if (gameData.jogador !== sender) return false;
-
-        // Normaliza a resposta do usuário
-        const resposta = text.toLowerCase().trim();
-        let answer = null;
-
-        // Mapeia as respostas para os valores aceitos pela API do Akinator
-        switch (resposta) {
-            case 'sim':
-            case 's':
-                answer = 0; // Yes
-                break;
-            case 'não':
-            case 'nao':
-            case 'n':
-                answer = 1; // No
-                break;
-            case 'não sei':
-            case 'nao sei':
-            case 'ns':
-                answer = 2; // Don't know
-                break;
-            case 'provavelmente sim':
-            case 'provavel sim':
-            case 'ps':
-                answer = 3; // Probably
-                break;
-            case 'provavelmente não':
-            case 'provavelmente nao':
-            case 'provavel não':
-            case 'provavel nao':
-            case 'pn':
-                answer = 4; // Probably not
-                break;
-            default:
-                return false; // Não é uma resposta válida
-        }
-
-        await reagirMensagem(sock, normalized, "⏳");
-
-        try {
-            const aki = gameData.aki;
-
-            // Envia a resposta para o Akinator
-            await aki.step(answer);
-            gameData.step++;
-
-            // Verifica se o Akinator tem uma resposta/personagem (progresso > 80 ou mais de 78 perguntas)
-            if (aki.progress >= 80 || aki.currentStep >= 78) {
-                await aki.win();
-
-                if (aki.answers && aki.answers.length > 0) {
-                    const personagem = aki.answers[0];
-
-                    // Marca o jogo como finalizado
-                    gameData.finish = 1;
-                    salvarAkinator();
-
-                    // Envia a resposta do Akinator com imagem se disponível
-                    const imagemPersonagem = personagem.absolute_picture_path || personagem.picture_path;
-
-                    if (imagemPersonagem && imagemPersonagem !== 'none') {
-                        await sock.sendMessage(from, {
-                            image: { url: imagemPersonagem },
-                            caption: `🧞‍♂️ *AKINATOR DESCOBRIU!*\n\n` +
-                                    `🎯 **${personagem.name}**\n` +
-                                    `📝 *Descrição:* ${personagem.description || 'Personagem descoberto pelo Akinator'}\n` +
-                                    `🎮 *Acurácia:* ${Math.round(aki.progress)}%\n\n` +
-                                    `✨ O Akinator descobriu em ${aki.currentStep} perguntas!\n` +
-                                    `🎉 Parabéns! Digite *.akinator* para jogar novamente.`,
-                            contextInfo: {
-                                forwardingScore: 100000,
-                                isForwarded: true,
-                                forwardedNewsletterMessageInfo: {
-                                    newsletterJid: "120363289739581116@newsletter",
-                                    newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
-                                },
-                                externalAdReply: {
-                                    title: "© NEEXT LTDA - Akinator",
-                                    body: "🧞‍♂️ O gênio descobriu!",
-                                    thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
-                                    mediaType: 1,
-                                    sourceUrl: "www.neext.online"
-                                }
-                            }
-                        }, { quoted: normalized });
-                    } else {
-                        await reply(sock, from, `🧞‍♂️ *AKINATOR DESCOBRIU!*\n\n` +
-                                              `🎯 **${personagem.name}**\n` +
-                                              `📝 *Descrição:* ${personagem.description || 'Personagem descoberto pelo Akinator'}\n` +
-                                              `🎮 *Acurácia:* ${Math.round(aki.progress)}%\n\n` +
-                                              `✨ O Akinator descobriu em ${aki.currentStep} perguntas!\n` +
-                                              `🎉 Parabéns! Digite *.akinator* para jogar novamente.`);
-                    }
-
-                    await reagirMensagem(sock, normalized, "🎉");
-
-                    // Remove o jogo da lista
-                    const gameIndex = akinator.indexOf(gameData);
-                    akinator.splice(gameIndex, 1);
-                    salvarAkinator();
-
-                } else {
-                    await reply(sock, from, "🧞‍♂️ O Akinator não conseguiu descobrir desta vez! Digite *.resetaki* para tentar novamente.");
-                    gameData.finish = 1;
-                    salvarAkinator();
-                }
-            } else {
-                // Continua o jogo com a próxima pergunta
-                await reply(sock, from, `🧞‍♂️ *AKINATOR QUESTIONS:*\n• Questão ${aki.currentStep + 1}: *${aki.question}*\n\n💭 *Progresso:* ${Math.round(aki.progress)}%`);
-                await reagirMensagem(sock, normalized, "🧞‍♂️");
-
-                salvarAkinator();
-            }
-        } catch (akinatorError) {
-            console.error("❌ Erro na API do Akinator:", akinatorError);
-            await reagirMensagem(sock, normalized, "❌");
-            await reply(sock, from, "❌ Erro na conexão com o Akinator. Digite *.resetaki* para reiniciar o jogo.");
-
-            // Remove o jogo da lista em caso de erro
-            const gameIndex = akinator.findIndex(game => game.id === from);
-            if (gameIndex !== -1) {
-                akinator.splice(gameIndex, 1);
-                salvarAkinator();
-            }
-        }
-
-        return true;
-
-    } catch (err) {
-        console.error("❌ Erro ao processar resposta do Akinator:", err);
-        await reagirMensagem(sock, normalized, "❌");
-        await reply(sock, from, "❌ Erro ao processar sua resposta. Digite *.resetaki* para reiniciar o jogo.");
-        return true;
-    }
-}
-
-// Cache para armazenar quem fez as últimas ações administrativas
-const x9ActionCache = new Map();
-
-// Cache para rastrear últimas atividades de admin (para melhor detecção de autor)
-const adminActivityCache = new Map();
-
-// X9 Monitor - Detecta ações administrativas
-async function processarX9Monitor(sock, groupId, participants, action, author = null) {
-    try {
-        const config = antiSpam.carregarConfigGrupo(groupId);
-        if (!config || !config.x9) return; // X9 não está ativo
-        
-        // Só monitora em grupos
-        if (!groupId.endsWith('@g.us') && !groupId.endsWith('@lid')) return;
-        
-        // Obtém metadados do grupo para verificar mudanças de admin
-        const groupMetadata = await sock.groupMetadata(groupId);
-        
-        for (const participant of participants) {
-            const participantInfo = groupMetadata.participants.find(p => p.id === participant);
-            const number = participant.split('@')[0];
-            const name = participantInfo?.notify || number;
-            
-            let autorAction = author; // Usa o autor passado como parâmetro se disponível
-            let autorName = "Sistema";
-            
-            // Busca quem fez a ação no cache se não foi passado autor
-            if (!autorAction) {
-                const cacheKey = `${groupId}_${action}_${participant}`;
-                const actionData = x9ActionCache.get(cacheKey);
-                
-                if (actionData && actionData.timestamp > Date.now() - 30000) { // 30 segundos
-                    autorAction = actionData.author;
-                }
-            }
-            
-            // Se ainda não tem autor, tenta detectar pelo último admin ativo no grupo
-            if (!autorAction) {
-                const recentActivity = adminActivityCache.get(groupId);
-                if (recentActivity && recentActivity.timestamp > Date.now() - 60000) { // 1 minuto
-                    autorAction = recentActivity.admin;
-                }
-            }
-            
-            // Se encontrou o autor, obtém o nome
-            if (autorAction) {
-                const autorInfo = groupMetadata.participants.find(p => p.id === autorAction);
-                autorName = autorInfo?.notify || autorAction?.split('@')[0] || "Admin";
-                
-                // Log de sucesso
-                console.log(`📊 X9: Autor detectado - ${autorName} (${autorAction.split('@')[0]}) fez ${action} em ${number}`);
-            } else {
-                console.log(`⚠️ X9: Não foi possível detectar autor para ${action} de ${number} no grupo ${groupId.split('@')[0]}`);
-            }
-            
-            let mensagem = "";
-            let emoji = "";
-            let mentionedUsers = [participant];
-            
-            if (autorAction) {
-                mentionedUsers.push(autorAction);
-            }
-            
-            switch (action) {
-                case "promote":
-                    if (autorAction) {
-                        mensagem = `📊 *X9 MONITOR DETECTOU*\n\n👑 **PROMOÇÃO PARA ADMIN**\n\n👤 @${number} foi promovido para administrador\n👨‍💼 **Por:** @${autorAction.split('@')[0]}\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando ações administrativas...`;
-                    } else {
-                        mensagem = `📊 *X9 MONITOR DETECTOU*\n\n👑 **PROMOÇÃO PARA ADMIN**\n\n👤 @${number} foi promovido para administrador\n👨‍💼 **Por:** ${autorName}\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando ações administrativas...`;
-                    }
-                    emoji = "👑";
-                    break;
-                    
-                case "demote":
-                    if (autorAction) {
-                        mensagem = `📊 *X9 MONITOR DETECTOU*\n\n⬇️ **REBAIXAMENTO DE ADMIN**\n\n👤 @${number} foi rebaixado de administrador\n👨‍💼 **Por:** @${autorAction.split('@')[0]}\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando ações administrativas...`;
-                    } else {
-                        mensagem = `📊 *X9 MONITOR DETECTOU*\n\n⬇️ **REBAIXAMENTO DE ADMIN**\n\n👤 @${number} foi rebaixado de administrador\n👨‍💼 **Por:** ${autorName}\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando ações administrativas...`;
-                    }
-                    emoji = "⬇️";
-                    break;
-                    
-                case "add":
-                    if (autorAction) {
-                        mensagem = `📊 *X9 MONITOR DETECTOU*\n\n➕ **MEMBRO ADICIONADO**\n\n👤 @${number} foi adicionado ao grupo\n👨‍💼 **Por:** @${autorAction.split('@')[0]}\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando entrada de membros...`;
-                    } else {
-                        mensagem = `📊 *X9 MONITOR DETECTOU*\n\n➕ **MEMBRO ADICIONADO**\n\n👤 @${number} foi adicionado ao grupo\n👨‍💼 **Por:** ${autorName}\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando entrada de membros...`;
-                    }
-                    emoji = "➕";
-                    break;
-                    
-                case "remove":
-                    if (autorAction) {
-                        mensagem = `📊 *X9 MONITOR DETECTOU*\n\n➖ **MEMBRO REMOVIDO**\n\n👤 @${number} foi removido do grupo\n👨‍💼 **Por:** @${autorAction.split('@')[0]}\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando saída de membros...`;
-                    } else {
-                        mensagem = `📊 *X9 MONITOR DETECTOU*\n\n➖ **MEMBRO REMOVIDO**\n\n👤 @${number} foi removido do grupo\n👨‍💼 **Por:** ${autorName}\n📱 Nome: ${name}\n⏰ Horário: ${new Date().toLocaleString('pt-BR')}\n\n🔍 Monitorando saída de membros...`;
-                    }
-                    emoji = "➖";
-                    break;
-            }
-            
-            if (mensagem) {
-                // Envia notificação do X9 Monitor
-                await sock.sendMessage(groupId, {
-                    text: mensagem,
-                    contextInfo: {
-                        mentionedJid: mentionedUsers,
-                        forwardingScore: 100000,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: "120363289739581116@newsletter",
-                            newsletterName: "📊⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗫𓋌𝟿 𝗠𝗢𝗡𝗜𝗧𝗢𝗥⦙⦙ꜣྀ"
-                        },
-                        externalAdReply: {
-                            title: "© NEEXT LTDA - X9 Monitor",
-                            body: `${emoji} Ação detectada no grupo`,
-                            thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
-                            mediaType: 1,
-                            sourceUrl: "www.neext.online"
-                        }
-                    }
-                });
-                
-                console.log(`📊 X9 MONITOR: ${action} detectado para ${number} no grupo ${groupId} ${autorAction ? 'por ' + autorAction.split('@')[0] : ''}`);
-            }
-            
-            // Limpa o cache após usar
-            x9ActionCache.delete(cacheKey);
-        }
-        
-    } catch (err) {
-        console.error("❌ Erro no X9 Monitor:", err);
-    }
-}
-
-// Função para registrar atividade de admin (para melhor detecção de autor)
-async function registrarAtividadeAdmin(sock, message, from) {
-    try {
-        const config = antiSpam.carregarConfigGrupo(from);
-        if (!config || !config.x9) return; // X9 não está ativo
-        
-        // Só funciona em grupos
-        if (!from.endsWith('@g.us') && !from.endsWith('@lid')) return;
-        
-        const sender = message.key.participant || from;
-        
-        // Verifica se quem mandou a mensagem é admin
-        const ehAdmin = await isAdmin(sock, from, sender);
-        if (ehAdmin) {
-            // Registra a última atividade do admin neste grupo
-            adminActivityCache.set(from, {
-                admin: sender,
-                timestamp: Date.now()
-            });
-            
-            // Auto-limpa após 2 minutos
-            setTimeout(() => {
-                const current = adminActivityCache.get(from);
-                if (current && current.admin === sender && current.timestamp <= Date.now() - 120000) {
-                    adminActivityCache.delete(from);
-                }
-            }, 120000);
-        }
-        
-    } catch (err) {
-        console.error("❌ Erro ao registrar atividade admin:", err);
-    }
-}
-
-// Função para detectar quem fez ações administrativas através de mensagens do sistema
-async function detectarAutorAcaoX9(sock, message, from) {
-    try {
-        const config = antiSpam.carregarConfigGrupo(from);
-        if (!config || !config.x9) return; // X9 não está ativo
-        
-        // Só funciona em grupos
-        if (!from.endsWith('@g.us') && !from.endsWith('@lid')) return;
-        
-        const sender = message.key.participant || from;
-        const texto = getMessageText(message.message);
-        
-        // Detecta mensagens de sistema do WhatsApp sobre mudanças de admin
-        if (texto.includes('foi promovido') || texto.includes('foi rebaixado') || 
-            texto.includes('foi removido') || texto.includes('foi adicionado') ||
-            texto.includes('agora é admin') || texto.includes('não é mais admin') ||
-            texto.includes('promoveu') || texto.includes('rebaixou') ||
-            texto.includes('removeu') || texto.includes('adicionou')) {
-            
-            // Extrai o número da pessoa que foi afetada
-            const numeroAfetado = texto.match(/@(\d+)/)?.[1];
-            if (numeroAfetado) {
-                const participantAfetado = numeroAfetado + '@s.whatsapp.net';
-                
-                // Determina a ação
-                let action = '';
-                if (texto.includes('agora é admin') || texto.includes('foi promovido') || texto.includes('promoveu')) {
-                    action = 'promote';
-                } else if (texto.includes('não é mais admin') || texto.includes('foi rebaixado') || texto.includes('rebaixou')) {
-                    action = 'demote';
-                } else if (texto.includes('foi adicionado') || texto.includes('adicionou')) {
-                    action = 'add';
-                } else if (texto.includes('foi removido') || texto.includes('removeu')) {
-                    action = 'remove';
-                }
-                
-                if (action) {
-                    // Armazena quem fez a ação no cache
-                    const cacheKey = `${from}_${action}_${participantAfetado}`;
-                    x9ActionCache.set(cacheKey, {
-                        author: sender,
-                        timestamp: Date.now()
-                    });
-                    
-                    console.log(`📊 X9: Ação ${action} de ${participantAfetado.split('@')[0]} por ${sender.split('@')[0]} armazenada no cache`);
-                    
-                    // Auto-limpa o cache após 30 segundos
-                    setTimeout(() => {
-                        x9ActionCache.delete(cacheKey);
-                    }, 30000);
-                }
-            }
-        }
-        
-    } catch (err) {
-        console.error("❌ Erro ao detectar autor da ação X9:", err);
-    }
-}
-
-// Listener de mensagens
-function setupListeners(sock) {
-    // Event listener para participantes do grupo (lista negra + X9 Monitor)
-    sock.ev.on("group-participants.update", async (update) => {
-        try {
-            const { id: groupId, participants, action, author } = update;
-            
-            console.log(`📊 X9 Event - Grupo: ${groupId.split('@')[0]}, Ação: ${action}, Participantes: ${participants.map(p => p.split('@')[0]).join(', ')}, Autor: ${author ? author.split('@')[0] : 'não detectado'}`);
-            
-            // Processamento da lista negra
-            await processarListaNegra(sock, participants, groupId, action);
-            
-            // Monitoramento X9 de ações administrativas com autor detectado
-            await processarX9Monitor(sock, groupId, participants, action, author);
-            
-        } catch (err) {
-            console.error("❌ Erro no event listener de participantes:", err);
-        }
-    });
-
-    sock.ev.on("messages.upsert", async (msgUpdate) => {
-    const messages = msgUpdate?.messages;
-    if (!messages || !Array.isArray(messages)) return;
-
-    for (const m of messages) {
-        try {
-            if (!m.message) continue;
-            const messageId = `${m.key.remoteJid}-${m.key.id}`;
-            if (processedMessages.has(messageId)) continue;
-            processedMessages.add(messageId);
-
-            const { normalized, quoted } = normalizeMessage(m);
-            const text = getMessageText(normalized.message).trim();
-            normalized.text = text;
-
-            const from = normalized.key.remoteJid;
-
-            // logger central
-            const config = obterConfiguracoes();
-            const isCmd = text.startsWith(config.prefix);
-            logMensagem(normalized, text, isCmd);
-
-            // 🔹 Detectar ações administrativas X9 (antes do anti-spam para capturar o autor)
-            await detectarAutorAcaoX9(sock, normalized, from);
-            
-            // 🔹 Registrar atividade de admin para X9 Monitor
-            await registrarAtividadeAdmin(sock, normalized, from);
-
-            // 🔹 Verificação de ANTI-SPAM COMPLETO (antes de tudo)
-            const violacaoDetectada = await processarAntiSpam(sock, normalized);
-            if (violacaoDetectada) continue; // se detectou violação, não processa mais nada
-
-            // 🔹 Processamento do jogo Akinator
-            const akinatorProcessed = await processarRespostaAkinator(sock, text, from, normalized);
-            if (akinatorProcessed) continue; // se processou resposta do Akinator, não processa mais nada
-
-            // 🔹 Processamento de jogadas (Jogo da Velha, Forca, etc.)
-            const jogadaProcessada = await processarJogadas(sock, text, from, normalized);
-            if (jogadaProcessada) continue; // se processou jogada, não processa mais nada
-
-            // 🔹 Palavras-chave sem prefixo
-            const respondeu = await responderPalavrasChave(sock, text, from, normalized);
-            if (respondeu) continue; // se respondeu, não processa comandos
-
-            // 🔹 Comandos com prefixo
-            if (isCmd) {
-                const [cmd, ...args] = text.slice(config.prefix.length).trim().split(/ +/);
-                const command = cmd.toLowerCase();
-
-                // 🔹 Verificação de registro (exceto para comando "rg")
-                if (command !== "rg") {
-                    const sender = normalized.key.participant || from;
-                    const numeroUsuario = sender.split('@')[0];
-                    
-                    if (!registros.usuarioRegistrado(numeroUsuario)) {
-                        await reagirMensagem(sock, normalized, "🚫");
-                        await reply(sock, from, `🚫 *ACESSO NEGADO!*\n\n❌ Você não está registrado no sistema!\n\n📝 Para se registrar, digite:\n\`\`\`${config.prefix}rg\`\`\`\n\n⚠️ Apenas usuários registrados podem usar o bot!`, [sender]);
-                        continue; // Não processa o comando se não estiver registrado
-                    }
-                }
-
-                try {
-                    await handleCommand(sock, normalized, command, args, from, quoted);
-                } catch (err) {
-                    console.error(`❌ Erro no comando "${command}":`, err);
-                    await reply(sock, from, "❌ Comando falhou. Tente novamente.");
-                }
-            }
-
-            // 🔹 /s sem prefixo (comando especial)
-            else if (text.startsWith("/s")) {
-                try {
-                    // 🔹 Verificação de registro para comando /s
-                    const sender = normalized.key.participant || from;
-                    const numeroUsuario = sender.split('@')[0];
-                    
-                    if (!registros.usuarioRegistrado(numeroUsuario)) {
-                        await reagirMensagem(sock, normalized, "🚫");
-                        await reply(sock, from, `🚫 *ACESSO NEGADO!*\n\n❌ Você não está registrado no sistema!\n\n📝 Para se registrar, digite:\n\`\`\`${config.prefix}rg\`\`\`\n\n⚠️ Apenas usuários registrados podem usar o bot!`, [sender]);
-                        continue;
-                    }
-
-                    // Verifica se tem mídia marcada ou na própria mensagem
-                    const quotedMsg = normalized.message.extendedTextMessage?.contextInfo?.quotedMessage;
-                    const hasQuotedMedia = quotedMsg && (quotedMsg.imageMessage || quotedMsg.videoMessage);
-                    const hasDirectMedia = normalized.message.imageMessage || normalized.message.videoMessage;
-
-                    if (hasQuotedMedia || hasDirectMedia) {
-                        await handleCommand(sock, normalized, "s", [], from, quoted);
-                    } else {
-                        await reagirMensagem(sock, normalized, "❌");
-                        await reply(sock, from, "❌ Para usar /s você precisa:\n• Marcar uma imagem/vídeo e digitar /s\n• Ou enviar uma imagem/vídeo com legenda /s");
-                    }
-                } catch (err) {
-                    console.error("❌ Erro no comando /s:", err);
-                    await reply(sock, from, "❌ Erro ao processar comando /s");
-                }
-            }
-
-        } catch (err) {
-            console.error(`❌ Erro ao processar ${m.key.id}:`, err);
-            try { 
-                await sock.sendMessage(m.key.remoteJid, { text: "❌ Erro interno. Tente novamente." }, { quoted: m }); 
-            } catch (e) { 
-                console.error("Falha ao enviar erro:", e); 
-            }
-        }
-    }
-});
-    console.log("✅ Listener de mensagens ATIVADO — processando TUDO (inclusive fromMe).");
-}
-
-// Exporta para iniciar no arquivo principal de conexão
-module.exports = { handleCommand, setupListeners };
+                    "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n=========
