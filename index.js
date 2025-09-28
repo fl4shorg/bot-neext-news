@@ -1971,8 +1971,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                         newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
                     },
                     externalAdReply: {
-                        title: "📱 NEEXT MENU",
-                        body: "© NEEXT LTDA • Menu Principal",
+                        title: obterSaudacao(),
+                        body: `${totalComandos} comandos`,
                         thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
                         mediaType: 1,
                         sourceUrl: "https://www.neext.online"
