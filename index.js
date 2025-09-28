@@ -3327,11 +3327,11 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 });
                 const gifBuffer = Buffer.from(response.data);
                 
-                // Envia como documento GIF (mais confiável)
+                // Envia como video/gif para ser tratado como imagem animada
                 await sock.sendMessage(from, {
-                    document: gifBuffer,
-                    fileName: "assassinato.gif",
+                    video: gifBuffer,
                     mimetype: "image/gif",
+                    gifPlayback: true,
                     caption: `💀 *ASSASSINATO!*\n\n@${sender.split('@')[0]} matou @${target.split('@')[0]}! ⚰️\n\n🩸 RIP... F no chat`,
                     mentions: [sender, target],
                     contextInfo: {
@@ -3384,11 +3384,11 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 });
                 const gifBuffer = Buffer.from(response.data);
                 
-                // Envia como documento
+                // Envia como video/gif para ser tratado como imagem animada
                 await sock.sendMessage(from, {
-                    document: gifBuffer,
-                    fileName: "tiro.gif",
+                    video: gifBuffer,
                     mimetype: "image/gif",
+                    gifPlayback: true,
                     caption: `🔫 *TIRO CERTEIRO!*\n\n@${sender.split('@')[0]} atirou em @${target.split('@')[0]}! 💥\n\n🎯 Pegou em cheio!`,
                     mentions: [sender, target],
                     contextInfo: {
@@ -4339,12 +4339,17 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 // Força final do jogo - alguém deve morrer
                 const vencedor = sender === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
                 
+                // Baixa o GIF primeiro
+                const response = await axios.get("https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif", {
+                    responseType: 'arraybuffer',
+                    timeout: 10000
+                });
+                const gifBuffer = Buffer.from(response.data);
+                
                 await sock.sendMessage(from, {
-                    document: { 
-                        url: "https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif",
-                        mimetype: "image/gif",
-                        fileName: "bang.gif"
-                    },
+                    video: gifBuffer,
+                    mimetype: "image/gif",
+                    gifPlayback: true,
                     caption: 
                         `💥 *BANG! JOGO FORÇADO!* 💥\n\n` +
                         `💀 @${sender.split('@')[0]} morreu na câmara extra! 🔫\n\n` +
@@ -4366,12 +4371,17 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 // BANG! Jogador morreu
                 const vencedor = sender === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
                 
+                // Baixa o GIF primeiro
+                const responseBang = await axios.get("https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif", {
+                    responseType: 'arraybuffer',
+                    timeout: 10000
+                });
+                const gifBangBuffer = Buffer.from(responseBang.data);
+                
                 await sock.sendMessage(from, {
-                    document: { 
-                        url: "https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif",
-                        mimetype: "image/gif",
-                        fileName: "bang.gif"
-                    },
+                    video: gifBangBuffer,
+                    mimetype: "image/gif",
+                    gifPlayback: true,
                     caption: 
                         `💥 *BANG! GAME OVER!* 💥\n\n` +
                         `💀 @${sender.split('@')[0]} puxou a bala fatal e morreu! 🔫\n\n` +
@@ -4398,12 +4408,17 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 const frase = sobrevivencia[Math.floor(Math.random() * sobrevivencia.length)];
                 
                 const configBot = obterConfiguracoes();
+                // Baixa o GIF do clique primeiro
+                const responseClique = await axios.get("https://i.ibb.co/yFvQCn1p/3b7300aa2a120ec29a2b4de808f40a77.gif", {
+                    responseType: 'arraybuffer',
+                    timeout: 10000
+                });
+                const gifCliqueBuffer = Buffer.from(responseClique.data);
+                
                 await sock.sendMessage(from, {
-                    document: { 
-                        url: "https://i.ibb.co/yFvQCn1p/3b7300aa2a120ec29a2b4de808f40a77.gif",
-                        mimetype: "image/gif",
-                        fileName: "clique.gif"
-                    },
+                    video: gifCliqueBuffer,
+                    mimetype: "image/gif",
+                    gifPlayback: true,
                     caption: 
                         `🔫 *CLIQUE!* Nada aconteceu... 😰\n\n` +
                         `😅 @${sender.split('@')[0]} ${frase}!\n\n` +
