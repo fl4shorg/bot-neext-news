@@ -16,33 +16,53 @@ const settings = require("./settings/settings.json");
 const prefix = settings.prefix; // pega exatamente o que está no JSON
 
 async function perguntarMetodoConexao() {
-    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-    return new Promise(resolve => {
-        console.log("\n🔐 Escolha o método de conexão:");
-        console.log("1 - QR Code (recomendado para desktop)");
-        console.log("2 - Código de Pareamento (para celular)");
-        rl.question("\n➡️ Digite 1 ou 2: ", (opcao) => {
-            rl.close();
-            if(opcao.trim() === "1") resolve("qr");
-            else if(opcao.trim() === "2") resolve("pairing");
-            else { console.log("❌ Opção inválida. Usando QR Code por padrão."); resolve("qr"); }
-        });
-    });
+    // Para Replit environment, usa QR Code por padrão para primeira conexão
+    console.log("\n🔐 Primeiro acesso detectado - usando QR Code");
+    console.log("📱 Escaneie o QR Code com seu WhatsApp para conectar");
+    console.log("⚠️ Se preferir código de pareamento, defina BOT_CONNECTION_METHOD=pairing no ambiente");
+    
+    // Verifica se há preferência de método no ambiente
+    const metodoEnv = process.env.BOT_CONNECTION_METHOD;
+    if (metodoEnv === "pairing") {
+        console.log("🔧 Método de pareamento definido via variável de ambiente");
+        return "pairing";
+    }
+    
+    return "qr";
 }
 
 async function perguntarNumero() {
-    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-    return new Promise(resolve => {
-        rl.question("📱 Digite seu número (ex: 5527999999999): ", (numero) => {
-            rl.close();
-            const numeroLimpo = numero.replace(/\D/g,'');
-            if(!numeroLimpo.match(/^\d{10,15}$/)){
-                console.log("❌ Número inválido. Deve ter entre 10 e 15 dígitos.");
-                process.exit(1);
-            }
-            resolve(numeroLimpo);
-        });
-    });
+    // Para Replit, usa número do environment ou do settings.json
+    const numeroEnv = process.env.BOT_OWNER_NUMBER || process.env.BOT_PHONE_NUMBER;
+    
+    if (numeroEnv) {
+        const numeroLimpo = numeroEnv.replace(/\D/g,'');
+        if(!numeroLimpo.match(/^\d{10,15}$/)){
+            console.log("❌ Número no environment inválido. Deve ter entre 10 e 15 dígitos.");
+            console.log("💡 Defina BOT_OWNER_NUMBER ou BOT_PHONE_NUMBER corretamente");
+            process.exit(1);
+        }
+        console.log(`📱 Usando número configurado: ${numeroLimpo}`);
+        return numeroLimpo;
+    }
+    
+    // Fallback: tenta usar do settings
+    const config = require('./config/environment.js');
+    const numeroSettings = config.botOwner.number;
+    
+    if (numeroSettings && numeroSettings !== 'PLACEHOLDER_NUMBER') {
+        const numeroLimpo = numeroSettings.replace(/\D/g,'');
+        if(!numeroLimpo.match(/^\d{10,15}$/)){
+            console.log("❌ Número nas configurações inválido.");
+            process.exit(1);
+        }
+        console.log(`📱 Usando número das configurações: ${numeroLimpo}`);
+        return numeroLimpo;
+    }
+    
+    console.log("❌ Número de telefone não configurado!");
+    console.log("💡 Defina BOT_OWNER_NUMBER no environment ou atualize settings.json");
+    process.exit(1);
 }
 
 function formatJid(jid) {
@@ -108,7 +128,6 @@ async function startBot() {
 
     const sock = makeWASocket({
         auth: state,
-        printQRInTerminal: metodo==="qr",
         browser: ["MacOS","Safari","16.5"],
         logger,
         version,
@@ -140,7 +159,19 @@ async function startBot() {
     sock.ev.on("creds.update", saveCreds);
 
     sock.ev.on("connection.update", async (update)=>{
-        const { connection, lastDisconnect } = update;
+        const { connection, lastDisconnect, qr } = update;
+        
+        // Handle QR code
+        if (qr && metodo === "qr") {
+            const qrcode = require('qrcode-terminal');
+            console.log("\n📱 QR CODE GERADO:");
+            console.log("════════════════════════════════════════");
+            qrcode.generate(qr, { small: true });
+            console.log("════════════════════════════════════════");
+            console.log("📱 Escaneie este QR Code com seu WhatsApp");
+            console.log("⚡ O QR Code expira em 60 segundos");
+        }
+        
         if(connection==="open"){
             mostrarBanner();
             console.log(`✅ Conectado ao sistema da Neext em ${new Date().toLocaleString()}`);
