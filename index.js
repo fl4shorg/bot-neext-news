@@ -3295,7 +3295,11 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const target = mentioned[0];
             await sock.sendMessage(from, {
-                image: { url: "https://i.ibb.co/DgWJjjK/58712ef364b6fdef5ae9bcbb48fc0fdb.jpg" },
+                document: { 
+                    url: "https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif",
+                    mimetype: "image/gif",
+                    fileName: "matar.gif"
+                },
                 caption: `💀 *ASSASSINATO!*\n\n@${sender.split('@')[0]} matou @${target.split('@')[0]}! ⚰️\n\n🩸 RIP... F no chat`,
                 mentions: [sender, target]
             });
@@ -3325,7 +3329,11 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const target = mentioned[0];
             await sock.sendMessage(from, {
-                image: { url: "https://i.ibb.co/KpVxK1PB/9ab46702d1f0669a0ae40464b25568f2.jpg" },
+                document: { 
+                    url: "https://i.ibb.co/KpVxK1PB/9ab46702d1f0669a0ae40464b25568f2.gif",
+                    mimetype: "image/gif",
+                    fileName: "atirar.gif"
+                },
                 caption: `🔫 *TIRO CERTEIRO!*\n\n@${sender.split('@')[0]} atirou em @${target.split('@')[0]}! 💥\n\n🎯 Pegou em cheio!`,
                 mentions: [sender, target]
             });
@@ -3441,7 +3449,11 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const target = mentioned[0];
             await sock.sendMessage(from, {
-                image: { url: "https://i.ibb.co/yFvQCn1p/3b7300aa2a120ec29a2b4de808f40a77.jpg" },
+                document: { 
+                    url: "https://i.ibb.co/yFvQCn1p/3b7300aa2a120ec29a2b4de808f40a77.gif",
+                    mimetype: "image/gif",
+                    fileName: "beijar.gif"
+                },
                 caption: `💋 *BEIJINHO!*\n\n@${sender.split('@')[0]} deu um beijinho em @${target.split('@')[0]}! 😘\n\n💕 Que fofo!`,
                 mentions: [sender, target]
             });
@@ -3471,7 +3483,11 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const target = mentioned[0];
             await sock.sendMessage(from, {
-                image: { url: "https://i.ibb.co/2YCMjzRm/60dc462e373c72f3f9155d48c79b428e.jpg" },
+                document: { 
+                    url: "https://i.ibb.co/2YCMjzRm/60dc462e373c72f3f9155d48c79b428e.gif",
+                    mimetype: "image/gif",
+                    fileName: "atropelar.gif"
+                },
                 caption: `🚗💨 *ATROPELAMENTO!*\n\n@${target.split('@')[0]} foi atropelado(a) por @${sender.split('@')[0]}! 🚑\n\n😵‍💫 Chamem o SAMU!`,
                 mentions: [sender, target]
             });
@@ -3501,7 +3517,11 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const target = mentioned[0];
             await sock.sendMessage(from, {
-                image: { url: "https://i.ibb.co/cKZh59pt/a0b90d2ad7ed5d684b582ef42a3bb7d7.jpg" },
+                document: { 
+                    url: "https://i.ibb.co/cKZh59pt/a0b90d2ad7ed5d684b582ef42a3bb7d7.gif",
+                    mimetype: "image/gif",
+                    fileName: "dedo.gif"
+                },
                 caption: `🖕 *DEDO!*\n\n@${sender.split('@')[0]} fez dedo para @${target.split('@')[0]}! 😠\n\n🤬 Vai se lascar!`,
                 mentions: [sender, target]
             });
@@ -3531,7 +3551,11 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             const target = mentioned[0];
             await sock.sendMessage(from, {
-                image: { url: "https://i.ibb.co/TDtD6FRG/b86f0e859c792c3adc32321e43e3141c.jpg" },
+                document: { 
+                    url: "https://i.ibb.co/TDtD6FRG/b86f0e859c792c3adc32321e43e3141c.gif",
+                    mimetype: "image/gif",
+                    fileName: "sarrar.gif"
+                },
                 caption: `🍑 *SARRADA!*\n\n@${sender.split('@')[0]} deu uma sarrada em @${target.split('@')[0]}! 🔥\n\n😈 Que safadeza!`,
                 mentions: [sender, target]
             });
@@ -4268,7 +4292,11 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 const vencedor = sender === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
                 
                 await sock.sendMessage(from, {
-                    image: { url: "https://i.ibb.co/DgWJjjK/58712ef364b6fdef5ae9bcbb48fc0fdb.jpg" },
+                    document: { 
+                        url: "https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif",
+                        mimetype: "image/gif",
+                        fileName: "bang.gif"
+                    },
                     caption: 
                         `💥 *BANG! JOGO FORÇADO!* 💥\n\n` +
                         `💀 @${sender.split('@')[0]} morreu na câmara extra! 🔫\n\n` +
@@ -4291,7 +4319,11 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 const vencedor = sender === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
                 
                 await sock.sendMessage(from, {
-                    image: { url: "https://i.ibb.co/DgWJjjK/58712ef364b6fdef5ae9bcbb48fc0fdb.jpg" },
+                    document: { 
+                        url: "https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif",
+                        mimetype: "image/gif",
+                        fileName: "bang.gif"
+                    },
                     caption: 
                         `💥 *BANG! GAME OVER!* 💥\n\n` +
                         `💀 @${sender.split('@')[0]} puxou a bala fatal e morreu! 🔫\n\n` +
@@ -4319,7 +4351,11 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 
                 const configBot = obterConfiguracoes();
                 await sock.sendMessage(from, {
-                    image: { url: "https://i.ibb.co/yFvQCn1p/3b7300aa2a120ec29a2b4de808f40a77.jpg" },
+                    document: { 
+                        url: "https://i.ibb.co/yFvQCn1p/3b7300aa2a120ec29a2b4de808f40a77.gif",
+                        mimetype: "image/gif",
+                        fileName: "clique.gif"
+                    },
                     caption: 
                         `🔫 *CLIQUE!* Nada aconteceu... 😰\n\n` +
                         `😅 @${sender.split('@')[0]} ${frase}!\n\n` +
