@@ -4227,8 +4227,12 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             let mediaData = null;
             if (message.message.imageMessage) {
                 mediaData = message.message.imageMessage;
-            } else if (quoted?.imageMessage) {
-                mediaData = quoted.imageMessage;
+            } else {
+                // Verifica se há mensagem marcada com imagem
+                const quotedMsg = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+                if (quotedMsg?.imageMessage) {
+                    mediaData = quotedMsg.imageMessage;
+                }
             }
 
             if (!mediaData) {
