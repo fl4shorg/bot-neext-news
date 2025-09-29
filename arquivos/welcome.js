@@ -172,8 +172,8 @@ class WelcomeSystem {
             let mensagemFinal = config.mensagem || `@${numeroLimpo} bem-vindo ao ${nomeGrupo}!`;
 
             // Substitui TODOS os placeholders (incluindo variações com e sem #)
-            // Para #numerodele#, não coloca @ porque já vai ser mencionado automaticamente
-            mensagemFinal = mensagemFinal.replace(/#numerodele#?/g, numeroLimpo);
+            // Para #numerodele#, usa @ + número para mencionar corretamente
+            mensagemFinal = mensagemFinal.replace(/#numerodele#?/g, `@${numeroLimpo}`);
             mensagemFinal = mensagemFinal.replace(/#nomedogrupo#?/g, nomeGrupo);
             mensagemFinal = mensagemFinal.replace(/#totalmembros#?/g, totalMembros.toString());
             
