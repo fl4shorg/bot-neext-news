@@ -15,7 +15,6 @@ const os = require("os");
 const { writeExif } = require("./arquivos/sticker.js");
 const { sendImageAsSticker, sendVideoAsSticker } = require("./arquivos/rename.js");
 const Jimp = require("jimp");
-const pinterest = require('./Pinterest.js');
 const { igdl } = require('./Instagram.js');
 const settings = require('./settings/settings.json');
 const envConfig = require('./config/environment.js');
@@ -1370,7 +1369,10 @@ async function handleCommand(sock, message, command, args, from, quoted) {
         case 'pinterest': {
             const query = args.join(' ');
             if (!query) {
-                await sock.sendMessage(from, { text: '❌ Digite uma palavra-chave para buscar!\n\nExemplo: *.pinterest gatos*' }, { quoted: message });
+                const config = obterConfiguracoes();
+                await sock.sendMessage(from, { 
+                    text: `❌ Digite uma palavra-chave para buscar!\n\nExemplo: *${config.prefix}pinterest naruto*` 
+                }, { quoted: message });
                 break;
             }
 
@@ -1378,13 +1380,17 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             await reagirMensagem(sock, message, "⏳");
 
             try {
-                // Nova API do Pinterest com timeout
+                // API Real do Pinterest
                 const response = await axios.get(`https://api.nekolabs.my.id/discovery/pinterest/search?q=${encodeURIComponent(query)}`, {
-                    timeout: 10000 // 10 segundos de timeout
+                    timeout: 15000, // 15 segundos de timeout
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                    }
                 });
                 
-                if (!response.data || typeof response.data.status !== 'boolean' || !response.data.status || 
-                    !Array.isArray(response.data.result) || response.data.result.length === 0) {
+                console.log(`📥 Resposta da API Pinterest:`, response.data?.status, response.data?.result?.length);
+                
+                if (!response.data || !response.data.status || !Array.isArray(response.data.result) || response.data.result.length === 0) {
                     await reagirMensagem(sock, message, "❌");
                     await sock.sendMessage(from, {
                         text: '❌ Nenhuma imagem encontrada para essa busca. Tente uma palavra-chave diferente.'
@@ -1392,8 +1398,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     break;
                 }
 
-                // Pega até 5 imagens dos resultados
-                const imagesToSend = response.data.result.slice(0, 5);
+                // Pega até 6 imagens dos resultados
+                const imagesToSend = response.data.result.slice(0, 6);
                 console.log(`📥 Encontradas ${response.data.result.length} imagens, enviando ${imagesToSend.length}`);
 
                 await reagirMensagem(sock, message, "✅");
@@ -1403,11 +1409,12 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     const result = imagesToSend[i];
 
                     // Prepara a legenda da imagem
-                    const caption = `📌 *Pinterest Search Result ${i + 1}*\n\n` +
-                                  `👤 *Por:* ${result.author?.fullname || result.author?.name || 'Anônimo'}\n` +
-                                  `📝 *Descrição:* ${result.caption || 'Sem descrição'}\n` +
-                                  `👥 *Seguidores:* ${result.author?.followers || 0}\n\n` +
-                                  `🔗 *Link:* ${result.url}\n\n` +
+                    const caption = `📌 *Pinterest Search Result ${i + 1}/${imagesToSend.length}*\n\n` +
+                                  `👤 **Autor:** ${result.author?.fullname || result.author?.name || 'Anônimo'}\n` +
+                                  `📝 **Descrição:** ${result.caption || 'Sem descrição'}\n` +
+                                  `👥 **Seguidores:** ${result.author?.followers || 0}\n\n` +
+                                  `🔗 **Link:** ${result.url}\n\n` +
+                                  `🔍 **Busca:** ${query}\n` +
                                   `© NEEXT LTDA - Pinterest Search`;
 
                     // Envia a imagem
@@ -1422,18 +1429,18 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                                 newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
                             },
                             externalAdReply: {
-                                title: "© NEEXT LTDA - Pinterest Search",
-                                body: `📌 Resultado ${i + 1} de ${imagesToSend.length} • Instagram: @neet.tk`,
-                                thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
+                                title: "📌 NEEXT PINTEREST SEARCH",
+                                body: `Resultado ${i + 1} de ${imagesToSend.length} • Instagram: @neet.tk`,
+                                thumbnailUrl: result.imageUrl,
                                 mediaType: 1,
-                                sourceUrl: "www.neext.online"
+                                sourceUrl: result.url
                             }
                         }
-                    }, { quoted: message });
+                    }, { quoted: selinho });
 
                     // Aguarda um pouco entre os envios para evitar spam
                     if (i < imagesToSend.length - 1) {
-                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        await new Promise(resolve => setTimeout(resolve, 1500));
                     }
                 }
 
@@ -1441,9 +1448,24 @@ async function handleCommand(sock, message, command, args, from, quoted) {
 
             } catch (error) {
                 console.error('❌ Erro ao buscar no Pinterest:', error.message);
+                
+                let errorMessage = '❌ Erro ao buscar imagens no Pinterest.';
+                
+                if (error.code === 'ENOTFOUND') {
+                    errorMessage += ' Problema de conexão com a API.';
+                } else if (error.code === 'ETIMEDOUT') {
+                    errorMessage += ' Timeout na requisição. Tente novamente.';
+                } else if (error.response?.status === 429) {
+                    errorMessage += ' Muitas requisições. Aguarde um momento.';
+                } else if (error.response?.status >= 500) {
+                    errorMessage += ' API temporariamente indisponível.';
+                } else {
+                    errorMessage += ' Tente novamente mais tarde.';
+                }
+                
                 await reagirMensagem(sock, message, "❌");
                 await sock.sendMessage(from, {
-                    text: '❌ Erro ao buscar imagens no Pinterest. Tente novamente mais tarde!'
+                    text: errorMessage
                 }, { quoted: message });
             }
             break;
