@@ -1090,13 +1090,17 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             const featureName = featureNames[command];
 
             // Carrega configuração atual do grupo
-            const config = antiSpam.carregarConfigGrupo(from);
-            if (!config) {
-                await reply(sock, from, `❌ Erro ao carregar configuração do grupo.`);
-                break;
+            let estadoAtual;
+            if (command === "welcome1") {
+                estadoAtual = welcomeSystem.isWelcomeAtivo(from);
+            } else {
+                const config = antiSpam.carregarConfigGrupo(from);
+                if (!config) {
+                    await reply(sock, from, `❌ Erro ao carregar configuração do grupo.`);
+                    break;
+                }
+                estadoAtual = config[command] || false;
             }
-
-            const estadoAtual = config[command] || false;
 
             // Lógica especial para o comando rankativo
             if (command === "rankativo") {
@@ -1153,7 +1157,12 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     }
                 } else {
                     // Precisa ativar
-                    const resultado = antiSpam.toggleAntiFeature(from, command, 'on');
+                    let resultado;
+                    if (command === "welcome1") {
+                        resultado = welcomeSystem.toggleWelcome(from, 'on');
+                    } else {
+                        resultado = antiSpam.toggleAntiFeature(from, command, 'on');
+                    }
                     if (resultado) {
                         await reagirMensagem(sock, message, "✅");
                         if (command === "rankativo") {
@@ -1181,7 +1190,12 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     }
                 } else {
                     // Precisa desativar
-                    const resultado = antiSpam.toggleAntiFeature(from, command, 'off');
+                    let resultado;
+                    if (command === "welcome1") {
+                        resultado = !welcomeSystem.toggleWelcome(from, 'off');
+                    } else {
+                        resultado = antiSpam.toggleAntiFeature(from, command, 'off');
+                    }
                     if (resultado !== undefined) {
                         await reagirMensagem(sock, message, "❌");
                         if (command === "rankativo") {
@@ -5870,6 +5884,13 @@ function setupListeners(sock) {
     sock.ev.on('group-participants.update', async ({ id, participants, action }) => {
         try {
             await processarListaNegra(sock, participants, id, action);
+            
+            // Processa welcome para novos membros
+            if (action === 'add') {
+                for (const participant of participants) {
+                    await welcomeSystem.processarWelcome(sock, id, participant);
+                }
+            }
         } catch (error) {
             console.error('❌ Erro ao processar participantes do grupo:', error);
         }

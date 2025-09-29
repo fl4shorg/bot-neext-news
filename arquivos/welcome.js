@@ -173,7 +173,7 @@ class WelcomeSystem {
 
             // Gera e envia welcome card
             const avatarUrl = await this.obterAvatarUsuario(sock, newMember);
-            const nomeUsuario = numeroMember; // Pode ser melhorado obtendo nome real
+            const nomeUsuario = numeroMembro; // Pode ser melhorado obtendo nome real
             
             const welcomeCardUrl = await this.gerarWelcomeCard(
                 avatarUrl, 
@@ -185,12 +185,12 @@ class WelcomeSystem {
             if (welcomeCardUrl) {
                 await sock.sendMessage(groupId, {
                     image: { url: welcomeCardUrl },
-                    caption: `🎉 *Welcome Card para @${numeroMember}*`,
+                    caption: `🎉 *Welcome Card para @${numeroMembro}*`,
                     mentions: [newMember]
                 });
             }
 
-            console.log(`✅ Welcome processado para ${numeroMember} no grupo ${nomeGrupo}`);
+            console.log(`✅ Welcome processado para ${numeroMembro} no grupo ${nomeGrupo}`);
             return true;
 
         } catch (error) {
