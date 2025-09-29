@@ -1273,7 +1273,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 const configAtual = welcomeSystem.obterConfig(from);
                 const mensagemAtual = configAtual?.mensagem || "Nenhuma configurada";
 
-                await reply(sock, from, `💬 *PERSONALIZAR BEM-VINDO*\n\n📝 *Como usar:*\n\`.mensagembemvindo1 [sua mensagem personalizada]\`\n\n💡 *Exemplo:*\n\`.mensagembemvindo1 Olá #numerodele! 🎉 Seja muito bem-vindo ao #nomedogrupo! Esperamos que você se divirta e participe das conversas!\`\n\n🎨 *Mensagem atual:*\n"${mensagemAtual}"\n\n✨ *Placeholders disponíveis:*\n• \`#numerodele\` - Menciona quem entrou\n• \`#nomedogrupo\` - Nome do grupo  \n• \`#totalmembros\` - Total de membros\n\n⚠️ Você pode usar # livremente na sua mensagem!\n⚠️ Esta será a mensagem COMPLETA de boas-vindas`);
+                await reply(sock, from, `💬 *PERSONALIZAR BEM-VINDO*\n\n📝 *Como usar:*\n\`.mensagembemvindo1 [sua mensagem personalizada]\`\n\n💡 *Exemplo:*\n\`.mensagembemvindo1 Olá #numerodele! 🎉 Seja muito bem-vindo ao #nomedogrupo! Esperamos que você se divirta e participe das conversas!\`\n\n🎨 *Mensagem atual:*\n"${mensagemAtual}"\n\n✨ *Placeholders disponíveis:*\n• \`#numerodele\` - Menciona quem entrou\n• \`#nomedogrupo\` - Nome do grupo  \n• \`#totalmembros\` ou \`#totaldemembros\` - Total de membros\n\n⚠️ Você pode usar # livremente na sua mensagem!\n⚠️ Esta será a mensagem COMPLETA de boas-vindas`);
                 break;
             }
 
@@ -1283,7 +1283,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 
                 if (sucesso) {
                     await reagirMensagem(sock, message, "✅");
-                    await reply(sock, from, `✅ *MENSAGEM PERSONALIZADA*\n\n🎉 Mensagem de boas-vindas atualizada com sucesso!\n\n🎨 *Nova mensagem:*\n"${novaDescricao}"\n\n📝 *Como testar:*\n• Adicione alguém ao grupo para ver a mensagem\n• Use \`.testwelcome\` para testar agora\n\n💡 *Placeholders disponíveis:*\n• \`#numerodele\` - Menciona quem entrou\n• \`#nomedogrupo\` - Nome do grupo\n• \`#totalmembros\` - Total de membros\n\n⚠️ Você pode usar # livremente na sua mensagem!\n⚠️ Sistema deve estar ativo para funcionar`);
+                    await reply(sock, from, `✅ *MENSAGEM PERSONALIZADA*\n\n🎉 Mensagem de boas-vindas atualizada com sucesso!\n\n🎨 *Nova mensagem:*\n"${novaDescricao}"\n\n📝 *Como testar:*\n• Adicione alguém ao grupo para ver a mensagem\n• Use \`.testwelcome\` para testar agora\n\n💡 *Placeholders disponíveis:*\n• \`#numerodele\` - Menciona quem entrou\n• \`#nomedogrupo\` - Nome do grupo\n• \`#totalmembros\` ou \`#totaldemembros\` - Total de membros\n\n⚠️ Você pode usar # livremente na sua mensagem!\n⚠️ Sistema deve estar ativo para funcionar`);
                 } else {
                     await reagirMensagem(sock, message, "❌");
                     await reply(sock, from, "❌ Erro ao configurar mensagem personalizada. Tente novamente.");

@@ -162,7 +162,9 @@ class WelcomeSystem {
             // Para #numerodele#, usa @ + número para menção visual
             mensagemFinal = mensagemFinal.replace(/#numerodele#?/g, `@${numeroLimpo}`);
             mensagemFinal = mensagemFinal.replace(/#nomedogrupo#?/g, nomeGrupo);
+            // Suporta tanto #totalmembros quanto #totaldemembros (com "de")
             mensagemFinal = mensagemFinal.replace(/#totalmembros#?/g, totalMembros.toString());
+            mensagemFinal = mensagemFinal.replace(/#totaldemembros#?/g, totalMembros.toString());
             
             console.log(`🔍 [WELCOME DEBUG] Mensagem após substituição: ${mensagemFinal}`);
 
