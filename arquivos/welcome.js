@@ -167,15 +167,21 @@ class WelcomeSystem {
 
             // Limpa o número (remove @s.whatsapp.net, @lid, e sufixos :xx)
             const numeroLimpo = newMember.replace(/@s\.whatsapp\.net|@lid|:[^@]+/g, '');
+            
+            // Debug para verificar os valores
+            console.log(`🔍 [WELCOME DEBUG] newMember original: ${newMember}`);
+            console.log(`🔍 [WELCOME DEBUG] numeroLimpo: ${numeroLimpo}`);
 
             // Usa APENAS a mensagem personalizada do usuário (sem texto padrão)
             let mensagemFinal = config.mensagem || `@${numeroLimpo} bem-vindo ao ${nomeGrupo}!`;
 
             // Substitui TODOS os placeholders (incluindo variações com e sem #)
-            // Para #numerodele#, substitui por um marcador temporário que será usado para menção
+            // Para #numerodele#, usa o número limpo para menção
             mensagemFinal = mensagemFinal.replace(/#numerodele#?/g, `@${numeroLimpo}`);
             mensagemFinal = mensagemFinal.replace(/#nomedogrupo#?/g, nomeGrupo);
             mensagemFinal = mensagemFinal.replace(/#totalmembros#?/g, totalMembros.toString());
+            
+            console.log(`🔍 [WELCOME DEBUG] Mensagem após substituição: ${mensagemFinal}`);
             
             // Remove #descricao se existir (não substitui, apenas remove)
             mensagemFinal = mensagemFinal.replace(/#descricao#?/g, '').trim();
@@ -197,6 +203,9 @@ class WelcomeSystem {
 
             // Sempre menciona o usuário se a mensagem contém @numeroLimpo
             const mentions = mensagemFinal.includes(`@${numeroLimpo}`) ? [newMember] : [];
+            
+            console.log(`🔍 [WELCOME DEBUG] Mentions array: ${JSON.stringify(mentions)}`);
+            console.log(`🔍 [WELCOME DEBUG] Deve mencionar: ${mensagemFinal.includes(`@${numeroLimpo}`)}`);
 
             // TENTA primeiro com welcome card da API
             let welcomeEnviado = false;
