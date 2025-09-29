@@ -5829,11 +5829,49 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             }
         }
         break;
+
+        // COMANDO DE TESTE DO WELCOME - TEMPORÁRIO
+        case "testwelcome": {
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const ehAdmin = await isAdmin(sock, from, sender);
+            const ehDono = isDono(sender);
+
+            if (!ehAdmin && !ehDono) {
+                await reply(sock, from, "❌ Apenas admins podem usar este comando.");
+                break;
+            }
+
+            try {
+                console.log(`🧪 [TEST-WELCOME] Iniciando teste do welcome no grupo ${from}`);
+                console.log(`🧪 [TEST-WELCOME] Simulando entrada de usuário no grupo`);
+                
+                // Simula um evento de entrada
+                await welcomeSystem.processarWelcome(sock, from, sender);
+                
+                await reagirMensagem(sock, message, "✅");
+                await reply(sock, from, `✅ *TESTE DO WELCOME EXECUTADO*\n\n🧪 Simulei sua entrada no grupo\n📋 Verifique os logs do console\n\n⚠️ Se não apareceu mensagem, o welcome pode estar:\n• Desativado - Use \`.welcome1 on\`\n• Mal configurado - Use \`.welcome1\`\n\n🔧 Este é um comando temporário para debug`);
+            } catch (error) {
+                console.error("❌ Erro no teste welcome:", error);
+                await reagirMensagem(sock, message, "❌");
+                await reply(sock, from, "❌ Erro ao testar welcome. Verifique os logs.");
+            }
+        }
+        break;
     }
 }
 
 // Função para configurar os listeners do bot
 function setupListeners(sock) {
+    // Remove listeners anteriores para evitar duplicação
+    sock.ev.removeAllListeners('messages.upsert');
+    sock.ev.removeAllListeners('group-participants.update');
+    sock.ev.removeAllListeners('call');
+    
     sock.ev.on('messages.upsert', async ({ messages, type }) => {
         if (type !== 'notify') return;
         

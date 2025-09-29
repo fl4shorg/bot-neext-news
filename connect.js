@@ -187,7 +187,7 @@ async function startBot() {
             console.log(`✅ Conectado ao sistema da Neext em ${new Date().toLocaleString()}`);
             await enviarContatoSelinho(sock);
             
-            // Configura listeners de mensagens após conectar
+            // Configura listeners de mensagens após conectar (sempre, incluindo reconexões)
             const { setupListeners } = require("./index.js");
             setupListeners(sock);
             console.log("🔧 Listeners de mensagens configurados!");
