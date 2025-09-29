@@ -195,6 +195,7 @@ function obterMenuDownload() {
 
 🎵 *MÚSICA:*
 • \`${prefix}play [nome]\` - Busca música no YouTube
+• \`${prefix}spotify [link]\` - Download do Spotify
 
 📷 *IMAGENS:*
 • \`${prefix}pinterest [busca]\` - Imagens do Pinterest

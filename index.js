@@ -723,6 +723,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     console.log("📷 Usando foto padrão para usuário sem perfil");
                 }
 
+                const configBot = obterConfiguracoes();
                 const mensagemSucesso =
                     `🎉 *PARABÉNS! REGISTRO REALIZADO COM SUCESSO!* 🎉\n\n` +
                     `✅ *Dados do Registro:*\n` +
@@ -732,7 +733,7 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     `🔢 Você é o usuário #${resultado.registro.numeroRegistro}\n\n` +
                     `📊 *Total de Registros no Sistema:* ${resultado.totalRegistros}\n\n` +
                     `🚀 Agora você pode usar todos os comandos do bot!\n` +
-                    `💡 Digite \`${config.prefix}menu\` para ver os comandos disponíveis`;
+                    `💡 Digite \`${configBot.prefix}menu\` para ver os comandos disponíveis`;
 
                 await sock.sendMessage(from, {
                     image: { url: fotoPerfilUrl },
@@ -2071,6 +2072,128 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                     await reply(sock, from, "❌ Música não encontrada. Tente um termo de busca diferente.");
                 } else {
                     await reply(sock, from, "❌ Erro ao baixar música. Tente novamente mais tarde.");
+                }
+            }
+        }
+        break;
+
+        case "spotify": {
+            // Verifica se foi fornecido um link do Spotify
+            if (!args.length) {
+                const configBot = obterConfiguracoes();
+                await reply(sock, from, `❌ Por favor, forneça o link do Spotify.\n\nExemplo: \`${configBot.prefix}spotify https://open.spotify.com/track/4MhTFsyqIJnjsOweVcU8ug\``);
+                break;
+            }
+
+            const spotifyUrl = args[0];
+
+            // Verifica se é um link válido do Spotify
+            if (!spotifyUrl.includes('open.spotify.com')) {
+                await reply(sock, from, "❌ Por favor, forneça um link válido do Spotify.");
+                break;
+            }
+
+            try {
+                await reagirMensagem(sock, message, "⏳");
+                await reply(sock, from, `🎵 Baixando música do Spotify, aguarde...`);
+
+                // Chama a API do Spotify
+                const apiUrl = `https://api.nekolabs.my.id/downloader/spotify/v1?url=${encodeURIComponent(spotifyUrl)}`;
+                const response = await axios.get(apiUrl, {
+                    timeout: 30000,
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    }
+                });
+
+                if (!response.data || !response.data.status || !response.data.result) {
+                    await reagirMensagem(sock, message, "❌");
+                    await reply(sock, from, "❌ Não foi possível baixar esta música do Spotify. Verifique o link.");
+                    break;
+                }
+
+                const result = response.data.result;
+                
+                if (!result.downloadUrl) {
+                    await reagirMensagem(sock, message, "❌");
+                    await reply(sock, from, "❌ Link de download não encontrado para esta música.");
+                    break;
+                }
+
+                // Baixa o áudio
+                const audioResponse = await axios({
+                    method: 'GET',
+                    url: result.downloadUrl,
+                    responseType: 'arraybuffer',
+                    timeout: 60000
+                });
+
+                const audioBuffer = Buffer.from(audioResponse.data);
+
+                // Baixa a capa se existir
+                let thumbnailBuffer = null;
+                if (result.cover) {
+                    try {
+                        const thumbnailResponse = await axios({
+                            method: 'GET',
+                            url: result.cover,
+                            responseType: 'arraybuffer',
+                            timeout: 10000
+                        });
+                        thumbnailBuffer = Buffer.from(thumbnailResponse.data);
+                    } catch (err) {
+                        console.log("❌ Erro ao baixar capa do Spotify:", err.message);
+                    }
+                }
+
+                // Prepara a caption com informações da música
+                const caption = `🎵 *Música do Spotify baixada!*
+
+📝 **Título:** ${result.title}
+👤 **Artista:** ${result.artist}
+⏱️ **Duração:** ${result.duration}
+
+🎧 **Enviado com selinho2**
+© NEEXT LTDA`;
+
+                // Envia o áudio com capa e informações usando o selinho2
+                await sock.sendMessage(from, {
+                    audio: audioBuffer,
+                    mimetype: 'audio/mp4',
+                    fileName: `${result.title} - ${result.artist}.mp3`,
+                    caption: caption,
+                    jpegThumbnail: thumbnailBuffer,
+                    contextInfo: {
+                        forwardingScore: 100000,
+                        isForwarded: true,
+                        forwardedNewsletterMessageInfo: {
+                            newsletterJid: "120363289739581116@newsletter",
+                            newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
+                        },
+                        externalAdReply: {
+                            title: `🎵 ${result.title}`,
+                            body: `🎤 ${result.artist} • ⏱️ ${result.duration}`,
+                            thumbnailUrl: result.cover || "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
+                            mediaType: 2,
+                            sourceUrl: spotifyUrl,
+                            showAdAttribution: true
+                        }
+                    }
+                }, { quoted: selinho2 });
+
+                await reagirMensagem(sock, message, "✅");
+                console.log(`✅ Música Spotify enviada: ${result.title} - ${result.artist}`);
+
+            } catch (error) {
+                console.error("❌ Erro no comando spotify:", error);
+                await reagirMensagem(sock, message, "❌");
+
+                if (error.code === 'ENOTFOUND' || error.code === 'ETIMEDOUT') {
+                    await reply(sock, from, "❌ Erro de conexão. Verifique sua internet e tente novamente.");
+                } else if (error.response?.status === 404) {
+                    await reply(sock, from, "❌ Música não encontrada no Spotify. Verifique o link.");
+                } else {
+                    await reply(sock, from, "❌ Erro ao baixar música do Spotify. Tente novamente mais tarde.");
                 }
             }
         }
