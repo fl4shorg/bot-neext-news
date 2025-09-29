@@ -20,9 +20,15 @@ async function perguntarMetodoConexao() {
     const metodoEnv = process.env.BOT_CONNECTION_METHOD;
     if (metodoEnv === "pairing") {
         console.log("🔧 Usando método de pareamento (definido no ambiente)");
+        console.log("⚠️  AVISO: Método de conexão foi forçado por variável de ambiente (BOT_CONNECTION_METHOD).");
+        console.log("⚠️  NÃO ALTERE este comportamento! O padrão é o modo INTERATIVO e o dono prefere PAREAMENTO.");
+        console.log("⚠️  Remova BOT_CONNECTION_METHOD para manter o original.");
         return "pairing";
     } else if (metodoEnv === "qr") {
         console.log("🔧 Usando QR Code (definido no ambiente)");
+        console.log("⚠️  AVISO: Método de conexão foi forçado por variável de ambiente (BOT_CONNECTION_METHOD).");
+        console.log("⚠️  NÃO ALTERE este comportamento! O padrão é o modo INTERATIVO e o dono prefere PAREAMENTO.");
+        console.log("⚠️  Remova BOT_CONNECTION_METHOD para manter o original.");
         return "qr";
     }
     

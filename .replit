@@ -20,14 +20,14 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "BOT_CONNECTION_METHOD=qr node main.js"
+args = "node main.js"
 
 [workflows.workflow.metadata]
 outputType = "console"
 
 [deployment]
 deploymentTarget = "vm"
-run = ["bash", "-c", "BOT_CONNECTION_METHOD=qr node main.js"]
+run = ["node", "main.js"]
 
 [nix]
 channel = "stable-25_05"
