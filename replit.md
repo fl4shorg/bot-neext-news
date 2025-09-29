@@ -88,6 +88,59 @@ Sistema de jogo interativo do Akinator (gênio da lâmpada):
 - ✅ Respostas inteligentes em português
 - ⚠️ API pode estar sujeita a limitações de Cloudflare
 
+### 💰 Sistema RPG - NeextCity
+Sistema completo de economia virtual com loja, trabalhos, jogos e inventário:
+
+#### 👤 Cadastro no RPG:
+- **`.rpg on/off`** - Ativa/desativa RPG no grupo (apenas admins)
+- **`.registrar [nome] [banco]`** - Cadastro inicial no sistema
+
+#### 💼 Comandos para Ganhar Gold:
+- **`.pescar`** - Pescar para ganhar gold (cooldown: 15 min)
+- **`.minerar`** - Minerar recursos preciosos (cooldown: 20 min)
+- **`.trabalhar`** - Trabalhar por gold (cooldown: 25 min)
+- **`.cacar`** - Caçar animais selvagens (cooldown: 20 min)
+- **`.coletar`** - Coletar itens da natureza (cooldown: 10 min)
+- **`.agricultura`** - Plantar e colher (cooldown: 25 min)
+- **`.entrega`** - Fazer entregas na cidade (cooldown: 30 min)
+
+#### 🛒 Sistema de Loja e Inventário:
+- **`.loja`** - Ver todas as categorias disponíveis
+- **`.loja [categoria]`** - Ver itens de categoria específica
+- **`.comprar [item] [quantidade]`** - Comprar itens (qtd: 1-10)
+- **`.inventario`** - Ver seus itens comprados
+
+#### 🏪 Categorias da Loja:
+- **Propriedades** - Casas, fazendas, empresas
+- **Animais** - Galinhas, cavalos, gatos
+- **Veículos** - Motos, carros, aviões
+- **Ferramentas** - Varas, picaretas, tratores
+- **Negócios** - Lanchonetes, academias
+
+#### 🎰 Jogos e Diversão:
+- **`.tigrinho [valor]`** - Caça-níquel
+- **`.assalto @user`** - Assaltar jogador
+- **`.apostar [valor]`** - Apostar na sorte
+- **`.investir [tipo] [valor]`** - Investimentos
+
+#### 🎓 Educação e Crescimento:
+- **`.estudar`** - Ver cursos disponíveis
+- **`.estudar [num]`** - Fazer curso específico
+
+#### 💸 Sistema Bancário:
+- **`.pix @user [valor]`** - Transferir gold
+- **`.saldo`** - Ver saldo e estatísticas
+- **`.rank`** - Ranking dos mais ricos
+
+#### Recursos do Sistema:
+- ✅ Economia balanceada com cooldowns
+- ✅ Sistema de inventário persistente
+- ✅ Loja com 5 categorias e 25+ itens
+- ✅ 7 formas diferentes de ganhar gold
+- ✅ Sistema bancário completo
+- ✅ Proteção contra spam com cooldowns
+- ✅ Dados salvos em JSON (database/grupos/rpg_data.json)
+
 ### 🛡️ Sistema Antilink
 Sistema completo de proteção contra links em grupos:
 
@@ -163,6 +216,11 @@ O bot é executado automaticamente via Workflow do Replit:
 - ✅ **RECENTE**: Controle total de grupos (abrir/fechar/resetar link)
 - ✅ **RECENTE**: Moderação avançada (deletar mensagens, controlar entrada)
 - ✅ **RECENTE**: Verificações robustas de permissões admin
+- ✅ **MAIS RECENTE**: Implementado sistema de loja RPG completo
+- ✅ **MAIS RECENTE**: Adicionados 4 novos comandos para ganhar gold (cacar, coletar, agricultura, entrega)
+- ✅ **MAIS RECENTE**: Sistema de inventário com 5 categorias e 25+ itens
+- ✅ **MAIS RECENTE**: Backend robusto com cooldowns e persistência de dados
+- ✅ **MAIS RECENTE**: Menu RPG atualizado com todas as funcionalidades
 
 ## Estado Atual
 ✅ **Bot Online e Funcionando no Replit**
