@@ -5939,11 +5939,15 @@ function setupListeners(sock) {
     // Listener para atualizações de grupo
     sock.ev.on('group-participants.update', async ({ id, participants, action }) => {
         try {
+            console.log(`👥 [GROUP-UPDATE] Evento recebido: ${action} - ${participants.length} participante(s) no grupo ${id}`);
+            
             await processarListaNegra(sock, participants, id, action);
             
             // Processa welcome para novos membros
             if (action === 'add') {
+                console.log(`🎉 [GROUP-UPDATE] Processando welcome para ${participants.length} novo(s) membro(s)`);
                 for (const participant of participants) {
+                    console.log(`🎉 [GROUP-UPDATE] Processando welcome para ${participant}`);
                     await welcomeSystem.processarWelcome(sock, id, participant);
                 }
             }
