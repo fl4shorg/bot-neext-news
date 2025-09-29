@@ -1765,7 +1765,6 @@ module.exports = {
     comprarItem,
     verificarCooldown,
     formatarTempo,
-    verificarCooldownDiario,
     bancos,
     catalogoItens
 };
