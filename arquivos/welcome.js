@@ -102,6 +102,8 @@ class WelcomeSystem {
             };
         } else {
             this.welcomeConfigs[groupId].mensagem = novaMensagem;
+            // Remove descricao duplicada para evitar conflitos
+            this.welcomeConfigs[groupId].descricao = "";
         }
 
         this.salvarConfiguracoes();
@@ -166,14 +168,16 @@ class WelcomeSystem {
             // Limpa o número (remove @s.whatsapp.net, @lid, e sufixos :xx)
             const numeroLimpo = newMember.replace(/@s\.whatsapp\.net|@lid|:[^@]+/g, '');
 
-            // Processa APENAS a mensagem que o usuário configurou
-            let mensagemFinal = config.mensagem;
+            // Usa APENAS a mensagem personalizada do usuário (sem texto padrão)
+            let mensagemFinal = config.mensagem || `@${numeroLimpo} bem-vindo ao ${nomeGrupo}!`;
 
-            // Substitui TODOS os placeholders (sem deixar # literal)
+            // Substitui TODOS os placeholders (incluindo variações com e sem #)
             mensagemFinal = mensagemFinal.replace(/#numerodele#?/g, `@${numeroLimpo}`);
             mensagemFinal = mensagemFinal.replace(/#nomedogrupo#?/g, nomeGrupo);
             mensagemFinal = mensagemFinal.replace(/#totalmembros#?/g, totalMembros.toString());
-            mensagemFinal = mensagemFinal.replace(/#descricao#?/g, config.descricao || '');
+            
+            // Remove #descricao se existir (não substitui, apenas remove)
+            mensagemFinal = mensagemFinal.replace(/#descricao#?/g, '').trim();
 
             console.log(`📝 [WELCOME] Mensagem final: "${mensagemFinal}"`);
 
@@ -251,7 +255,7 @@ class WelcomeSystem {
                 try {
                     await sock.sendMessage(groupId, {
                         image: { url: avatarUrl },
-                        caption: `🎉 *BEM-VINDO AO GRUPO!*\n\n${mensagemFinal}\n\n📱 *Grupo:* ${nomeGrupo}\n👥 *Membros:* ${totalMembros}\n\n© NEEXT LTDA`,
+                        caption: mensagemFinal, // APENAS a mensagem personalizada
                         mentions: mentions,
                         contextInfo: {
                             forwardingScore: 100000,
@@ -278,7 +282,7 @@ class WelcomeSystem {
                     // ÚLTIMO RECURSO: Mensagem apenas de texto
                     try {
                         await sock.sendMessage(groupId, {
-                            text: `🎉 *BEM-VINDO AO GRUPO!*\n\n${mensagemFinal}\n\n📱 *Grupo:* ${nomeGrupo}\n👥 *Membros:* ${totalMembros}\n\n© NEEXT LTDA`,
+                            text: mensagemFinal, // APENAS a mensagem personalizada
                             mentions: mentions
                         });
 
