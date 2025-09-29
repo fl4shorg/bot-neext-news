@@ -2793,10 +2793,10 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             }
 
             const categoria = args[0]?.toLowerCase();
-            const categoriasValidas = ['propriedades', 'animais', 'ferramentas', 'veiculos', 'negocios'];
+            const categoriasValidas = ['propriedades', 'animais', 'ferramentas', 'veiculos', 'negocios', 'tecnologia', 'decoracao', 'seguranca'];
             
             if (categoria && !categoriasValidas.includes(categoria)) {
-                await reply(sock, from, "❌ Categoria inválida! Use: propriedades, animais, ferramentas, veiculos, negocios");
+                await reply(sock, from, "❌ Categoria inválida! Use: propriedades, animais, ferramentas, veiculos, negocios, tecnologia, decoracao, seguranca");
                 break;
             }
 
@@ -3217,6 +3217,173 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             await reply(sock, from, mensagemPerfil);
             await reagirMensagem(sock, message, "👤");
+        }
+        break;
+
+        // ==================== NOVOS COMANDOS RPG EXPANDIDOS ====================
+
+        case "roubar":
+        case "roubo": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
+                break;
+            }
+
+            const localId = args[0] ? parseInt(args[0]) : null;
+            const resultado = await rpg.roubar(userId, localId);
+
+            if (resultado.erro) {
+                if (resultado.erro === 'Cooldown' || resultado.erro === 'Limite diário') {
+                    await reply(sock, from, resultado.mensagem);
+                } else {
+                    await reply(sock, from, `❌ ${resultado.erro}`);
+                }
+                break;
+            }
+
+            if (resultado.listaLocais) {
+                await reply(sock, from, resultado.mensagem);
+                await reagirMensagem(sock, message, "🏴‍☠️");
+            } else {
+                await reply(sock, from, resultado.mensagem);
+                
+                if (resultado.sucesso) {
+                    await reagirMensagem(sock, message, "💰");
+                } else if (resultado.prisao) {
+                    await reagirMensagem(sock, message, "🚨");
+                } else {
+                    await reagirMensagem(sock, message, "😞");
+                }
+            }
+        }
+        break;
+
+        case "youtube":
+        case "yt": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
+                break;
+            }
+
+            const resultado = await rpg.criarConteudo(userId, 'youtube');
+
+            if (resultado.erro) {
+                if (resultado.erro === 'Cooldown') {
+                    await reply(sock, from, resultado.mensagem);
+                } else {
+                    await reply(sock, from, `❌ ${resultado.erro}`);
+                }
+                break;
+            }
+
+            await reply(sock, from, resultado.mensagem);
+            await reagirMensagem(sock, message, "🎥");
+        }
+        break;
+
+        case "tiktok":
+        case "tt": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
+                break;
+            }
+
+            const resultado = await rpg.criarConteudo(userId, 'tiktok');
+
+            if (resultado.erro) {
+                if (resultado.erro === 'Cooldown') {
+                    await reply(sock, from, resultado.mensagem);
+                } else {
+                    await reply(sock, from, `❌ ${resultado.erro}`);
+                }
+                break;
+            }
+
+            await reply(sock, from, resultado.mensagem);
+            await reagirMensagem(sock, message, "📱");
+        }
+        break;
+
+        case "twitch":
+        case "stream": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
+                break;
+            }
+
+            const resultado = await rpg.criarConteudo(userId, 'twitch');
+
+            if (resultado.erro) {
+                if (resultado.erro === 'Cooldown') {
+                    await reply(sock, from, resultado.mensagem);
+                } else {
+                    await reply(sock, from, `❌ ${resultado.erro}`);
+                }
+                break;
+            }
+
+            await reply(sock, from, resultado.mensagem);
+            await reagirMensagem(sock, message, "🎮");
         }
         break;
 
