@@ -1378,10 +1378,13 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             await reagirMensagem(sock, message, "⏳");
 
             try {
-                // Busca imagens no Pinterest
-                const results = await pinterest(query);
-
-                if (!results || results.length === 0) {
+                // Nova API do Pinterest com timeout
+                const response = await axios.get(`https://api.nekolabs.my.id/discovery/pinterest/search?q=${encodeURIComponent(query)}`, {
+                    timeout: 10000 // 10 segundos de timeout
+                });
+                
+                if (!response.data || typeof response.data.status !== 'boolean' || !response.data.status || 
+                    !Array.isArray(response.data.result) || response.data.result.length === 0) {
                     await reagirMensagem(sock, message, "❌");
                     await sock.sendMessage(from, {
                         text: '❌ Nenhuma imagem encontrada para essa busca. Tente uma palavra-chave diferente.'
@@ -1390,8 +1393,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 }
 
                 // Pega até 5 imagens dos resultados
-                const imagesToSend = results.slice(0, 5);
-                console.log(`📥 Encontradas ${results.length} imagens, enviando ${imagesToSend.length}`);
+                const imagesToSend = response.data.result.slice(0, 5);
+                console.log(`📥 Encontradas ${response.data.result.length} imagens, enviando ${imagesToSend.length}`);
 
                 await reagirMensagem(sock, message, "✅");
 
@@ -1401,15 +1404,15 @@ async function handleCommand(sock, message, command, args, from, quoted) {
 
                     // Prepara a legenda da imagem
                     const caption = `📌 *Pinterest Search Result ${i + 1}*\n\n` +
-                                  `👤 *Por:* ${result.fullname || result.upload_by || 'Anônimo'}\n` +
+                                  `👤 *Por:* ${result.author?.fullname || result.author?.name || 'Anônimo'}\n` +
                                   `📝 *Descrição:* ${result.caption || 'Sem descrição'}\n` +
-                                  `👥 *Seguidores:* ${result.followers || 0}\n\n` +
-                                  `🔗 *Link:* ${result.source}\n\n` +
+                                  `👥 *Seguidores:* ${result.author?.followers || 0}\n\n` +
+                                  `🔗 *Link:* ${result.url}\n\n` +
                                   `© NEEXT LTDA - Pinterest Search`;
 
                     // Envia a imagem
                     await sock.sendMessage(from, {
-                        image: { url: result.image },
+                        image: { url: result.imageUrl },
                         caption: caption,
                         contextInfo: {
                             forwardingScore: 100000,
@@ -5315,6 +5318,225 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
                 await reagirMensagem(sock, message, "✅");
             } else {
                 await reply(sock, from, "❌ Apenas os jogadores participantes ou admins podem resetar o jogo.");
+            }
+        }
+        break;
+
+        case "promover": {
+            // Só funciona em grupos
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const ehAdmin = await isAdmin(sock, from, sender);
+            const ehDono = isDono(sender);
+
+            if (!ehAdmin && !ehDono) {
+                await reply(sock, from, "❌ Apenas admins podem usar este comando.");
+                break;
+            }
+
+            // Verifica se bot é admin
+            const botAdmin = await botEhAdmin(sock, from);
+            if (!botAdmin) {
+                await reply(sock, from, "❌ O bot precisa ser admin para promover usuários.");
+                break;
+            }
+
+            // Verifica se há usuário mencionado ou mensagem marcada
+            let targetUser = null;
+            
+            if (message.message.extendedTextMessage?.contextInfo?.mentionedJid?.length > 0) {
+                // Se mencionou alguém
+                targetUser = message.message.extendedTextMessage.contextInfo.mentionedJid[0];
+            } else if (message.message.extendedTextMessage?.contextInfo?.quotedMessage) {
+                // Se marcou uma mensagem, pega o autor da mensagem
+                targetUser = message.message.extendedTextMessage.contextInfo.participant;
+            } else {
+                const config = obterConfiguracoes();
+                await reply(sock, from, `❌ Use o comando marcando uma mensagem ou mencionando alguém!\n\nExemplo: ${config.prefix}promover @usuario`);
+                break;
+            }
+
+            if (!targetUser) {
+                await reply(sock, from, "❌ Usuário não identificado.");
+                break;
+            }
+
+            // Verifica se o usuário já é admin
+            const jaEhAdmin = await isAdmin(sock, from, targetUser);
+            if (jaEhAdmin) {
+                await reply(sock, from, `⚠️ @${targetUser.split('@')[0]} já é administrador do grupo!`, [targetUser]);
+                break;
+            }
+
+            try {
+                await sock.groupParticipantsUpdate(from, [targetUser], "promote");
+                await reagirMensagem(sock, message, "⬆️");
+                await reply(sock, from, `⬆️ *USUÁRIO PROMOVIDO!*\n\n✅ @${targetUser.split('@')[0]} agora é administrador do grupo!\n\n👤 Promovido por: @${sender.split('@')[0]}`, [targetUser, sender]);
+                console.log(`⬆️ Usuário ${targetUser.split('@')[0]} promovido a admin por ${sender.split('@')[0]} no grupo ${from}`);
+            } catch (err) {
+                console.error("❌ Erro ao promover usuário:", err);
+                await reply(sock, from, "❌ Erro ao promover usuário. Verifique se o bot tem permissões de admin.");
+            }
+        }
+        break;
+
+        case "rebaixar": {
+            // Só funciona em grupos
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const ehAdmin = await isAdmin(sock, from, sender);
+            const ehDono = isDono(sender);
+
+            if (!ehAdmin && !ehDono) {
+                await reply(sock, from, "❌ Apenas admins podem usar este comando.");
+                break;
+            }
+
+            // Verifica se bot é admin
+            const botAdmin = await botEhAdmin(sock, from);
+            if (!botAdmin) {
+                await reply(sock, from, "❌ O bot precisa ser admin para rebaixar usuários.");
+                break;
+            }
+
+            // Verifica se há usuário mencionado ou mensagem marcada
+            let targetUser = null;
+            
+            if (message.message.extendedTextMessage?.contextInfo?.mentionedJid?.length > 0) {
+                // Se mencionou alguém
+                targetUser = message.message.extendedTextMessage.contextInfo.mentionedJid[0];
+            } else if (message.message.extendedTextMessage?.contextInfo?.quotedMessage) {
+                // Se marcou uma mensagem, pega o autor da mensagem
+                targetUser = message.message.extendedTextMessage.contextInfo.participant;
+            } else {
+                const config = obterConfiguracoes();
+                await reply(sock, from, `❌ Use o comando marcando uma mensagem ou mencionando alguém!\n\nExemplo: ${config.prefix}rebaixar @usuario`);
+                break;
+            }
+
+            if (!targetUser) {
+                await reply(sock, from, "❌ Usuário não identificado.");
+                break;
+            }
+
+            // Verifica se o usuário é admin
+            const ehAdminTarget = await isAdmin(sock, from, targetUser);
+            if (!ehAdminTarget) {
+                await reply(sock, from, `⚠️ @${targetUser.split('@')[0]} não é administrador do grupo!`, [targetUser]);
+                break;
+            }
+
+            try {
+                await sock.groupParticipantsUpdate(from, [targetUser], "demote");
+                await reagirMensagem(sock, message, "⬇️");
+                await reply(sock, from, `⬇️ *USUÁRIO REBAIXADO!*\n\n✅ @${targetUser.split('@')[0]} não é mais administrador do grupo!\n\n👤 Rebaixado por: @${sender.split('@')[0]}`, [targetUser, sender]);
+                console.log(`⬇️ Usuário ${targetUser.split('@')[0]} rebaixado por ${sender.split('@')[0]} no grupo ${from}`);
+            } catch (err) {
+                console.error("❌ Erro ao rebaixar usuário:", err);
+                await reply(sock, from, "❌ Erro ao rebaixar usuário. Verifique se o bot tem permissões de admin.");
+            }
+        }
+        break;
+
+        case "transmissão":
+        case "transmissao": {
+            const sender = message.key.participant || from;
+            const ehDono = isDono(sender);
+
+            if (!ehDono) {
+                await reply(sock, from, "❌ Apenas o dono pode usar este comando.");
+                break;
+            }
+
+            const mensagem = args.join(' ').trim();
+            if (!mensagem) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, `❌ Digite a mensagem para transmitir!\n\nExemplo: ${config.prefix}transmissão Olá pessoal! Esta é uma mensagem importante.`);
+                break;
+            }
+
+            try {
+                await reagirMensagem(sock, message, "⏳");
+
+                // Busca todos os grupos que o bot participa
+                const allGroups = await sock.groupFetchAllParticipating();
+                const groups = Object.keys(allGroups).filter(id => id.endsWith('@g.us'));
+                
+                if (groups.length === 0) {
+                    await reply(sock, from, "❌ O bot não está em nenhum grupo para transmitir.");
+                    break;
+                }
+
+                const config = obterConfiguracoes();
+                const nomeTransmissor = config.nickDoDono;
+
+                let sucessos = 0;
+                let falhas = 0;
+
+                for (const groupId of groups) {
+                    try {
+                        const mensagemTransmissao = `📢 *TRANSMISSÃO OFICIAL*\n\n` +
+                                                   `📝 *Mensagem:* ${mensagem}\n\n` +
+                                                   `👤 *Enviado por:* ${nomeTransmissor}\n` +
+                                                   `🤖 *Via:* NEEXT BOT\n\n` +
+                                                   `© NEEXT LTDA`;
+
+                        await sock.sendMessage(groupId, {
+                            text: mensagemTransmissao,
+                            contextInfo: {
+                                forwardingScore: 100000,
+                                isForwarded: true,
+                                forwardedNewsletterMessageInfo: {
+                                    newsletterJid: "120363289739581116@newsletter",
+                                    newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
+                                },
+                                externalAdReply: {
+                                    title: "📢 TRANSMISSÃO OFICIAL",
+                                    body: `© NEEXT LTDA • ${nomeTransmissor}`,
+                                    thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
+                                    mediaType: 1,
+                                    sourceUrl: "https://www.neext.online"
+                                }
+                            }
+                        });
+
+                        sucessos++;
+                        console.log(`📢 Transmissão enviada para grupo: ${groupId}`);
+
+                        // Rate limiting - aguarda entre envios para evitar spam/rate limits
+                        await new Promise(resolve => setTimeout(resolve, 1500));
+
+                    } catch (err) {
+                        console.error(`❌ Erro ao enviar transmissão para ${groupId}:`, err);
+                        falhas++;
+                    }
+                }
+
+                await reagirMensagem(sock, message, "✅");
+                await reply(sock, from, 
+                    `✅ *TRANSMISSÃO CONCLUÍDA!*\n\n` +
+                    `📊 *Estatísticas:*\n` +
+                    `✅ **Sucessos:** ${sucessos} grupos\n` +
+                    `❌ **Falhas:** ${falhas} grupos\n` +
+                    `📱 **Total:** ${groups.length} grupos\n\n` +
+                    `📝 **Mensagem:** ${mensagem}\n\n` +
+                    `© NEEXT LTDA`
+                );
+
+                console.log(`📢 Transmissão concluída: ${sucessos} sucessos, ${falhas} falhas de ${groups.length} grupos`);
+
+            } catch (err) {
+                console.error("❌ Erro na transmissão:", err);
+                await reagirMensagem(sock, message, "❌");
+                await reply(sock, from, "❌ Erro ao realizar transmissão. Tente novamente.");
             }
         }
         break;
