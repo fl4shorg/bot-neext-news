@@ -158,7 +158,7 @@ class WelcomeSystem {
             const numeroMembro = newMember.replace('@s.whatsapp.net', '');
             
             // Gera mensagem personalizada
-            const mensagemWelcome = this.processarMensagem(groupId, numeroMember, nomeGrupo, totalMembros);
+            const mensagemWelcome = this.processarMensagem(groupId, numeroMembro, nomeGrupo, totalMembros);
             
             if (!mensagemWelcome) {
                 console.log('❌ Erro ao processar mensagem de welcome');
