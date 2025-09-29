@@ -5129,3 +5129,5 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
             }
         }
         break;
+    }
+}
