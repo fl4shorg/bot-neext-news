@@ -1109,8 +1109,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     if (estadoAtual) {
                         // Está ativo, mostra o ranking
                         await reagirMensagem(sock, message, "🔥");
-                        const ranking = await rankAtivo.gerarRankingFormatado(sock, from);
-                        await reply(sock, from, ranking);
+                        const resultado = await rankAtivo.gerarRankingFormatado(sock, from);
+                        await reply(sock, from, resultado.mensagem, resultado.mentions);
                     } else {
                         // Está inativo, mostra como ativar
                         await reagirMensagem(sock, message, "⚠️");

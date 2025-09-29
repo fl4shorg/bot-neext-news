@@ -14,7 +14,7 @@
   "antipalavrao": false,
   "antipv": false,
   "anticall": false,
-  "rankativo": false,
+  "rankativo": true,
   "welcome1": false,
   "listanegra": [],
   "floodConfig": {

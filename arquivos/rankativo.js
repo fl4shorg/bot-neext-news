@@ -132,11 +132,15 @@ async function gerarRankingFormatado(sock, groupId) {
         const ranking = obterRanking(groupId, 6);
         
         if (ranking.length === 0) {
-            return `⚠️ *RANK DE ATIVOS*\n\nNenhuma atividade registrada ainda.\nComece a interagir no grupo para aparecer no ranking! 🚀`;
+            return {
+                mensagem: `⚠️ *RANK DE ATIVOS*\n\nNenhuma atividade registrada ainda.\nComece a interagir no grupo para aparecer no ranking! 🚀`,
+                mentions: []
+            };
         }
         
         const posicoes = ['🏆', '🥈', '🥉', '', '', ''];
         const numeros = ['1°', '2°', '3°', '4°', '5°', '6°'];
+        const mentions = [];
         
         let mensagem = `╭════ •⊰✿⊱• ════╮
   🔥 𝐑𝐀𝐍𝐊 𝐃𝐄 𝐀𝐓𝐈𝐕𝐎𝐒 𝐃𝐎 𝐆𝐑𝐔𝐏𝐎 🔥
@@ -146,6 +150,12 @@ async function gerarRankingFormatado(sock, groupId) {
             const usuario = ranking[i];
             const emoji = posicoes[i];
             const numero = numeros[i];
+            
+            // Adiciona o userId ao array de mentions
+            mentions.push(usuario.userId);
+            
+            // Extrai o número limpo para menção
+            const numeroLimpo = usuario.userId.replace(/@s\.whatsapp\.net|@lid/g, '');
             
             // Tenta obter o nome do usuário através do grupo
             let nomeUsuario = '';
@@ -165,7 +175,7 @@ async function gerarRankingFormatado(sock, groupId) {
             
             mensagem += `『 ${numero} ${emoji} 』
 ╔═══════════════╗
-┃ 👤 Usuário: @~${nomeUsuario}
+┃ 👤 Usuário: @${numeroLimpo}
 ┃ 💬 Mensagens: ${usuario.mensagens}
 ┃ ⌨️ Comandos: ${usuario.comandos}
 ┃ 📱 Conectado: Android 🗿
@@ -174,11 +184,17 @@ async function gerarRankingFormatado(sock, groupId) {
 ╚═══════════════╝\n\n`;
         }
         
-        return mensagem.trim();
+        return {
+            mensagem: mensagem.trim(),
+            mentions: mentions
+        };
         
     } catch (err) {
         console.error('❌ Erro ao gerar ranking:', err);
-        return `❌ Erro ao gerar ranking de ativos.`;
+        return {
+            mensagem: `❌ Erro ao gerar ranking de ativos.`,
+            mentions: []
+        };
     }
 }
 
