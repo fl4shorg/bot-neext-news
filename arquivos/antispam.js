@@ -51,6 +51,7 @@ function carregarConfigGrupo(groupId) {
                 antipalavrao: false,
                 antipv: false,
                 anticall: false,
+                rankativo: false,
                 listanegra: [],
                 floodConfig: {
                     maxMensagens: 5,
@@ -345,7 +346,7 @@ function toggleAntiFeature(groupId, feature, estado) {
     const config = carregarConfigGrupo(groupId);
     if (!config) return false;
     
-    const validFeatures = ['antilink', 'anticontato', 'antidocumento', 'antivideo', 'antiaudio', 'antisticker', 'antiflod', 'antifake', 'x9', 'antiporno', 'antilinkhard', 'antipalavrao', 'antipv', 'anticall'];
+    const validFeatures = ['antilink', 'anticontato', 'antidocumento', 'antivideo', 'antiaudio', 'antisticker', 'antiflod', 'antifake', 'x9', 'antiporno', 'antilinkhard', 'antipalavrao', 'antipv', 'anticall', 'rankativo'];
     
     if (!validFeatures.includes(feature)) return false;
     

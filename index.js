@@ -32,6 +32,9 @@ const akinatorFile = path.join(__dirname, "database/grupos/games/akinator.json")
 // Sistema Anti-Spam Completo
 const antiSpam = require("./arquivos/antispam.js");
 
+// Sistema de Ranking de Ativos
+const rankAtivo = require("./arquivos/rankativo.js");
+
 // Sistema de Registros
 const registros = require("./arquivos/registros.js");
 
@@ -1045,7 +1048,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
         case "x9":
         case "antiporno":
         case "antilinkhard":
-        case "antipalavrao": {
+        case "antipalavrao":
+        case "rankativo": {
             // Só funciona em grupos
             if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
                 await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
@@ -1074,7 +1078,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 'x9': '📊 X9 MONITOR',
                 'antiporno': '🔞 ANTIPORNO',
                 'antilinkhard': '🔗 ANTILINK HARD',
-                'antipalavrao': '🤬 ANTIPALAVRAO'
+                'antipalavrao': '🤬 ANTIPALAVRAO',
+                'rankativo': '🔥 RANK DE ATIVOS'
             };
 
             const featureName = featureNames[command];
@@ -1088,17 +1093,43 @@ async function handleCommand(sock, message, command, args, from, quoted) {
 
             const estadoAtual = config[command] || false;
 
+            // Lógica especial para o comando rankativo
+            if (command === "rankativo") {
+                // Se não tem argumentos, verifica se está ativo para mostrar ranking ou instruções
+                if (!acao) {
+                    if (estadoAtual) {
+                        // Está ativo, mostra o ranking
+                        await reagirMensagem(sock, message, "🔥");
+                        const ranking = await rankAtivo.gerarRankingFormatado(sock, from);
+                        await reply(sock, from, ranking);
+                    } else {
+                        // Está inativo, mostra como ativar
+                        await reagirMensagem(sock, message, "⚠️");
+                        await reply(sock, from, `⚠️ *🔥 RANK DE ATIVOS DESATIVADO*\n\n📊 O sistema de ranking não está ativo neste grupo.\n\n📝 *Para ativar:*\n• \`.rankativo on\` - Ativa o sistema\n\n✨ *Após ativar:*\n• Digite \`.rankativo\` para ver o ranking\n• O bot irá rastrear mensagens, comandos e stickers\n• Mostra os top 6 usuários mais ativos\n\n⚠️ Apenas admins podem ativar/desativar`);
+                    }
+                    break;
+                }
+            }
+
             if (acao === "on" || acao === "ativar" || acao === "1") {
                 if (estadoAtual) {
                     // Já está ativo
                     await reagirMensagem(sock, message, "⚠️");
-                    await reply(sock, from, `⚠️ *${featureName} JÁ ESTÁ ATIVO!*\n\n✅ A proteção já está funcionando\n⚔️ Links/conteúdo será removido e usuário banido`);
+                    if (command === "rankativo") {
+                        await reply(sock, from, `⚠️ *${featureName} JÁ ESTÁ ATIVO!*\n\n✅ O sistema já está rastreando atividades\n📊 Digite \`.rankativo\` para ver o ranking atual`);
+                    } else {
+                        await reply(sock, from, `⚠️ *${featureName} JÁ ESTÁ ATIVO!*\n\n✅ A proteção já está funcionando\n⚔️ Links/conteúdo será removido e usuário banido`);
+                    }
                 } else {
                     // Precisa ativar
                     const resultado = antiSpam.toggleAntiFeature(from, command, 'on');
                     if (resultado) {
                         await reagirMensagem(sock, message, "✅");
-                        await reply(sock, from, `✅ *${featureName} ATIVADO*\n\n⚔️ Conteúdo será removido e usuário será BANIDO\n🛡️ Admins e dono são protegidos\n🚫 Ação dupla: Delete + Ban automático`);
+                        if (command === "rankativo") {
+                            await reply(sock, from, `✅ *${featureName} ATIVADO*\n\n📊 O bot agora rastreará:\n• 💬 Mensagens enviadas\n• ⌨️ Comandos executados\n• 🖼️ Stickers enviados\n• 📱 Mídias compartilhadas\n\n🔥 Digite \`.rankativo\` para ver o ranking a qualquer momento!`);
+                        } else {
+                            await reply(sock, from, `✅ *${featureName} ATIVADO*\n\n⚔️ Conteúdo será removido e usuário será BANIDO\n🛡️ Admins e dono são protegidos\n🚫 Ação dupla: Delete + Ban automático`);
+                        }
                     } else {
                         await reply(sock, from, `❌ Erro ao ativar ${featureName}`);
                     }
@@ -1108,13 +1139,21 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 if (!estadoAtual) {
                     // Já está desativo
                     await reagirMensagem(sock, message, "⚠️");
-                    await reply(sock, from, `⚠️ *${featureName} JÁ ESTÁ DESATIVADO!*\n\n✅ A proteção já estava desligada\n💡 Use \`${config.prefix}${command} on\` para ativar`);
+                    if (command === "rankativo") {
+                        await reply(sock, from, `⚠️ *${featureName} JÁ ESTÁ DESATIVADO!*\n\n✅ O sistema já estava desligado\n💡 Use \`.rankativo on\` para ativar`);
+                    } else {
+                        await reply(sock, from, `⚠️ *${featureName} JÁ ESTÁ DESATIVADO!*\n\n✅ A proteção já estava desligada\n💡 Use \`${config.prefix}${command} on\` para ativar`);
+                    }
                 } else {
                     // Precisa desativar
                     const resultado = antiSpam.toggleAntiFeature(from, command, 'off');
                     if (resultado !== undefined) {
                         await reagirMensagem(sock, message, "❌");
-                        await reply(sock, from, `❌ *${featureName} DESATIVADO*\n\n✅ Conteúdo agora é permitido\n💡 Use \`${config.prefix}${command} on\` para reativar`);
+                        if (command === "rankativo") {
+                            await reply(sock, from, `❌ *${featureName} DESATIVADO*\n\n📊 O bot parou de rastrear atividades\n💡 Use \`.rankativo on\` para reativar\n⚠️ Dados existentes são mantidos`);
+                        } else {
+                            await reply(sock, from, `❌ *${featureName} DESATIVADO*\n\n✅ Conteúdo agora é permitido\n💡 Use \`${config.prefix}${command} on\` para reativar`);
+                        }
                     } else {
                         await reply(sock, from, `❌ Erro ao desativar ${featureName}`);
                     }
@@ -1131,12 +1170,15 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     'antisticker': 'Remove stickers e bane usuário',
                     'antiflod': 'Remove flood (spam) e bane usuário',
                     'antifake': 'Remove usuários não brasileiros',
-                    'x9': 'Monitora ações administrativas do grupo (promover, rebaixar, adicionar, remover)'
+                    'x9': 'Monitora ações administrativas do grupo (promover, rebaixar, adicionar, remover)',
+                    'rankativo': 'Rastreia atividades e gera ranking dos usuários mais ativos'
                 };
 
                 let extraInfo = "";
                 if (command === 'x9') {
                     extraInfo = `\n\n📊 *O que o X9 Monitor detecta:*\n• 👑 Promoções para admin\n• ⬇️ Rebaixamentos de admin\n• ➕ Membros adicionados\n• ➖ Membros removidos\n• 👨‍💼 Quem realizou cada ação\n\n⚠️ Status do X9 no grupo: ${status}`;
+                } else if (command === 'rankativo') {
+                    extraInfo = `\n\n🔥 *O que o Rank de Ativos rastreia:*\n• 💬 Mensagens de texto\n• ⌨️ Comandos executados\n• 🖼️ Stickers enviados\n• 📱 Mídias (fotos, vídeos)\n• 📊 Calcula ranking dos top 6\n\n⚠️ Status do Ranking: ${status}`;
                 }
 
                 await reply(sock, from, `📊 *${featureName}*\n\nStatus: ${status}\n\n📝 *Como usar:*\n• \`${config.prefix}${command} on\` - Ativar\n• \`${config.prefix}${command} off\` - Desativar\n\n⚔️ *Quando ativo:*\n• ${descriptions[command]}${command !== 'x9' ? '\n• Protege admins e dono' : ''}${extraInfo}\n\n⚠️ Apenas admins podem usar`);
@@ -5718,6 +5760,42 @@ function setupListeners(sock) {
                 // Processa anti-spam primeiro
                 const bloqueado = await processarAntiSpam(sock, normalized);
                 if (bloqueado) continue;
+
+                // Rastreamento de atividades para ranking (apenas em grupos)
+                if (isGroup) {
+                    const configGrupo = antiSpam.carregarConfigGrupo(from);
+                    if (configGrupo && configGrupo.rankativo) {
+                        // Determina o tipo de atividade
+                        let tipoAtividade = '';
+                        
+                        // Verifica se é sticker
+                        if (normalized.message.stickerMessage) {
+                            tipoAtividade = 'sticker';
+                        }
+                        // Verifica se é mídia (foto, vídeo, áudio)
+                        else if (normalized.message.imageMessage || normalized.message.videoMessage || 
+                                normalized.message.audioMessage || normalized.message.documentMessage) {
+                            tipoAtividade = 'midia';
+                        }
+                        // Se tem texto, é mensagem
+                        else if (messageText && messageText.trim()) {
+                            // Verifica se vai ser um comando
+                            const config = obterConfiguracoes();
+                            const prefix = config.prefix;
+                            if (messageText.trim().startsWith(prefix)) {
+                                tipoAtividade = 'comando';
+                            } else {
+                                tipoAtividade = 'mensagem';
+                            }
+                        }
+
+                        // Registra a atividade se foi identificada
+                        if (tipoAtividade) {
+                            rankAtivo.registrarAtividade(from, sender, tipoAtividade);
+                            console.log(`📊 Atividade registrada: ${sender.split('@')[0]} -> ${tipoAtividade} no grupo ${from.split('@')[0]}`);
+                        }
+                    }
+                }
                 
                 // Extrai texto da mensagem
                 const text = messageText.trim();
