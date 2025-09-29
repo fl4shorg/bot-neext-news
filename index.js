@@ -269,8 +269,14 @@ function normalizeMessage(m) {
 // Função reply genérica
 async function reply(sock, from, text, mentions = []) {
     try {
+        // Validação do texto
+        if (!text || typeof text !== 'string') {
+            console.error("❌ Texto da reply é inválido:", text);
+            text = "❌ Erro: Mensagem inválida";
+        }
+        
         await sock.sendMessage(from, {
-            text,
+            text: String(text),
             contextInfo: {
                 forwardingScore: 100000,
                 isForwarded: true,
@@ -285,7 +291,7 @@ async function reply(sock, from, text, mentions = []) {
         console.error("❌ Erro ao enviar reply:", err.message || err);
         // Tenta envio mais simples em caso de erro
         try {
-            await sock.sendMessage(from, { text, mentions });
+            await sock.sendMessage(from, { text: String(text || "❌ Erro na mensagem"), mentions });
         } catch (secondErr) {
             console.error("❌ Falha no fallback reply:", secondErr.message || secondErr);
         }
@@ -2803,6 +2809,33 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             const resultado = rpg.listarLoja(categoria);
             await reply(sock, from, resultado.mensagem);
             await reagirMensagem(sock, message, "🛒");
+        }
+        break;
+
+        case "negocios": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
+                break;
+            }
+
+            const resultado = rpg.listarLoja("negocios");
+            await reply(sock, from, resultado.mensagem);
+            await reagirMensagem(sock, message, "🏢");
         }
         break;
 
