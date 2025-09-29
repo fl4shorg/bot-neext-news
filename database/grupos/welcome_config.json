@@ -1,7 +1,7 @@
 {
   "120363400994746868@g.us": {
     "ativo": true,
-    "mensagem": "🎉 *BEM-VINDO(A) #numerodele#!*\n\n📱 *Grupo:* #nomedogrupo\n👥 *Total de Membros:* #totalmembros\n\n#descricao",
-    "descricao": "\n#numerodele# olá \n\n#nomedogrupo"
+    "mensagem": "#numerodele bem-vindo ao #nomedogrupo! #descricao",
+    "descricao": "#numerodele# bem-vindo nessa merda #nomedogrupo"
   }
 }

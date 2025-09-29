@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const axios = require('axios');
 
 class WelcomeSystem {
     constructor() {
@@ -8,6 +7,7 @@ class WelcomeSystem {
         this.configFile = 'welcome_config.json';
         this.ensureDirectoryExists();
         this.welcomeConfigs = this.carregarConfiguracoes();
+        this.migrarConfiguracoesAntigas(); // Remove textos fixos antigos
     }
 
     ensureDirectoryExists() {
@@ -29,23 +29,48 @@ class WelcomeSystem {
         return {};
     }
 
+    // NOVA: Remove textos fixos antigos das configurações
+    migrarConfiguracoesAntigas() {
+        let alterado = false;
+        
+        for (const [groupId, config] of Object.entries(this.welcomeConfigs)) {
+            // Remove mensagens com textos fixos antigos
+            if (config.mensagem && (
+                config.mensagem.includes('BEM-VINDO(A)') ||
+                config.mensagem.includes('📱 *Grupo:*') ||
+                config.mensagem.includes('👥 *Total de Membros:*') ||
+                config.mensagem.includes('🎉 *BEM-VINDO')
+            )) {
+                console.log(`🔧 Removendo texto fixo antigo do grupo ${groupId}`);
+                // Remove texto fixo - deixa VAZIO para usuário configurar
+                config.mensagem = "";
+                config.descricao = "";
+                alterado = true;
+            }
+        }
+        
+        if (alterado) {
+            this.salvarConfiguracoes();
+            console.log('✅ Configurações migradas - textos fixos removidos!');
+        }
+    }
+
     salvarConfiguracoes() {
         try {
             const configFilePath = path.join(this.configPath, this.configFile);
             fs.writeFileSync(configFilePath, JSON.stringify(this.welcomeConfigs, null, 2));
-            console.log('✅ Configurações de welcome salvas!');
         } catch (error) {
             console.log('❌ Erro ao salvar configurações de welcome:', error);
         }
     }
 
-    // Ativa/desativa welcome para um grupo
+    // Ativa/desativa welcome para um grupo - SEM texto padrão
     toggleWelcome(groupId, action) {
         if (!this.welcomeConfigs[groupId]) {
             this.welcomeConfigs[groupId] = {
                 ativo: false,
-                mensagem: "🎉 *BEM-VINDO(A) #numerodele!*\n\n📱 *Grupo:* #nomedogrupo\n👥 *Total de Membros:* #totalmembros\n\n#descricao",
-                descricao: "Seja bem-vindo(a) ao nosso grupo! Esperamos que você se divirta e participe das conversas! 😊"
+                mensagem: "", // VAZIO - usuário deve configurar
+                descricao: ""
             };
         }
 
@@ -67,17 +92,35 @@ class WelcomeSystem {
         return this.welcomeConfigs[groupId] && this.welcomeConfigs[groupId].ativo;
     }
 
-    // Configura mensagem personalizada de welcome
+    // NOVA: Configura a mensagem COMPLETA (não apenas descrição)
+    configurarMensagemCompleta(groupId, novaMensagem) {
+        if (!this.welcomeConfigs[groupId]) {
+            this.welcomeConfigs[groupId] = {
+                ativo: false,
+                mensagem: novaMensagem,
+                descricao: ""
+            };
+        } else {
+            this.welcomeConfigs[groupId].mensagem = novaMensagem;
+        }
+
+        this.salvarConfiguracoes();
+        console.log(`✅ Mensagem welcome configurada para grupo ${groupId}: ${novaMensagem}`);
+        return true;
+    }
+
+    // LEGACY: Mantém por compatibilidade (apenas altera #descricao)
     configurarMensagem(groupId, novaDescricao) {
         if (!this.welcomeConfigs[groupId]) {
             this.welcomeConfigs[groupId] = {
                 ativo: false,
-                mensagem: "🎉 *BEM-VINDO(A) #numerodele!*\n\n📱 *Grupo:* #nomedogrupo\n👥 *Total de Membros:* #totalmembros\n\n#descricao",
-                descricao: "Seja bem-vindo(a) ao nosso grupo! Esperamos que você se divirta e participe das conversas! 😊"
+                mensagem: "",
+                descricao: novaDescricao
             };
+        } else {
+            this.welcomeConfigs[groupId].descricao = novaDescricao;
         }
 
-        this.welcomeConfigs[groupId].descricao = novaDescricao;
         this.salvarConfiguracoes();
         return true;
     }
@@ -87,132 +130,71 @@ class WelcomeSystem {
         return this.welcomeConfigs[groupId] || null;
     }
 
-    // Processa placeholders na mensagem
-    processarMensagem(groupId, numeroMembro, nomeGrupo, totalMembros) {
-        const config = this.welcomeConfigs[groupId];
-        if (!config) return null;
-
-        let mensagem = config.mensagem;
-        
-        // Remove o @s.whatsapp.net ou @lid do número
-        const numeroLimpo = numeroMembro.replace(/@s\.whatsapp\.net|@lid/g, '');
-        
-        // Substitui placeholders (compatível com ambas as versões: #numerodele e #numerodele#)
-        mensagem = mensagem.replace(/#numerodele#?/g, `@${numeroLimpo}`);
-        mensagem = mensagem.replace(/#nomedogrupo#?/g, nomeGrupo);
-        mensagem = mensagem.replace(/#totalmembros#?/g, totalMembros.toString());
-        mensagem = mensagem.replace(/#descricao#?/g, config.descricao);
-
-        return {
-            texto: mensagem,
-            numeroParaMencionar: numeroMembro // Retorna o JID completo para mencionar
-        };
-    }
-
-    // Gera URL da API PopCat para welcome card
-    async gerarWelcomeCard(avatarUrl, numeroLimpo, nomeGrupo, totalMembros) {
-        try {
-            // URL base da API PopCat
-            const baseUrl = 'https://api.popcat.xyz/v2/welcomecard';
-            
-            // Background padrão fornecido
-            const background = 'https://i.ibb.co/N6qX5TzX/bcfd129f316060c3149893a4663a160f.jpg';
-            
-            // Avatar padrão melhorado (imagem vazia do WhatsApp)
-            const avatarPadrao = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face';
-            
-            // Monta os parâmetros (numeroLimpo já vem limpo)
-            const params = new URLSearchParams({
-                background: background,
-                text1: numeroLimpo,
-                text2: `Bem-vindo(a) ao ${nomeGrupo}`,
-                text3: `Membro #${totalMembros}`,
-                avatar: avatarUrl || avatarPadrao
-            });
-
-            const welcomeCardUrl = `${baseUrl}?${params.toString()}`;
-            console.log('🖼️ URL da welcome card gerada:', welcomeCardUrl);
-            
-            return welcomeCardUrl;
-        } catch (error) {
-            console.log('❌ Erro ao gerar welcome card:', error);
-            return null;
-        }
-    }
-
-    // Obtém foto de perfil do usuário
-    async obterAvatarUsuario(sock, userId) {
+    // Obtém foto de perfil do usuário OU usa imagem específica
+    async obterFotoPerfil(sock, userId) {
         try {
             const profilePic = await sock.profilePictureUrl(userId, 'image');
-            console.log('✅ Foto de perfil obtida:', profilePic);
+            console.log('✅ [WELCOME] Foto de perfil obtida');
             return profilePic;
         } catch (error) {
-            console.log('⚠️ Não foi possível obter foto de perfil, usando padrão');
-            // Avatar padrão que simula a foto vazia do WhatsApp
-            return 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face';
+            console.log('⚠️ [WELCOME] Usando foto padrão (usuário sem foto)');
+            return 'https://i.ibb.co/pvQpcbB2/37575a213755cad83bd408908623ba22.jpg';
         }
     }
 
-    // Processa welcome completo para novo membro - CORRIGIDO
+    // SISTEMA FINAL: Processa welcome EXATAMENTE como o usuário configurar
     async processarWelcome(sock, groupId, newMember) {
         try {
+            console.log(`🎉 [WELCOME] Processando para ${newMember} no grupo ${groupId}`);
+
             if (!this.isWelcomeAtivo(groupId)) {
-                console.log('❌ Welcome não está ativo para este grupo');
+                console.log('❌ [WELCOME] Sistema não está ativo para este grupo');
                 return false;
             }
 
-            console.log(`🎉 Processando welcome para ${newMember} no grupo ${groupId}`);
+            const config = this.welcomeConfigs[groupId];
+            if (!config || !config.mensagem || config.mensagem.trim() === '') {
+                console.log('❌ [WELCOME] Mensagem não configurada pelo usuário - não enviando');
+                return false;
+            }
 
-            // Obtém metadados do grupo
+            // Obtém informações do grupo
             const groupMetadata = await sock.groupMetadata(groupId);
             const nomeGrupo = groupMetadata.subject;
             const totalMembros = groupMetadata.participants.length;
-            
-            // Extrai número do membro (mantém o JID completo para mencionar)
+
+            // Limpa o número (remove @s.whatsapp.net ou @lid)
             const numeroLimpo = newMember.replace(/@s\.whatsapp\.net|@lid/g, '');
-            
-            // Gera mensagem personalizada
-            const resultadoMensagem = this.processarMensagem(groupId, newMember, nomeGrupo, totalMembros);
-            
-            if (!resultadoMensagem) {
-                console.log('❌ Erro ao processar mensagem de welcome');
-                return false;
-            }
 
-            // Obtém avatar do usuário
-            const avatarUrl = await this.obterAvatarUsuario(sock, newMember);
-            
-            // Gera welcome card
-            const welcomeCardUrl = await this.gerarWelcomeCard(
-                avatarUrl, 
-                numeroLimpo, 
-                nomeGrupo, 
-                totalMembros
-            );
+            // Processa APENAS a mensagem que o usuário configurou
+            let mensagemFinal = config.mensagem;
 
-            if (welcomeCardUrl) {
-                // ENVIA APENAS UMA MENSAGEM com imagem E texto
-                await sock.sendMessage(groupId, {
-                    image: { url: welcomeCardUrl },
-                    caption: resultadoMensagem.texto,
-                    mentions: [newMember] // Usa o JID completo
-                });
-                
-                console.log(`✅ Welcome card enviado para ${numeroLimpo} no grupo ${nomeGrupo}`);
-            } else {
-                // Fallback: envia apenas texto se não conseguir gerar a imagem
-                await sock.sendMessage(groupId, {
-                    text: resultadoMensagem.texto,
-                    mentions: [newMember]
-                });
-                
-                console.log(`✅ Welcome texto enviado para ${numeroLimpo} no grupo ${nomeGrupo}`);
-            }
+            // Substitui TODOS os placeholders (suporta # no final também)
+            mensagemFinal = mensagemFinal.replace(/#numerodele#?/g, `@${numeroLimpo}`);
+            mensagemFinal = mensagemFinal.replace(/#nomedogrupo#?/g, nomeGrupo);
+            mensagemFinal = mensagemFinal.replace(/#totalmembros#?/g, totalMembros.toString());
+            mensagemFinal = mensagemFinal.replace(/#descricao#?/g, config.descricao || '');
 
+            console.log(`📝 [WELCOME] Mensagem final: "${mensagemFinal}"`);
+
+            // Obtém foto do usuário ou usa a específica
+            const fotoUrl = await this.obterFotoPerfil(sock, newMember);
+
+            // Verifica se deve mencionar (só se tiver @ na mensagem)
+            const mentions = mensagemFinal.includes(`@${numeroLimpo}`) ? [newMember] : [];
+
+            // ENVIA UMA MENSAGEM ÚNICA: foto + texto do usuário
+            await sock.sendMessage(groupId, {
+                image: { url: fotoUrl },
+                caption: mensagemFinal,
+                mentions: mentions
+            });
+
+            console.log(`✅ [WELCOME] Enviado para ${numeroLimpo}: "${mensagemFinal}"`);
             return true;
 
         } catch (error) {
-            console.log('❌ Erro ao processar welcome:', error);
+            console.log('❌ [WELCOME] Erro ao processar:', error);
             return false;
         }
     }
