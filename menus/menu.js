@@ -362,18 +362,42 @@ function obterMenuRPG() {
 👤 *CADASTRO:*
 • \`${prefix}registrar [nome] [banco]\` - Registrar no RPG
 
-💼 *TRABALHOS:*
+💼 *TRABALHOS (GANHAR GOLD):*
 • \`${prefix}pescar\` - Pescar para ganhar gold
-• \`${prefix}minerar\` - Minerar recursos
+• \`${prefix}minerar\` - Minerar recursos preciosos
 • \`${prefix}trabalhar\` - Trabalhar por gold
+• \`${prefix}cacar\` - Caçar animais selvagens
+• \`${prefix}coletar\` - Coletar itens da natureza
+• \`${prefix}agricultura\` - Plantar e colher
+• \`${prefix}entrega\` - Fazer entregas na cidade
 
-🎰 *JOGOS:*
+🛒 *LOJA E INVENTÁRIO:*
+• \`${prefix}loja\` - Ver todas as categorias
+• \`${prefix}loja [categoria]\` - Ver itens específicos
+• \`${prefix}comprar [item] [qtd]\` - Comprar itens
+• \`${prefix}inventario\` - Ver seus itens
+
+🎰 *JOGOS E DIVERSÃO:*
 • \`${prefix}tigrinho [valor]\` - Caça-níquel
 • \`${prefix}assalto @user\` - Assaltar jogador
+• \`${prefix}apostar [valor]\` - Apostar na sorte
+• \`${prefix}investir [tipo] [valor]\` - Investimentos
 
-📊 *INFORMAÇÕES:*
-• \`${prefix}saldo\` - Ver seu saldo e stats
+🎓 *EDUCAÇÃO E CRESCIMENTO:*
+• \`${prefix}estudar\` - Ver cursos disponíveis
+• \`${prefix}estudar [num]\` - Fazer curso específico
+
+💸 *SISTEMA BANCÁRIO:*
+• \`${prefix}pix @user [valor]\` - Transferir gold
+• \`${prefix}saldo\` - Ver saldo e estatísticas
 • \`${prefix}rank\` - Ranking dos mais ricos
+
+🏪 *CATEGORIAS DA LOJA:*
+• **Propriedades** - Casas, fazendas, empresas
+• **Animais** - Galinhas, cavalos, gatos
+• **Veículos** - Motos, carros, aviões
+• **Ferramentas** - Varas, picaretas, tratores
+• **Negócios** - Lanchonetes, academias
 
 💡 *Ganhe gold, compre itens e domine NeextCity!*
 

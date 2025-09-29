@@ -1763,8 +1763,244 @@ module.exports = {
     obterPerfilCompleto,
     pixTransferir,
     comprarItem,
+    listarLoja,
     verificarCooldown,
     formatarTempo,
+    cacar,
+    coletar,
+    agricultura,
+    entrega,
     bancos,
     catalogoItens
 };
+
+// ==================== NOVOS COMANDOS PARA GANHAR DINHEIRO ====================
+
+// Comando caçar
+function cacar(userId) {
+    return withLock(async () => {
+        const dados = carregarDadosRPG();
+        let usuario = dados.jogadores[userId];
+        if (!usuario) return { erro: 'Usuário não registrado' };
+        
+        usuario = ensureUserDefaults(usuario);
+        
+        // Verifica cooldown
+        const cooldownKey = `${userId}_caca`;
+        const ultimaVez = usuario.cooldowns?.[cooldownKey] || 0;
+        const agora = Date.now();
+        const tempoEspera = 20 * 60 * 1000; // 20 minutos
+        
+        if (agora - ultimaVez < tempoEspera) {
+            const tempoRestante = Math.ceil((tempoEspera - (agora - ultimaVez)) / 1000 / 60);
+            return { erro: 'Cooldown', mensagem: `⏰ **Cooldown ativo!**\n\n🕐 Aguarde mais ${tempoRestante} minutos para caçar novamente.` };
+        }
+        
+        // Atualiza cooldown
+        if (!usuario.cooldowns) usuario.cooldowns = {};
+        usuario.cooldowns[cooldownKey] = agora;
+        
+        const animais = ['🦌 Veado', '🐗 Javali', '🐰 Coelho', '🦆 Pato selvagem', '🐺 Lobo'];
+        const valores = [150, 200, 80, 120, 250];
+        const chances = [0.3, 0.2, 0.6, 0.4, 0.1];
+        
+        let ganho = 0;
+        let animal = '';
+        
+        for (let i = 0; i < animais.length; i++) {
+            if (Math.random() < chances[i]) {
+                ganho = valores[i];
+                animal = animais[i];
+                break;
+            }
+        }
+        
+        if (ganho === 0) {
+            dados.jogadores[userId] = usuario;
+            salvarDadosRPG(dados);
+            return { sucesso: false, mensagem: "🏹 **CAÇADA**\n\n😞 Você não conseguiu caçar nada desta vez!\n\n⏰ **Cooldown:** 20 minutos" };
+        } else {
+            usuario.saldo += ganho;
+            usuario.totalGanho += ganho;
+            dados.jogadores[userId] = usuario;
+            salvarDadosRPG(dados);
+            
+            return { 
+                sucesso: true, 
+                ganho: ganho,
+                mensagem: `🏹 **CAÇADA BEM SUCEDIDA!** 🎯\n\n${animal} capturado!\n💰 **Ganhou:** ${ganho} Gold\n💳 **Saldo atual:** ${usuario.saldo} Gold\n\n⏰ **Cooldown:** 20 minutos`
+            };
+        }
+    });
+}
+
+// Comando coletar
+function coletar(userId) {
+    return withLock(async () => {
+        const dados = carregarDadosRPG();
+        let usuario = dados.jogadores[userId];
+        if (!usuario) return { erro: 'Usuário não registrado' };
+        
+        usuario = ensureUserDefaults(usuario);
+        
+        // Verifica cooldown
+        const cooldownKey = `${userId}_coleta`;
+        const ultimaVez = usuario.cooldowns?.[cooldownKey] || 0;
+        const agora = Date.now();
+        const tempoEspera = 10 * 60 * 1000; // 10 minutos
+        
+        if (agora - ultimaVez < tempoEspera) {
+            const tempoRestante = Math.ceil((tempoEspera - (agora - ultimaVez)) / 1000 / 60);
+            return { erro: 'Cooldown', mensagem: `⏰ **Cooldown ativo!**\n\n🕐 Aguarde mais ${tempoRestante} minutos para coletar novamente.` };
+        }
+        
+        // Atualiza cooldown
+        if (!usuario.cooldowns) usuario.cooldowns = {};
+        usuario.cooldowns[cooldownKey] = agora;
+        
+        const itens = ['🍄 Cogumelos', '🌿 Ervas medicinais', '🍓 Frutas silvestres', '🌰 Castanhas', '🌸 Flores raras'];
+        const valores = [30, 60, 40, 50, 100];
+        const chances = [0.8, 0.5, 0.7, 0.6, 0.3];
+        
+        let ganhoTotal = 0;
+        let itensColetados = [];
+        
+        for (let i = 0; i < itens.length; i++) {
+            if (Math.random() < chances[i]) {
+                ganhoTotal += valores[i];
+                itensColetados.push(itens[i]);
+            }
+        }
+        
+        if (ganhoTotal === 0) {
+            dados.jogadores[userId] = usuario;
+            salvarDadosRPG(dados);
+            return { sucesso: false, mensagem: "🌱 **COLETA**\n\n😞 Você não encontrou nada útil desta vez!\n\n⏰ **Cooldown:** 10 minutos" };
+        } else {
+            usuario.saldo += ganhoTotal;
+            usuario.totalGanho += ganhoTotal;
+            dados.jogadores[userId] = usuario;
+            salvarDadosRPG(dados);
+            
+            return { 
+                sucesso: true, 
+                ganho: ganhoTotal,
+                mensagem: `🌱 **COLETA BEM SUCEDIDA!** ✨\n\n📦 **Coletou:**\n${itensColetados.join('\n')}\n\n💰 **Ganhou:** ${ganhoTotal} Gold\n💳 **Saldo atual:** ${usuario.saldo} Gold\n\n⏰ **Cooldown:** 10 minutos`
+            };
+        }
+    });
+}
+
+// Comando agricultura
+function agricultura(userId) {
+    return withLock(async () => {
+        const dados = carregarDadosRPG();
+        let usuario = dados.jogadores[userId];
+        if (!usuario) return { erro: 'Usuário não registrado' };
+        
+        usuario = ensureUserDefaults(usuario);
+        
+        // Verifica cooldown
+        const cooldownKey = `${userId}_agricultura`;
+        const ultimaVez = usuario.cooldowns?.[cooldownKey] || 0;
+        const agora = Date.now();
+        const tempoEspera = 25 * 60 * 1000; // 25 minutos
+        
+        if (agora - ultimaVez < tempoEspera) {
+            const tempoRestante = Math.ceil((tempoEspera - (agora - ultimaVez)) / 1000 / 60);
+            return { erro: 'Cooldown', mensagem: `⏰ **Cooldown ativo!**\n\n🕐 Aguarde mais ${tempoRestante} minutos para plantar novamente.` };
+        }
+        
+        // Atualiza cooldown
+        if (!usuario.cooldowns) usuario.cooldowns = {};
+        usuario.cooldowns[cooldownKey] = agora;
+        
+        const cultivos = ['🌽 Milho', '🥕 Cenoura', '🍅 Tomate', '🥔 Batata', '🌾 Trigo'];
+        const valores = [80, 60, 90, 70, 110];
+        const sucesso = Math.random() > 0.2; // 80% chance de sucesso
+        
+        if (!sucesso) {
+            usuario.saldo = Math.max(0, usuario.saldo - 20);
+            dados.jogadores[userId] = usuario;
+            salvarDadosRPG(dados);
+            return { 
+                sucesso: false, 
+                mensagem: "🚜 **AGRICULTURA**\n\n🦗 Sua plantação foi atacada por pragas!\n💸 **Perdeu:** 20 Gold\n\n⏰ **Cooldown:** 25 minutos"
+            };
+        } else {
+            const cultivoIndex = Math.floor(Math.random() * cultivos.length);
+            const cultivo = cultivos[cultivoIndex];
+            const ganho = valores[cultivoIndex];
+            
+            usuario.saldo += ganho;
+            usuario.totalGanho += ganho;
+            dados.jogadores[userId] = usuario;
+            salvarDadosRPG(dados);
+            
+            return { 
+                sucesso: true, 
+                ganho: ganho,
+                mensagem: `🚜 **AGRICULTURA BEM SUCEDIDA!** 🌱\n\n${cultivo} colhido com sucesso!\n💰 **Ganhou:** ${ganho} Gold\n💳 **Saldo atual:** ${usuario.saldo} Gold\n\n⏰ **Cooldown:** 25 minutos`
+            };
+        }
+    });
+}
+
+// Comando entrega
+function entrega(userId) {
+    return withLock(async () => {
+        const dados = carregarDadosRPG();
+        let usuario = dados.jogadores[userId];
+        if (!usuario) return { erro: 'Usuário não registrado' };
+        
+        usuario = ensureUserDefaults(usuario);
+        
+        // Verifica cooldown
+        const cooldownKey = `${userId}_entrega`;
+        const ultimaVez = usuario.cooldowns?.[cooldownKey] || 0;
+        const agora = Date.now();
+        const tempoEspera = 30 * 60 * 1000; // 30 minutos
+        
+        if (agora - ultimaVez < tempoEspera) {
+            const tempoRestante = Math.ceil((tempoEspera - (agora - ultimaVez)) / 1000 / 60);
+            return { erro: 'Cooldown', mensagem: `⏰ **Cooldown ativo!**\n\n🕐 Aguarde mais ${tempoRestante} minutos para fazer entrega novamente.` };
+        }
+        
+        // Atualiza cooldown
+        if (!usuario.cooldowns) usuario.cooldowns = {};
+        usuario.cooldowns[cooldownKey] = agora;
+        
+        const entregas = ['🍕 Pizza', '🍔 Hambúrguer', '📦 Encomenda', '💊 Remédios', '🛒 Compras'];
+        const distancias = ['Centro', 'Zona Norte', 'Zona Sul', 'Subúrbio', 'Interior'];
+        const valores = [120, 180, 100, 200, 300];
+        
+        const entregaIndex = Math.floor(Math.random() * entregas.length);
+        const entregaItem = entregas[entregaIndex];
+        const distancia = distancias[entregaIndex];
+        const ganho = valores[entregaIndex];
+        
+        // Chance de problema na entrega
+        const problema = Math.random() < 0.1; // 10% chance
+        
+        if (problema) {
+            usuario.saldo = Math.max(0, usuario.saldo - 15);
+            dados.jogadores[userId] = usuario;
+            salvarDadosRPG(dados);
+            return { 
+                sucesso: false, 
+                mensagem: `🛵 **ENTREGA COM PROBLEMA** ⚠️\n\n${entregaItem} para ${distancia}\n❌ Cliente não estava em casa!\n💸 **Perdeu gasolina:** 15 Gold\n\n⏰ **Cooldown:** 30 minutos`
+            };
+        } else {
+            usuario.saldo += ganho;
+            usuario.totalGanho += ganho;
+            dados.jogadores[userId] = usuario;
+            salvarDadosRPG(dados);
+            
+            return { 
+                sucesso: true, 
+                ganho: ganho,
+                mensagem: `🛵 **ENTREGA CONCLUÍDA!** ✅\n\n${entregaItem} entregue em ${distancia}\n💰 **Ganhou:** ${ganho} Gold\n💳 **Saldo atual:** ${usuario.saldo} Gold\n\n⏰ **Cooldown:** 30 minutos`
+            };
+        }
+    });
+}

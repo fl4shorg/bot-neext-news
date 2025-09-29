@@ -2769,6 +2769,303 @@ Seu ID foi salvo com segurança em nosso sistema!`;
         }
         break;
 
+        // ==================== NOVOS COMANDOS RPG ====================
+
+        case "loja": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
+                break;
+            }
+
+            const categoria = args[0]?.toLowerCase();
+            const categoriasValidas = ['propriedades', 'animais', 'ferramentas', 'veiculos', 'negocios'];
+            
+            if (categoria && !categoriasValidas.includes(categoria)) {
+                await reply(sock, from, "❌ Categoria inválida! Use: propriedades, animais, ferramentas, veiculos, negocios");
+                break;
+            }
+
+            const resultado = rpg.listarLoja(categoria);
+            await reply(sock, from, resultado.mensagem);
+            await reagirMensagem(sock, message, "🛒");
+        }
+        break;
+
+        case "comprar": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
+                break;
+            }
+
+            if (!args[0]) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, `🛒 **COMO COMPRAR**\n\nUse: \`${config.prefix}comprar [item_id] [quantidade]\`\n\n💡 **Exemplo:**\n\`${config.prefix}comprar casa_simples 1\`\n\n📋 **Para ver itens:** \`${config.prefix}loja\``);
+                break;
+            }
+
+            const itemId = args[0];
+            const quantidade = args[1] ? parseInt(args[1]) : 1;
+
+            if (!Number.isInteger(quantidade) || quantidade < 1 || quantidade > 10) {
+                await reply(sock, from, "❌ Quantidade deve ser um número inteiro entre 1 e 10!");
+                break;
+            }
+
+            const resultado = await rpg.comprarItem(userId, itemId, quantidade);
+
+            if (resultado.erro) {
+                await reply(sock, from, `❌ ${resultado.erro}`);
+                break;
+            }
+
+            await reply(sock, from, resultado.mensagem);
+            await reagirMensagem(sock, message, "✅");
+        }
+        break;
+
+        case "inventario":
+        case "meuinventario":
+        case "mochila": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
+                break;
+            }
+
+            const resultado = rpg.obterPerfilCompleto(userId);
+
+            if (!resultado) {
+                await reply(sock, from, "❌ Erro ao carregar inventário.");
+                break;
+            }
+
+            let mensagem = `📦 **INVENTÁRIO DE ${resultado.usuario.nome.toUpperCase()}**\n\n`;
+            mensagem += `💰 **Saldo:** ${resultado.usuario.saldo} Gold\n`;
+            mensagem += `💎 **Valor do inventário:** ${resultado.valorInventario} Gold\n`;
+            mensagem += `📋 **Total de itens:** ${resultado.totalItens}\n\n`;
+            mensagem += resultado.inventarioTexto;
+            
+            await reply(sock, from, mensagem);
+            await reagirMensagem(sock, message, "📦");
+        }
+        break;
+
+        case "cacar":
+        case "cacada": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
+                break;
+            }
+
+            const resultado = await rpg.cacar(userId);
+
+            if (resultado.erro) {
+                if (resultado.erro === 'Cooldown') {
+                    await reply(sock, from, resultado.mensagem);
+                } else {
+                    await reply(sock, from, `❌ ${resultado.erro}`);
+                }
+                break;
+            }
+
+            await reply(sock, from, resultado.mensagem);
+            
+            if (resultado.sucesso) {
+                await reagirMensagem(sock, message, "🏹");
+            } else {
+                await reagirMensagem(sock, message, "😞");
+            }
+        }
+        break;
+
+        case "coletar":
+        case "coleta": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
+                break;
+            }
+
+            const resultado = await rpg.coletar(userId);
+
+            if (resultado.erro) {
+                if (resultado.erro === 'Cooldown') {
+                    await reply(sock, from, resultado.mensagem);
+                } else {
+                    await reply(sock, from, `❌ ${resultado.erro}`);
+                }
+                break;
+            }
+
+            await reply(sock, from, resultado.mensagem);
+            
+            if (resultado.sucesso) {
+                await reagirMensagem(sock, message, "🌱");
+            } else {
+                await reagirMensagem(sock, message, "😞");
+            }
+        }
+        break;
+
+        case "agricultura":
+        case "plantar": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
+                break;
+            }
+
+            const resultado = await rpg.agricultura(userId);
+
+            if (resultado.erro) {
+                if (resultado.erro === 'Cooldown') {
+                    await reply(sock, from, resultado.mensagem);
+                } else {
+                    await reply(sock, from, `❌ ${resultado.erro}`);
+                }
+                break;
+            }
+
+            await reply(sock, from, resultado.mensagem);
+            
+            if (resultado.sucesso) {
+                await reagirMensagem(sock, message, "🚜");
+            } else {
+                await reagirMensagem(sock, message, "🦗");
+            }
+        }
+        break;
+
+        case "entrega":
+        case "delivery": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
+                break;
+            }
+
+            const resultado = await rpg.entrega(userId);
+
+            if (resultado.erro) {
+                if (resultado.erro === 'Cooldown') {
+                    await reply(sock, from, resultado.mensagem);
+                } else {
+                    await reply(sock, from, `❌ ${resultado.erro}`);
+                }
+                break;
+            }
+
+            await reply(sock, from, resultado.mensagem);
+            
+            if (resultado.sucesso) {
+                await reagirMensagem(sock, message, "🛵");
+            } else {
+                await reagirMensagem(sock, message, "❌");
+            }
+        }
+        break;
+
         case "pix": {
             // Só funciona em grupos com RPG ativo
             if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
