@@ -32,6 +32,16 @@ async function perguntarMetodoConexao() {
         return "qr";
     }
     
+    // Detecta se estamos em um ambiente não-interativo (como Replit, CI/CD, etc.)
+    const isReplit = process.env.REPL_ID || process.env.REPLIT || process.env.REPL_OWNER;
+    const isNonInteractive = !process.stdin.isTTY || process.env.CI || isReplit;
+    
+    if (isNonInteractive) {
+        console.log("🔧 Detectado ambiente não-interativo (Replit/CI). Usando QR Code automaticamente.");
+        console.log("💡 Para alterar o método, defina a variável BOT_CONNECTION_METHOD (qr ou pairing)");
+        return "qr";
+    }
+    
     // Tenta modo interativo sempre - funciona no Replit também
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
     return new Promise(resolve => {
