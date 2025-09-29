@@ -179,8 +179,8 @@ class WelcomeSystem {
             console.log(`🔍 [WELCOME DEBUG] numeroLimpo para substituir: ${numeroLimpo}`);
 
             // Substitui TODOS os placeholders (incluindo variações com e sem #)
-            // Para #numerodele#, usa APENAS o número limpo (sem @)
-            mensagemFinal = mensagemFinal.replace(/#numerodele#?/g, numeroLimpo);
+            // Para #numerodele#, usa @ + número para menção visual
+            mensagemFinal = mensagemFinal.replace(/#numerodele#?/g, `@${numeroLimpo}`);
             mensagemFinal = mensagemFinal.replace(/#nomedogrupo#?/g, nomeGrupo);
             mensagemFinal = mensagemFinal.replace(/#totalmembros#?/g, totalMembros.toString());
             
