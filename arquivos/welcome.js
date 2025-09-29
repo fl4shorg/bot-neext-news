@@ -42,9 +42,9 @@ class WelcomeSystem {
                 config.mensagem.includes('🎉 *BEM-VINDO')
             )) {
                 console.log(`🔧 Removendo texto fixo antigo do grupo ${groupId}`);
-                // Remove texto fixo - deixa VAZIO para usuário configurar
-                config.mensagem = "";
-                config.descricao = "";
+                // Define mensagem padrão simples com placeholders
+                config.mensagem = "#numerodele bem-vindo ao #nomedogrupo! #descricao";
+                config.descricao = config.descricao || "Aproveite o grupo!";
                 alterado = true;
             }
         }
@@ -64,13 +64,13 @@ class WelcomeSystem {
         }
     }
 
-    // Ativa/desativa welcome para um grupo - SEM texto padrão
+    // Ativa/desativa welcome para um grupo
     toggleWelcome(groupId, action) {
         if (!this.welcomeConfigs[groupId]) {
             this.welcomeConfigs[groupId] = {
                 ativo: false,
-                mensagem: "", // VAZIO - usuário deve configurar
-                descricao: ""
+                mensagem: "#numerodele bem-vindo ao #nomedogrupo! #descricao", // Mensagem padrão simples
+                descricao: "Aproveite o grupo!"
             };
         }
 
@@ -114,7 +114,7 @@ class WelcomeSystem {
         if (!this.welcomeConfigs[groupId]) {
             this.welcomeConfigs[groupId] = {
                 ativo: false,
-                mensagem: "",
+                mensagem: "#numerodele bem-vindo ao #nomedogrupo! #descricao",
                 descricao: novaDescricao
             };
         } else {
@@ -142,7 +142,7 @@ class WelcomeSystem {
         }
     }
 
-    // SISTEMA FINAL: Processa welcome EXATAMENTE como o usuário configurar
+    // SISTEMA FINAL: Processa welcome com API de welcome card
     async processarWelcome(sock, groupId, newMember) {
         try {
             console.log(`🎉 [WELCOME] Processando para ${newMember} no grupo ${groupId}`);
@@ -153,8 +153,8 @@ class WelcomeSystem {
             }
 
             const config = this.welcomeConfigs[groupId];
-            if (!config || !config.mensagem || config.mensagem.trim() === '') {
-                console.log('❌ [WELCOME] Mensagem não configurada pelo usuário - não enviando');
+            if (!config || !config.mensagem) {
+                console.log('❌ [WELCOME] Configuração não encontrada');
                 return false;
             }
 
@@ -163,13 +163,13 @@ class WelcomeSystem {
             const nomeGrupo = groupMetadata.subject;
             const totalMembros = groupMetadata.participants.length;
 
-            // Limpa o número (remove @s.whatsapp.net ou @lid)
-            const numeroLimpo = newMember.replace(/@s\.whatsapp\.net|@lid/g, '');
+            // Limpa o número (remove @s.whatsapp.net, @lid, e sufixos :xx)
+            const numeroLimpo = newMember.replace(/@s\.whatsapp\.net|@lid|:[^@]+/g, '');
 
             // Processa APENAS a mensagem que o usuário configurou
             let mensagemFinal = config.mensagem;
 
-            // Substitui TODOS os placeholders (suporta # no final também)
+            // Substitui TODOS os placeholders (sem deixar # literal)
             mensagemFinal = mensagemFinal.replace(/#numerodele#?/g, `@${numeroLimpo}`);
             mensagemFinal = mensagemFinal.replace(/#nomedogrupo#?/g, nomeGrupo);
             mensagemFinal = mensagemFinal.replace(/#totalmembros#?/g, totalMembros.toString());
@@ -177,20 +177,38 @@ class WelcomeSystem {
 
             console.log(`📝 [WELCOME] Mensagem final: "${mensagemFinal}"`);
 
-            // Obtém foto do usuário ou usa a específica
-            const fotoUrl = await this.obterFotoPerfil(sock, newMember);
+            // Obtém foto do usuário
+            let avatarUrl;
+            let temFotoPropria = true;
+            
+            try {
+                avatarUrl = await sock.profilePictureUrl(newMember, 'image');
+                console.log('✅ [WELCOME] Foto de perfil própria obtida');
+            } catch (error) {
+                avatarUrl = 'https://i.ibb.co/pvQpcbB2/37575a213755cad83bd408908623ba22.jpg';
+                temFotoPropria = false;
+                console.log('⚠️ [WELCOME] Usando foto padrão (usuário sem foto)');
+            }
+
+            // Gera welcome card - só usa background quando não tem foto própria
+            let welcomeCardUrl = `https://api.erdwpe.com/api/maker/welcome1?profile=${encodeURIComponent(avatarUrl)}&name=${encodeURIComponent(numeroLimpo)}&groupname=${encodeURIComponent(nomeGrupo)}&member=${totalMembros}`;
+            
+            // SÓ adiciona background se não tem foto própria
+            if (!temFotoPropria) {
+                welcomeCardUrl += `&background=https://i.ibb.co/pvQpcbB2/37575a213755cad83bd408908623ba22.jpg`;
+            }
 
             // Verifica se deve mencionar (só se tiver @ na mensagem)
             const mentions = mensagemFinal.includes(`@${numeroLimpo}`) ? [newMember] : [];
 
-            // ENVIA UMA MENSAGEM ÚNICA: foto + texto do usuário
+            // ENVIA welcome card + texto do usuário
             await sock.sendMessage(groupId, {
-                image: { url: fotoUrl },
+                image: { url: welcomeCardUrl },
                 caption: mensagemFinal,
                 mentions: mentions
             });
 
-            console.log(`✅ [WELCOME] Enviado para ${numeroLimpo}: "${mensagemFinal}"`);
+            console.log(`✅ [WELCOME] Welcome card enviado para ${numeroLimpo}: "${mensagemFinal}"`);
             return true;
 
         } catch (error) {
