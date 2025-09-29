@@ -44,7 +44,7 @@ class WelcomeSystem {
         if (!this.welcomeConfigs[groupId]) {
             this.welcomeConfigs[groupId] = {
                 ativo: false,
-                mensagem: "🎉 *BEM-VINDO(A) #numerodele#!*\n\n📱 *Grupo:* #nomedogrupo\n👥 *Total de Membros:* #totalmembros\n\n#descricao",
+                mensagem: "🎉 *BEM-VINDO(A) #numerodele!*\n\n📱 *Grupo:* #nomedogrupo\n👥 *Total de Membros:* #totalmembros\n\n#descricao",
                 descricao: "Seja bem-vindo(a) ao nosso grupo! Esperamos que você se divirta e participe das conversas! 😊"
             };
         }
@@ -72,7 +72,7 @@ class WelcomeSystem {
         if (!this.welcomeConfigs[groupId]) {
             this.welcomeConfigs[groupId] = {
                 ativo: false,
-                mensagem: "🎉 *BEM-VINDO(A) #numerodele#!*\n\n📱 *Grupo:* #nomedogrupo\n👥 *Total de Membros:* #totalmembros\n\n#descricao",
+                mensagem: "🎉 *BEM-VINDO(A) #numerodele!*\n\n📱 *Grupo:* #nomedogrupo\n👥 *Total de Membros:* #totalmembros\n\n#descricao",
                 descricao: "Seja bem-vindo(a) ao nosso grupo! Esperamos que você se divirta e participe das conversas! 😊"
             };
         }
@@ -94,17 +94,23 @@ class WelcomeSystem {
 
         let mensagem = config.mensagem;
         
-        // Substitui placeholders
-        mensagem = mensagem.replace(/#numerodele#/g, `@${numeroMembro}`);
-        mensagem = mensagem.replace(/#nomedogrupo/g, nomeGrupo);
-        mensagem = mensagem.replace(/#totalmembros/g, totalMembros.toString());
-        mensagem = mensagem.replace(/#descricao/g, config.descricao);
+        // Remove o @s.whatsapp.net ou @lid do número
+        const numeroLimpo = numeroMembro.replace(/@s\.whatsapp\.net|@lid/g, '');
+        
+        // Substitui placeholders (compatível com ambas as versões: #numerodele e #numerodele#)
+        mensagem = mensagem.replace(/#numerodele#?/g, `@${numeroLimpo}`);
+        mensagem = mensagem.replace(/#nomedogrupo#?/g, nomeGrupo);
+        mensagem = mensagem.replace(/#totalmembros#?/g, totalMembros.toString());
+        mensagem = mensagem.replace(/#descricao#?/g, config.descricao);
 
-        return mensagem;
+        return {
+            texto: mensagem,
+            numeroParaMencionar: numeroMembro // Retorna o JID completo para mencionar
+        };
     }
 
     // Gera URL da API PopCat para welcome card
-    async gerarWelcomeCard(avatarUrl, nomeUsuario, nomeGrupo, numeroMembro) {
+    async gerarWelcomeCard(avatarUrl, numeroLimpo, nomeGrupo, totalMembros) {
         try {
             // URL base da API PopCat
             const baseUrl = 'https://api.popcat.xyz/v2/welcomecard';
@@ -112,13 +118,16 @@ class WelcomeSystem {
             // Background padrão fornecido
             const background = 'https://i.ibb.co/N6qX5TzX/bcfd129f316060c3149893a4663a160f.jpg';
             
-            // Monta os parâmetros
+            // Avatar padrão melhorado (imagem vazia do WhatsApp)
+            const avatarPadrao = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face';
+            
+            // Monta os parâmetros (numeroLimpo já vem limpo)
             const params = new URLSearchParams({
                 background: background,
-                text1: nomeUsuario || 'Novo Membro',
+                text1: numeroLimpo,
                 text2: `Bem-vindo(a) ao ${nomeGrupo}`,
-                text3: `Membro #${numeroMembro}`,
-                avatar: avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'
+                text3: `Membro #${totalMembros}`,
+                avatar: avatarUrl || avatarPadrao
             });
 
             const welcomeCardUrl = `${baseUrl}?${params.toString()}`;
@@ -135,62 +144,71 @@ class WelcomeSystem {
     async obterAvatarUsuario(sock, userId) {
         try {
             const profilePic = await sock.profilePictureUrl(userId, 'image');
+            console.log('✅ Foto de perfil obtida:', profilePic);
             return profilePic;
         } catch (error) {
             console.log('⚠️ Não foi possível obter foto de perfil, usando padrão');
-            return 'https://cdn.discordapp.com/embed/avatars/0.png';
+            // Avatar padrão que simula a foto vazia do WhatsApp
+            return 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face';
         }
     }
 
-    // Processa welcome completo para novo membro
+    // Processa welcome completo para novo membro - CORRIGIDO
     async processarWelcome(sock, groupId, newMember) {
         try {
             if (!this.isWelcomeAtivo(groupId)) {
+                console.log('❌ Welcome não está ativo para este grupo');
                 return false;
             }
+
+            console.log(`🎉 Processando welcome para ${newMember} no grupo ${groupId}`);
 
             // Obtém metadados do grupo
             const groupMetadata = await sock.groupMetadata(groupId);
             const nomeGrupo = groupMetadata.subject;
             const totalMembros = groupMetadata.participants.length;
             
-            // Extrai número do membro
-            const numeroMembro = newMember.replace('@s.whatsapp.net', '');
+            // Extrai número do membro (mantém o JID completo para mencionar)
+            const numeroLimpo = newMember.replace(/@s\.whatsapp\.net|@lid/g, '');
             
             // Gera mensagem personalizada
-            const mensagemWelcome = this.processarMensagem(groupId, numeroMembro, nomeGrupo, totalMembros);
+            const resultadoMensagem = this.processarMensagem(groupId, newMember, nomeGrupo, totalMembros);
             
-            if (!mensagemWelcome) {
+            if (!resultadoMensagem) {
                 console.log('❌ Erro ao processar mensagem de welcome');
                 return false;
             }
 
-            // Envia mensagem de texto primeiro
-            await sock.sendMessage(groupId, {
-                text: mensagemWelcome,
-                mentions: [newMember]
-            });
-
-            // Gera e envia welcome card
+            // Obtém avatar do usuário
             const avatarUrl = await this.obterAvatarUsuario(sock, newMember);
-            const nomeUsuario = numeroMembro; // Pode ser melhorado obtendo nome real
             
+            // Gera welcome card
             const welcomeCardUrl = await this.gerarWelcomeCard(
                 avatarUrl, 
-                nomeUsuario, 
+                numeroLimpo, 
                 nomeGrupo, 
                 totalMembros
             );
 
             if (welcomeCardUrl) {
+                // ENVIA APENAS UMA MENSAGEM com imagem E texto
                 await sock.sendMessage(groupId, {
                     image: { url: welcomeCardUrl },
-                    caption: `🎉 *Welcome Card para @${numeroMembro}*`,
+                    caption: resultadoMensagem.texto,
+                    mentions: [newMember] // Usa o JID completo
+                });
+                
+                console.log(`✅ Welcome card enviado para ${numeroLimpo} no grupo ${nomeGrupo}`);
+            } else {
+                // Fallback: envia apenas texto se não conseguir gerar a imagem
+                await sock.sendMessage(groupId, {
+                    text: resultadoMensagem.texto,
                     mentions: [newMember]
                 });
+                
+                console.log(`✅ Welcome texto enviado para ${numeroLimpo} no grupo ${nomeGrupo}`);
             }
 
-            console.log(`✅ Welcome processado para ${numeroMembro} no grupo ${nomeGrupo}`);
             return true;
 
         } catch (error) {
