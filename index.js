@@ -1240,6 +1240,62 @@ async function handleCommand(sock, message, command, args, from, quoted) {
         }
         break;
 
+        case "mensagembemvindo1": {
+            // Só funciona em grupos
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const ehAdmin = await isAdmin(sock, from, sender);
+            const ehDono = isDono(sender);
+
+            if (!ehAdmin && !ehDono) {
+                await reply(sock, from, "❌ Apenas admins podem personalizar mensagens de boas-vindas.");
+                break;
+            }
+
+            // Verifica se welcome está ativo
+            const welcomeAtivo = welcomeSystem.isWelcomeAtivo(from);
+            if (!welcomeAtivo) {
+                await reagirMensagem(sock, message, "⚠️");
+                await reply(sock, from, `⚠️ *WELCOME INATIVO*\n\n🎉 O sistema de boas-vindas não está ativo neste grupo.\n\n📝 *Para usar este comando:*\n1. Primeiro ative: \`.welcome1 on\`\n2. Depois personalize: \`.mensagembemvindo1 [sua mensagem]\`\n\n💡 *Exemplo:*\n\`.mensagembemvindo1 Olá! Seja muito bem-vindo ao nosso grupo incrível! Divirta-se e participe das conversas! 🎉\``);
+                break;
+            }
+
+            const novaDescricao = args.join(' ');
+
+            // Se não tem argumentos, mostra como usar
+            if (!novaDescricao || novaDescricao.trim() === '') {
+                await reagirMensagem(sock, message, "💡");
+                
+                const configAtual = welcomeSystem.obterConfig(from);
+                const descricaoAtual = configAtual?.descricao || "Nenhuma configurada";
+
+                await reply(sock, from, `💬 *PERSONALIZAR BEM-VINDO*\n\n📝 *Como usar:*\n\`.mensagembemvindo1 [sua mensagem personalizada]\`\n\n💡 *Exemplo:*\n\`.mensagembemvindo1 Olá! Seja muito bem-vindo ao nosso grupo incrível! Esperamos que você se divirta e participe das conversas! 🎉\`\n\n🎨 *Descrição atual:*\n"${descricaoAtual}"\n\n✨ *Placeholders disponíveis:*\n• \`#numerodele#\` - Menciona quem entrou\n• \`#nomedogrupo\` - Nome do grupo  \n• \`#totalmembros\` - Total de membros\n• \`#descricao\` - Sua mensagem personalizada\n\n⚠️ A descrição aparece na parte final da mensagem de boas-vindas`);
+                break;
+            }
+
+            // Configura nova mensagem
+            try {
+                const sucesso = welcomeSystem.configurarMensagem(from, novaDescricao);
+                
+                if (sucesso) {
+                    await reagirMensagem(sock, message, "✅");
+                    await reply(sock, from, `✅ *MENSAGEM PERSONALIZADA*\n\n🎉 Descrição do welcome atualizada com sucesso!\n\n🎨 *Nova descrição:*\n"${novaDescricao}"\n\n📝 *Como testar:*\n• Adicione alguém ao grupo para ver a mensagem\n• A descrição aparece após as informações do grupo\n\n💡 *Para ver configuração completa:*\n• Digite \`.welcome1\` para ver status atual\n\n⚠️ Sistema deve estar ativo para funcionar`);
+                } else {
+                    await reagirMensagem(sock, message, "❌");
+                    await reply(sock, from, "❌ Erro ao configurar mensagem personalizada. Tente novamente.");
+                }
+            } catch (error) {
+                console.error("❌ Erro no comando mensagembemvindo1:", error);
+                await reagirMensagem(sock, message, "❌");
+                await reply(sock, from, "❌ Erro interno ao personalizar mensagem. Tente novamente.");
+            }
+        }
+        break;
+
         case "s":
             try {
                 // Obtém hora atual para metadados
