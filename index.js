@@ -5347,6 +5347,15 @@ function setupListeners(sock) {
                 // Normaliza a mensagem
                 const { normalized, quoted } = normalizeMessage(message);
                 
+                // Verifica antipv (bloqueio de PV para não-donos)
+                if (!isGroup) {
+                    const config = require('./settings/settings.json');
+                    if (config.antipv && !isDono(sender)) {
+                        console.log(`🚫 PV bloqueado: ${sender.split('@')[0]} (ANTIPV ativo)`);
+                        continue; // Ignora completamente mensagens de PV de não-donos
+                    }
+                }
+
                 // Processa anti-spam primeiro
                 const bloqueado = await processarAntiSpam(sock, normalized);
                 if (bloqueado) continue;
@@ -5386,6 +5395,39 @@ function setupListeners(sock) {
             await processarListaNegra(sock, participants, id, action);
         } catch (error) {
             console.error('❌ Erro ao processar participantes do grupo:', error);
+        }
+    });
+
+    // Listener para chamadas (anticall)
+    sock.ev.on('call', async ({ content, isGroup, id, from, date, accepted }) => {
+        try {
+            const config = require('./settings/settings.json');
+            
+            // Se anticall estiver ativo, rejeita automaticamente
+            if (config.anticall && !accepted) {
+                console.log(`📞 Chamada rejeitada automaticamente: ${from.split('@')[0]} (ANTICALL ativo)`);
+                
+                // Rejeita a chamada
+                await sock.rejectCall(id, from);
+                
+                // Log da ação
+                console.log(`🚫 Chamada de ${from.split('@')[0]} foi rejeitada pelo ANTICALL`);
+                
+                // Opcional: notifica o dono sobre a chamada rejeitada
+                const donoDM = isDono(from) ? null : settings.numeroDoDono + '@s.whatsapp.net';
+                if (donoDM && donoDM !== from) {
+                    try {
+                        await sock.sendMessage(donoDM, {
+                            text: `🚫 *ANTICALL ATIVO*\n\n📞 Chamada rejeitada de: @${from.split('@')[0]}\n⏰ Horário: ${new Date(date).toLocaleString()}\n🛡️ Sistema de proteção funcionando!`,
+                            mentions: [from]
+                        });
+                    } catch (err) {
+                        console.log('❌ Erro ao notificar dono sobre chamada rejeitada:', err);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('❌ Erro ao processar chamada:', error);
         }
     });
 
