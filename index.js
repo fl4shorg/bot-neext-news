@@ -5848,17 +5848,37 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
 
             try {
                 console.log(`🧪 [TEST-WELCOME] Iniciando teste do welcome no grupo ${from}`);
-                console.log(`🧪 [TEST-WELCOME] Simulando entrada de usuário no grupo`);
+                
+                // Verifica configuração atual
+                const config = welcomeSystem.obterConfig(from);
+                console.log(`🧪 [TEST-WELCOME] Config atual:`, config);
+                
+                // Verifica se está ativo
+                const ativo = welcomeSystem.isWelcomeAtivo(from);
+                console.log(`🧪 [TEST-WELCOME] Welcome ativo: ${ativo}`);
+                
+                if (!ativo) {
+                    await reply(sock, from, `❌ *WELCOME INATIVO*\n\nO sistema está desativado para este grupo.\n\n🔧 Use \`.welcome1 on\` para ativar`);
+                    break;
+                }
+                
+                console.log(`🧪 [TEST-WELCOME] Simulando entrada de ${sender} no grupo`);
                 
                 // Simula um evento de entrada
-                await welcomeSystem.processarWelcome(sock, from, sender);
+                const sucesso = await welcomeSystem.processarWelcome(sock, from, sender);
                 
-                await reagirMensagem(sock, message, "✅");
-                await reply(sock, from, `✅ *TESTE DO WELCOME EXECUTADO*\n\n🧪 Simulei sua entrada no grupo\n📋 Verifique os logs do console\n\n⚠️ Se não apareceu mensagem, o welcome pode estar:\n• Desativado - Use \`.welcome1 on\`\n• Mal configurado - Use \`.welcome1\`\n\n🔧 Este é um comando temporário para debug`);
+                if (sucesso) {
+                    await reagirMensagem(sock, message, "✅");
+                    await reply(sock, from, `✅ *TESTE DO WELCOME EXECUTADO*\n\n🧪 Simulei sua entrada no grupo\n✅ Welcome enviado com sucesso!\n\n📋 Configuração atual:\n• Ativo: ${ativo}\n• Mensagem: "${config?.mensagem || 'Padrão'}"\n• Descrição: "${config?.descricao || 'Vazia'}"`);
+                } else {
+                    await reagirMensagem(sock, message, "❌");
+                    await reply(sock, from, `❌ *TESTE FALHOU*\n\n🧪 O welcome não conseguiu enviar a mensagem\n📋 Verifique os logs do console para mais detalhes\n\n🔧 Configuração atual:\n• Ativo: ${ativo}\n• Mensagem: "${config?.mensagem || 'Não configurada'}"`);
+                }
+                
             } catch (error) {
                 console.error("❌ Erro no teste welcome:", error);
                 await reagirMensagem(sock, message, "❌");
-                await reply(sock, from, "❌ Erro ao testar welcome. Verifique os logs.");
+                await reply(sock, from, `❌ Erro ao testar welcome: ${error.message}`);
             }
         }
         break;
@@ -5979,14 +5999,43 @@ function setupListeners(sock) {
         try {
             console.log(`👥 [GROUP-UPDATE] Evento recebido: ${action} - ${participants.length} participante(s) no grupo ${id}`);
             
+            // Processa lista negra e antifake PRIMEIRO
             await processarListaNegra(sock, participants, id, action);
             
-            // Processa welcome para novos membros
+            // Processa welcome para novos membros (após verificar lista negra)
             if (action === 'add') {
                 console.log(`🎉 [GROUP-UPDATE] Processando welcome para ${participants.length} novo(s) membro(s)`);
+                
+                // Aguarda um pouco para garantir que o usuário foi processado
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
                 for (const participant of participants) {
-                    console.log(`🎉 [GROUP-UPDATE] Processando welcome para ${participant}`);
-                    await welcomeSystem.processarWelcome(sock, id, participant);
+                    try {
+                        console.log(`🎉 [GROUP-UPDATE] Tentando welcome para ${participant}`);
+                        
+                        // Verifica se o usuário ainda está no grupo (pode ter sido banido)
+                        const groupMetadata = await sock.groupMetadata(id);
+                        const participantExists = groupMetadata.participants.some(p => p.id === participant);
+                        
+                        if (participantExists) {
+                            console.log(`🎉 [GROUP-UPDATE] Usuário ${participant} confirmado no grupo, processando welcome`);
+                            const sucesso = await welcomeSystem.processarWelcome(sock, id, participant);
+                            
+                            if (sucesso) {
+                                console.log(`✅ [GROUP-UPDATE] Welcome enviado com sucesso para ${participant}`);
+                            } else {
+                                console.log(`❌ [GROUP-UPDATE] Falha no welcome para ${participant}`);
+                            }
+                        } else {
+                            console.log(`⚠️ [GROUP-UPDATE] Usuário ${participant} não está mais no grupo, pulando welcome`);
+                        }
+                        
+                        // Aguarda entre cada processamento
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                    } catch (welcomeError) {
+                        console.error(`❌ [GROUP-UPDATE] Erro no welcome para ${participant}:`, welcomeError);
+                    }
                 }
             }
         } catch (error) {

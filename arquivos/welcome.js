@@ -96,16 +96,18 @@ class WelcomeSystem {
     configurarMensagemCompleta(groupId, novaMensagem) {
         if (!this.welcomeConfigs[groupId]) {
             this.welcomeConfigs[groupId] = {
-                ativo: false,
+                ativo: true, // Ativa automaticamente quando configura mensagem
                 mensagem: novaMensagem,
-                descricao: ""
+                descricao: "Aproveite o grupo!"
             };
         } else {
             this.welcomeConfigs[groupId].mensagem = novaMensagem;
+            // Garante que está ativo quando configura mensagem
+            this.welcomeConfigs[groupId].ativo = true;
         }
 
         this.salvarConfiguracoes();
-        console.log(`✅ Mensagem welcome configurada para grupo ${groupId}: ${novaMensagem}`);
+        console.log(`✅ Mensagem welcome configurada e ativada para grupo ${groupId}: ${novaMensagem}`);
         return true;
     }
 
@@ -113,15 +115,22 @@ class WelcomeSystem {
     configurarMensagem(groupId, novaDescricao) {
         if (!this.welcomeConfigs[groupId]) {
             this.welcomeConfigs[groupId] = {
-                ativo: false,
+                ativo: true, // Ativa automaticamente quando configura
                 mensagem: "#numerodele bem-vindo ao #nomedogrupo! #descricao",
                 descricao: novaDescricao
             };
         } else {
             this.welcomeConfigs[groupId].descricao = novaDescricao;
+            // Garante que a mensagem padrão existe
+            if (!this.welcomeConfigs[groupId].mensagem) {
+                this.welcomeConfigs[groupId].mensagem = "#numerodele bem-vindo ao #nomedogrupo! #descricao";
+            }
+            // Garante que está ativo
+            this.welcomeConfigs[groupId].ativo = true;
         }
 
         this.salvarConfiguracoes();
+        console.log(`✅ Descrição welcome configurada e ativada para grupo ${groupId}: ${novaDescricao}`);
         return true;
     }
 
@@ -142,7 +151,7 @@ class WelcomeSystem {
         }
     }
 
-    // SISTEMA FINAL: Processa welcome com API de welcome card
+    // SISTEMA FINAL: Processa welcome com fallback robusto
     async processarWelcome(sock, groupId, newMember) {
         try {
             console.log(`🎉 [WELCOME] Processando para ${newMember} no grupo ${groupId}`);
@@ -153,7 +162,7 @@ class WelcomeSystem {
             }
 
             const config = this.welcomeConfigs[groupId];
-            if (!config || !config.mensagem) {
+            if (!config) {
                 console.log('❌ [WELCOME] Configuração não encontrada');
                 return false;
             }
@@ -166,54 +175,90 @@ class WelcomeSystem {
             // Limpa o número (remove @s.whatsapp.net, @lid, e sufixos :xx)
             const numeroLimpo = newMember.replace(/@s\.whatsapp\.net|@lid|:[^@]+/g, '');
 
-            // Processa APENAS a mensagem que o usuário configurou
-            let mensagemFinal = config.mensagem;
+            // Processa a mensagem configurada ou usa padrão
+            let mensagemFinal = config.mensagem || "#numerodele bem-vindo ao #nomedogrupo! #descricao";
 
-            // Substitui TODOS os placeholders (sem deixar # literal)
+            // Substitui TODOS os placeholders
             mensagemFinal = mensagemFinal.replace(/#numerodele#?/g, `@${numeroLimpo}`);
             mensagemFinal = mensagemFinal.replace(/#nomedogrupo#?/g, nomeGrupo);
             mensagemFinal = mensagemFinal.replace(/#totalmembros#?/g, totalMembros.toString());
-            mensagemFinal = mensagemFinal.replace(/#descricao#?/g, config.descricao || '');
+            mensagemFinal = mensagemFinal.replace(/#descricao#?/g, config.descricao || 'Aproveite o grupo!');
 
             console.log(`📝 [WELCOME] Mensagem final: "${mensagemFinal}"`);
 
             // Obtém foto do usuário
-            let avatarUrl;
-            let temFotoPropria = true;
+            let avatarUrl = 'https://i.ibb.co/LDs3wJR3/a720804619ff4c744098b956307db1ff.jpg'; // Foto padrão
             
             try {
-                avatarUrl = await sock.profilePictureUrl(newMember, 'image');
-                console.log('✅ [WELCOME] Foto de perfil própria obtida');
+                const profilePic = await sock.profilePictureUrl(newMember, 'image');
+                if (profilePic) {
+                    avatarUrl = profilePic;
+                    console.log('✅ [WELCOME] Foto de perfil própria obtida');
+                }
             } catch (error) {
-                avatarUrl = 'https://i.ibb.co/pvQpcbB2/37575a213755cad83bd408908623ba22.jpg';
-                temFotoPropria = false;
                 console.log('⚠️ [WELCOME] Usando foto padrão (usuário sem foto)');
             }
 
-            // Gera welcome card - só usa background quando não tem foto própria
-            let welcomeCardUrl = `https://api.erdwpe.com/api/maker/welcome1?profile=${encodeURIComponent(avatarUrl)}&name=${encodeURIComponent(numeroLimpo)}&groupname=${encodeURIComponent(nomeGrupo)}&member=${totalMembros}`;
-            
-            // SÓ adiciona background se não tem foto própria
-            if (!temFotoPropria) {
-                welcomeCardUrl += `&background=https://i.ibb.co/pvQpcbB2/37575a213755cad83bd408908623ba22.jpg`;
-            }
-
-            // Verifica se deve mencionar (só se tiver @ na mensagem)
+            // Verifica se deve mencionar
             const mentions = mensagemFinal.includes(`@${numeroLimpo}`) ? [newMember] : [];
 
-            // ENVIA welcome card + texto do usuário
-            await sock.sendMessage(groupId, {
-                image: { url: welcomeCardUrl },
-                caption: mensagemFinal,
-                mentions: mentions
-            });
+            // PRIMEIRA TENTATIVA: Tenta enviar com welcome card
+            try {
+                const welcomeCardUrl = `https://api.popcat.xyz/welcomecard?background=https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg&text1=Bem-vindo&text2=${encodeURIComponent(numeroLimpo)}&text3=${encodeURIComponent(nomeGrupo)}&avatar=${encodeURIComponent(avatarUrl)}`;
+                
+                await sock.sendMessage(groupId, {
+                    image: { url: welcomeCardUrl },
+                    caption: mensagemFinal,
+                    mentions: mentions
+                });
 
-            console.log(`✅ [WELCOME] Welcome card enviado para ${numeroLimpo}: "${mensagemFinal}"`);
-            return true;
+                console.log(`✅ [WELCOME] Welcome card enviado para ${numeroLimpo}`);
+                return true;
+
+            } catch (cardError) {
+                console.log('⚠️ [WELCOME] Erro no welcome card, enviando texto simples:', cardError.message);
+                
+                // FALLBACK: Envia apenas texto com foto de perfil
+                try {
+                    await sock.sendMessage(groupId, {
+                        image: { url: avatarUrl },
+                        caption: `🎉 *BEM-VINDO!*\n\n${mensagemFinal}\n\n© NEEXT LTDA`,
+                        mentions: mentions
+                    });
+
+                    console.log(`✅ [WELCOME] Mensagem simples enviada para ${numeroLimpo}`);
+                    return true;
+
+                } catch (fallbackError) {
+                    console.log('❌ [WELCOME] Erro no fallback, enviando só texto:', fallbackError.message);
+                    
+                    // ÚLTIMO RECURSO: Apenas texto
+                    await sock.sendMessage(groupId, {
+                        text: `🎉 *BEM-VINDO!*\n\n${mensagemFinal}\n\n© NEEXT LTDA`,
+                        mentions: mentions
+                    });
+
+                    console.log(`✅ [WELCOME] Texto simples enviado para ${numeroLimpo}`);
+                    return true;
+                }
+            }
 
         } catch (error) {
-            console.log('❌ [WELCOME] Erro ao processar:', error);
-            return false;
+            console.error('❌ [WELCOME] Erro crítico ao processar:', error);
+            
+            // ÚLTIMO RECURSO ABSOLUTO: Mensagem básica
+            try {
+                const numeroLimpo = newMember.replace(/@s\.whatsapp\.net|@lid|:[^@]+/g, '');
+                await sock.sendMessage(groupId, {
+                    text: `🎉 Bem-vindo @${numeroLimpo}! Aproveite o grupo!`,
+                    mentions: [newMember]
+                });
+                console.log(`✅ [WELCOME] Mensagem de emergência enviada para ${numeroLimpo}`);
+                return true;
+            } catch (emergencyError) {
+                console.error('❌ [WELCOME] Falha total:', emergencyError);
+                return false;
+            }
         }
     }
 
