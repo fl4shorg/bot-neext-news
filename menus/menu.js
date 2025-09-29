@@ -169,6 +169,10 @@ function obterMenuDono() {
 • \`${prefix}trocar-nick [novo]\` - Altera nick do dono
 • \`${prefix}configurar-bot\` - Guia de configurações
 
+🛡️ *PROTEÇÃO AVANÇADA:*
+• \`${prefix}antipv on/off\` - Bloqueia PVs de não-donos
+• \`${prefix}anticall on/off\` - Rejeita chamadas automaticamente
+
 🔧 *CONTROLE TOTAL:*
 • Todos os comandos de admin funcionam
 • Bypass de todas as restrições
@@ -272,6 +276,7 @@ function obterMenuAdm() {
 🔗 *SISTEMA ANTI-SPAM:*
 • \`${prefix}x9 on/off\` - Anti-X9 Monitor
 • \`${prefix}antilink on/off\` - Anti-links
+• \`${prefix}antilinkhard on/off\` - Anti-links avançado
 • \`${prefix}anticontato on/off\` - Anti-contatos
 • \`${prefix}antidocumento on/off\` - Anti-documentos
 • \`${prefix}antivideo on/off\` - Anti-vídeos
@@ -279,6 +284,8 @@ function obterMenuAdm() {
 • \`${prefix}antisticker on/off\` - Anti-stickers
 • \`${prefix}antiflod on/off\` - Anti-flood
 • \`${prefix}antifake on/off\` - Anti-números fake
+• \`${prefix}antiporno on/off\` - Anti-pornografia
+• \`${prefix}antipalavrao on/off\` - Anti-palavrões
 
 📋 *LISTA NEGRA:*
 • \`${prefix}listanegra add @user\` - Adicionar usuário
@@ -288,6 +295,7 @@ function obterMenuAdm() {
 🗑️ *MODERAÇÃO:*
 • \`${prefix}del\` - Deleta mensagem marcada
 • \`${prefix}marca\` - Menciona todos os membros
+• \`${prefix}hidetag [texto]\` - Marcação oculta
 
 🔒 *CONTROLE DO GRUPO:*
 • \`${prefix}fechargrupo\` - Fecha o grupo
@@ -325,6 +333,7 @@ function obterMenuAnti() {
 
 🔗 *PROTEÇÕES DISPONÍVEIS:*
 • \`${prefix}antilink on/off\` - Anti-links
+• \`${prefix}antilinkhard on/off\` - Anti-links avançado
 • \`${prefix}anticontato on/off\` - Anti-contatos
 • \`${prefix}antidocumento on/off\` - Anti-documentos
 • \`${prefix}antivideo on/off\` - Anti-vídeos
@@ -332,6 +341,8 @@ function obterMenuAnti() {
 • \`${prefix}antisticker on/off\` - Anti-stickers
 • \`${prefix}antiflod on/off\` - Anti-flood
 • \`${prefix}antifake on/off\` - Anti-números fake
+• \`${prefix}antiporno on/off\` - Anti-pornografia
+• \`${prefix}antipalavrao on/off\` - Anti-palavrões
 • \`${prefix}x9 on/off\` - Anti-X9
 
 📋 *LISTA NEGRA:*
