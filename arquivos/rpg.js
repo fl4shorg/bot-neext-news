@@ -601,6 +601,164 @@ const loja = {
             durabilidade: 9999, durabilidade_max: 9999, beneficio: '+20000 gold/dia (telecomunicações)', renda_passiva: 20000,
             descricao: 'Seu próprio satélite em órbita'
         }
+    },
+
+    // CATEGORIA 7: DECORAÇÃO (15 itens)
+    decoracao: {
+        quadro_simples: { 
+            id: 'quadro_simples', nome: '🖼️ Quadro Simples', preco: 500, categoria: 'decoracao', emoji: '🖼️',
+            durabilidade: 300, durabilidade_max: 300, beneficio: '+5% felicidade em casa', bonus_felicidade: 5,
+            descricao: 'Arte básica para decorar paredes'
+        },
+        vaso_plantas: { 
+            id: 'vaso_plantas', nome: '🪴 Vaso de Plantas', preco: 200, categoria: 'decoracao', emoji: '🪴',
+            durabilidade: 200, durabilidade_max: 200, beneficio: '+3% purificação do ar', bonus_saude: 3,
+            descricao: 'Plantas decorativas que melhoram o ambiente'
+        },
+        tapete_persa: { 
+            id: 'tapete_persa', nome: '🪆 Tapete Persa', preco: 5000, categoria: 'decoracao', emoji: '🪆',
+            durabilidade: 500, durabilidade_max: 500, beneficio: '+10% conforto residencial', bonus_conforto: 10,
+            descricao: 'Tapete artesanal luxuoso'
+        },
+        lustre_cristal: { 
+            id: 'lustre_cristal', nome: '💎 Lustre de Cristal', preco: 25000, categoria: 'decoracao', emoji: '💎',
+            durabilidade: 800, durabilidade_max: 800, beneficio: '+20% elegância + iluminação perfeita', bonus_elegancia: 20,
+            descricao: 'Iluminação de alto padrão'
+        },
+        estante_livros: { 
+            id: 'estante_livros', nome: '📚 Estante de Livros', preco: 3000, categoria: 'decoracao', emoji: '📚',
+            durabilidade: 600, durabilidade_max: 600, beneficio: '+15% bônus estudo', bonus_estudo: 15,
+            descricao: 'Biblioteca pessoal impressionante'
+        },
+        lareira: { 
+            id: 'lareira', nome: '🔥 Lareira', preco: 15000, categoria: 'decoracao', emoji: '🔥',
+            durabilidade: 1000, durabilidade_max: 1000, beneficio: '+25% aconchego + aquecimento', bonus_conforto: 25,
+            descricao: 'Aquecimento aconchegante para casa'
+        },
+        piano_cauda: { 
+            id: 'piano_cauda', nome: '🎹 Piano de Cauda', preco: 80000, categoria: 'decoracao', emoji: '🎹',
+            durabilidade: 2000, durabilidade_max: 2000, beneficio: '+100 gold/dia (aulas música)', renda_passiva: 100,
+            descricao: 'Instrumento musical refinado'
+        },
+        aquario_gigante: { 
+            id: 'aquario_gigante', nome: '🐠 Aquário Gigante', preco: 12000, categoria: 'decoracao', emoji: '🐠',
+            durabilidade: 400, durabilidade_max: 400, beneficio: '+30% relaxamento + peixes exóticos', bonus_relaxamento: 30,
+            descricao: 'Aquário com peixes tropicais'
+        },
+        escultura_marmore: { 
+            id: 'escultura_marmore', nome: '🗿 Escultura de Mármore', preco: 50000, categoria: 'decoracao', emoji: '🗿',
+            durabilidade: 9999, durabilidade_max: 9999, beneficio: '+50% status cultural', bonus_cultura: 50,
+            descricao: 'Arte clássica em mármore'
+        },
+        fonte_agua: { 
+            id: 'fonte_agua', nome: '⛲ Fonte de Água', preco: 20000, categoria: 'decoracao', emoji: '⛲',
+            durabilidade: 1200, durabilidade_max: 1200, beneficio: '+40% tranquilidade', bonus_tranquilidade: 40,
+            descricao: 'Fonte ornamental relaxante'
+        },
+        jardim_zen: { 
+            id: 'jardim_zen', nome: '🧘 Jardim Zen', preco: 8000, categoria: 'decoracao', emoji: '🧘',
+            durabilidade: 800, durabilidade_max: 800, beneficio: '+60% meditação e paz', bonus_meditacao: 60,
+            descricao: 'Espaço para meditação e reflexão'
+        },
+        home_theater: { 
+            id: 'home_theater', nome: '📽️ Home Theater', preco: 100000, categoria: 'decoracao', emoji: '📽️',
+            durabilidade: 1500, durabilidade_max: 1500, beneficio: '+200 gold/dia (entretenimento)', renda_passiva: 200,
+            descricao: 'Cinema particular em casa'
+        },
+        mesa_sinuca: { 
+            id: 'mesa_sinuca', nome: '🎱 Mesa de Sinuca', preco: 18000, categoria: 'decoracao', emoji: '🎱',
+            durabilidade: 1000, durabilidade_max: 1000, beneficio: '+80 gold/dia (torneios)', renda_passiva: 80,
+            descricao: 'Mesa profissional para jogos'
+        },
+        adega_vinhos: { 
+            id: 'adega_vinhos', nome: '🍷 Adega de Vinhos', preco: 60000, categoria: 'decoracao', emoji: '🍷',
+            durabilidade: 2000, durabilidade_max: 2000, beneficio: '+300 gold/dia (degustações)', renda_passiva: 300,
+            descricao: 'Coleção de vinhos premium'
+        },
+        galeria_arte: { 
+            id: 'galeria_arte', nome: '🎨 Galeria de Arte', preco: 200000, categoria: 'decoracao', emoji: '🎨',
+            durabilidade: 3000, durabilidade_max: 3000, beneficio: '+1000 gold/dia (exposições)', renda_passiva: 1000,
+            descricao: 'Galeria pessoal com obras de arte'
+        }
+    },
+
+    // CATEGORIA 8: SEGURANÇA (15 itens)
+    seguranca: {
+        cameras_simples: { 
+            id: 'cameras_simples', nome: '📹 Câmeras Básicas', preco: 2000, categoria: 'seguranca', emoji: '📹',
+            durabilidade: 300, durabilidade_max: 300, beneficio: '+30% proteção contra roubos', bonus_protecao: 30,
+            descricao: 'Sistema básico de vigilância'
+        },
+        alarme_residencial: { 
+            id: 'alarme_residencial', nome: '🚨 Alarme Residencial', preco: 5000, categoria: 'seguranca', emoji: '🚨',
+            durabilidade: 500, durabilidade_max: 500, beneficio: '+40% alerta contra invasões', bonus_alerta: 40,
+            descricao: 'Sistema de alarme automático'
+        },
+        fechadura_digital: { 
+            id: 'fechadura_digital', nome: '🔐 Fechadura Digital', preco: 3000, categoria: 'seguranca', emoji: '🔐',
+            durabilidade: 800, durabilidade_max: 800, beneficio: '+25% segurança acesso', bonus_acesso: 25,
+            descricao: 'Controle de acesso biométrico'
+        },
+        cerca_eletrica: { 
+            id: 'cerca_eletrica', nome: '⚡ Cerca Elétrica', preco: 8000, categoria: 'seguranca', emoji: '⚡',
+            durabilidade: 1000, durabilidade_max: 1000, beneficio: '+60% proteção perímetro', bonus_perimetro: 60,
+            descricao: 'Barreira elétrica de proteção'
+        },
+        seguranca_armada: { 
+            id: 'seguranca_armada', nome: '👮 Segurança Armada', preco: 15000, categoria: 'seguranca', emoji: '👮',
+            durabilidade: 200, durabilidade_max: 200, beneficio: '+150 gold/dia + proteção máxima', renda_passiva: -150,
+            descricao: 'Equipe de segurança profissional (custo mensal)'
+        },
+        bunker_seguro: { 
+            id: 'bunker_seguro', nome: '🏰 Bunker Seguro', preco: 500000, categoria: 'seguranca', emoji: '🏰',
+            durabilidade: 5000, durabilidade_max: 5000, beneficio: '+95% proteção total', bonus_protecao: 95,
+            descricao: 'Abrigo blindado máxima segurança'
+        },
+        drones_vigilancia: { 
+            id: 'drones_vigilancia', nome: '🛸 Drones de Vigilância', preco: 50000, categoria: 'seguranca', emoji: '🛸',
+            durabilidade: 600, durabilidade_max: 600, beneficio: '+80% monitoramento aéreo', bonus_monitoramento: 80,
+            descricao: 'Vigilância aérea automatizada'
+        },
+        radar_movimento: { 
+            id: 'radar_movimento', nome: '📡 Radar de Movimento', preco: 25000, categoria: 'seguranca', emoji: '📡',
+            durabilidade: 1200, durabilidade_max: 1200, beneficio: '+70% detecção intrusos', bonus_deteccao: 70,
+            descricao: 'Sistema de detecção avançado'
+        },
+        sistema_biometrico: { 
+            id: 'sistema_biometrico', nome: '👁️ Sistema Biométrico', preco: 40000, categoria: 'seguranca', emoji: '👁️',
+            durabilidade: 1500, durabilidade_max: 1500, beneficio: '+85% controle acesso', bonus_biometria: 85,
+            descricao: 'Reconhecimento facial e digital'
+        },
+        blindagem_residencial: { 
+            id: 'blindagem_residencial', nome: '🛡️ Blindagem Residencial', preco: 200000, categoria: 'seguranca', emoji: '🛡️',
+            durabilidade: 3000, durabilidade_max: 3000, beneficio: '+90% resistência ataques', bonus_blindagem: 90,
+            descricao: 'Reforço estrutural anti-balas'
+        },
+        sistema_contramedidas: { 
+            id: 'sistema_contramedidas', nome: '⚔️ Sistema de Contramedidas', preco: 800000, categoria: 'seguranca', emoji: '⚔️',
+            durabilidade: 2000, durabilidade_max: 2000, beneficio: '+100% defesa ativa', bonus_contramedidas: 100,
+            descricao: 'Defesas automáticas ativas'
+        },
+        seguranca_ai: { 
+            id: 'seguranca_ai', nome: '🤖 IA de Segurança', preco: 1000000, categoria: 'seguranca', emoji: '🤖',
+            durabilidade: 5000, durabilidade_max: 5000, beneficio: '+98% predição ameaças', bonus_predicao: 98,
+            descricao: 'Inteligência artificial de proteção'
+        },
+        escudo_eletromagnetico: { 
+            id: 'escudo_eletromagnetico', nome: '🌐 Escudo Eletromagnético', preco: 5000000, categoria: 'seguranca', emoji: '🌐',
+            durabilidade: 8000, durabilidade_max: 8000, beneficio: '+99% proteção total', bonus_escudo: 99,
+            descricao: 'Campo de força eletromagnético'
+        },
+        satelite_vigilancia: { 
+            id: 'satelite_vigilancia', nome: '🛰️ Satélite de Vigilância', preco: 25000000, categoria: 'seguranca', emoji: '🛰️',
+            durabilidade: 9999, durabilidade_max: 9999, beneficio: '+100% vigilância global', bonus_satelite: 100,
+            descricao: 'Monitoramento via satélite'
+        },
+        exercito_particular: { 
+            id: 'exercito_particular', nome: '🪖 Exército Particular', preco: 100000000, categoria: 'seguranca', emoji: '🪖',
+            durabilidade: 9999, durabilidade_max: 9999, beneficio: 'Proteção militar total', bonus_militar: 100,
+            descricao: 'Força militar privada completa'
+        }
     }
 };
 
