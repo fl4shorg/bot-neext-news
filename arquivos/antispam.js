@@ -142,11 +142,23 @@ function detectarPorno(texto, message) {
         'p0rno', 'p0rn', 's3xo', 'x x x', 'p.o.r.n', 's.e.x.o'
     ];
     
+    // Função para normalizar texto removendo acentos mas preservando caracteres
+    function normalizarTexto(texto) {
+        return texto
+            .toLowerCase()
+            .normalize('NFD') // Decompõe caracteres acentuados
+            .replace(/[\u0300-\u036f]/g, '') // Remove os diacríticos (acentos)
+            .replace(/[^a-zA-Z0-9\s]/g, '') // Remove caracteres especiais exceto espaços
+            .replace(/\s+/g, ' ') // Normaliza espaços múltiplos
+            .trim();
+    }
+
     // Verifica no texto
     if (texto) {
-        const textoLimpo = texto.toLowerCase().replace(/[^a-zA-Z0-9\s]/g, '');
+        const textoLimpo = normalizarTexto(texto);
         for (const palavra of palavrasPorno) {
-            if (textoLimpo.includes(palavra.toLowerCase())) {
+            const palavraNormalizada = normalizarTexto(palavra);
+            if (textoLimpo.includes(palavraNormalizada)) {
                 return true;
             }
         }
@@ -199,16 +211,28 @@ function detectarPalavrao(texto) {
         'piranha', 'galinha', 'vadia', 'rameira', 'prostituta'
     ];
     
-    const textoLimpo = texto.toLowerCase().replace(/[^a-zA-Z0-9\s]/g, ' ');
+    // Função para normalizar texto removendo acentos mas preservando caracteres
+    function normalizarTexto(texto) {
+        return texto
+            .toLowerCase()
+            .normalize('NFD') // Decompõe caracteres acentuados
+            .replace(/[\u0300-\u036f]/g, '') // Remove os diacríticos (acentos)
+            .replace(/[^a-zA-Z0-9\s]/g, ' ') // Remove caracteres especiais exceto espaços
+            .replace(/\s+/g, ' ') // Normaliza espaços múltiplos
+            .trim();
+    }
+
+    const textoLimpo = normalizarTexto(texto);
     
     for (const palavrao of palavroes) {
         // Verifica palavra exata
-        if (textoLimpo.includes(palavrao.toLowerCase())) {
+        const palavraoNormalizado = normalizarTexto(palavrao);
+        if (textoLimpo.includes(palavraoNormalizado)) {
             return true;
         }
         
         // Verifica palavra com espaços
-        const palavraoComEspacos = palavrao.toLowerCase().split('').join('\\s*');
+        const palavraoComEspacos = palavraoNormalizado.split('').join('\\s*');
         const regex = new RegExp(palavraoComEspacos, 'i');
         if (regex.test(textoLimpo)) {
             return true;
