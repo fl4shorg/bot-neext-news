@@ -1278,18 +1278,6 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 // Cleanup do arquivo temporário
                 fs.unlinkSync(webpFile);
 
-                // Aguarda um momento e envia uma preview da figurinha
-                setTimeout(async () => {
-                    try {
-                        await sock.sendMessage(from, {
-                            image: stickerBuffer,
-                            caption: "🎨 *Preview da Figurinha NEEXT*\n\n✅ Figurinha criada com sucesso!",
-                            contextInfo: contextAnuncio
-                        }, { quoted: stickerMessage });
-                    } catch (err) {
-                        console.log("⚠️ Erro ao enviar preview:", err.message);
-                    }
-                }, 1000);
 
                 await reagirMensagem(sock, message, "✅");
                 console.log("✅ Figurinha NEEXT criada e enviada com sucesso!");
