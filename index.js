@@ -5131,3 +5131,77 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
         break;
     }
 }
+
+// Função para configurar os listeners do bot
+function setupListeners(sock) {
+    sock.ev.on('messages.upsert', async ({ messages, type }) => {
+        if (type !== 'notify') return;
+        
+        for (const message of messages) {
+            try {
+                // Ignora mensagens próprias
+                if (message.key.fromMe) continue;
+                
+                // Verifica se já foi processada
+                const messageId = message.key.id;
+                if (processedMessages.has(messageId)) continue;
+                processedMessages.add(messageId);
+                
+                // Log da mensagem recebida
+                const from = message.key.remoteJid;
+                const isGroup = from.endsWith('@g.us');
+                const sender = isGroup ? message.key.participant : from;
+                const messageText = getMessageText(message.message);
+                
+                logMensagem(from, sender, messageText, isGroup);
+                
+                // Normaliza a mensagem
+                const { normalized, quoted } = normalizeMessage(message);
+                
+                // Processa anti-spam primeiro
+                const bloqueado = await processarAntiSpam(sock, normalized);
+                if (bloqueado) continue;
+                
+                // Extrai texto da mensagem
+                const text = messageText.trim();
+                if (!text) continue;
+                
+                // Verifica se é comando
+                const config = obterConfiguracoes();
+                const prefix = config.prefix;
+                
+                if (text.startsWith(prefix)) {
+                    const args = text.slice(prefix.length).trim().split(/ +/);
+                    const command = args.shift().toLowerCase();
+                    
+                    console.log(`🤖 Comando recebido: ${command} de ${sender.split('@')[0]}`);
+                    
+                    // Executa o comando
+                    await handleCommand(sock, normalized, command, args, from, quoted);
+                } else {
+                    // Processa mensagens que não são comandos
+                    if (text.toLowerCase() === 'prefixo') {
+                        await reply(sock, from, `🤖 *Prefixo atual:* \`${prefix}\`\n\n💡 Use ${prefix}menu para ver os comandos disponíveis.`);
+                    }
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao processar mensagem:', error);
+            }
+        }
+    });
+
+    // Listener para atualizações de grupo
+    sock.ev.on('group-participants.update', async ({ id, participants, action }) => {
+        try {
+            await processarListaNegra(sock, participants, id, action);
+        } catch (error) {
+            console.error('❌ Erro ao processar participantes do grupo:', error);
+        }
+    });
+
+    console.log('🔧 Listeners configurados com sucesso!');
+}
+
+// Exporta a função
+module.exports = { setupListeners };
