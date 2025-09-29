@@ -175,9 +175,12 @@ class WelcomeSystem {
             // Usa APENAS a mensagem personalizada do usuário (sem texto padrão)
             let mensagemFinal = config.mensagem || `@${numeroLimpo} bem-vindo ao ${nomeGrupo}!`;
 
+            console.log(`🔍 [WELCOME DEBUG] Mensagem original configurada: ${mensagemFinal}`);
+            console.log(`🔍 [WELCOME DEBUG] numeroLimpo para substituir: ${numeroLimpo}`);
+
             // Substitui TODOS os placeholders (incluindo variações com e sem #)
-            // Para #numerodele#, usa o número limpo para menção
-            mensagemFinal = mensagemFinal.replace(/#numerodele#?/g, `@${numeroLimpo}`);
+            // Para #numerodele#, usa APENAS o número limpo (sem @)
+            mensagemFinal = mensagemFinal.replace(/#numerodele#?/g, numeroLimpo);
             mensagemFinal = mensagemFinal.replace(/#nomedogrupo#?/g, nomeGrupo);
             mensagemFinal = mensagemFinal.replace(/#totalmembros#?/g, totalMembros.toString());
             
@@ -201,11 +204,11 @@ class WelcomeSystem {
                 console.log('⚠️ [WELCOME] Usando foto padrão (usuário sem foto)');
             }
 
-            // Sempre menciona o usuário se a mensagem contém @numeroLimpo
-            const mentions = mensagemFinal.includes(`@${numeroLimpo}`) ? [newMember] : [];
+            // SEMPRE menciona o usuário que entrou (não depende de @ na mensagem)
+            const mentions = [newMember];
             
             console.log(`🔍 [WELCOME DEBUG] Mentions array: ${JSON.stringify(mentions)}`);
-            console.log(`🔍 [WELCOME DEBUG] Deve mencionar: ${mensagemFinal.includes(`@${numeroLimpo}`)}`);
+            console.log(`🔍 [WELCOME DEBUG] newMember completo: ${newMember}`);
 
             // TENTA primeiro com welcome card da API
             let welcomeEnviado = false;
