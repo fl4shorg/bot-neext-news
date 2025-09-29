@@ -1694,19 +1694,19 @@ function comprarItem(userId, itemId, quantidade = 1) {
 // Listar loja
 function listarLoja(categoria = null) {
     if (!categoria) {
-        let lista = '🛍️ **LOJA NEEXTCITY - CATEGORIAS**\n\n';
-        lista += '1. 🏠 **Propriedades** - Casas, fazendas, resorts\n';
-        lista += '2. 🐾 **Animais** - Pets e criações\n';
-        lista += '3. 🔧 **Ferramentas** - Equipamentos de trabalho\n';
-        lista += '4. 🚗 **Veículos** - Carros, motos, aviões\n';
-        lista += '5. 🏢 **Negócios** - Empresas e estabelecimentos\n';
-        lista += '6. 💻 **Tecnologia** - Computadores e setups\n';
-        lista += '7. 🎨 **Decoração** - Móveis e arte\n';
-        lista += '8. 🛡️ **Segurança** - Proteção e defesa\n\n';
-        lista += '💡 **Como usar:** `.loja [categoria]`\n';
-        lista += '📝 **Exemplo:** `.loja propriedades`';
+        let mensagem = '🛍️ **LOJA NEEXTCITY - CATEGORIAS**\n\n';
+        mensagem += '1. 🏠 **Propriedades** - Casas, fazendas, resorts\n';
+        mensagem += '2. 🐾 **Animais** - Pets e criações\n';
+        mensagem += '3. 🔧 **Ferramentas** - Equipamentos de trabalho\n';
+        mensagem += '4. 🚗 **Veículos** - Carros, motos, aviões\n';
+        mensagem += '5. 🏢 **Negócios** - Empresas e estabelecimentos\n';
+        mensagem += '6. 💻 **Tecnologia** - Computadores e setups\n';
+        mensagem += '7. 🎨 **Decoração** - Móveis e arte\n';
+        mensagem += '8. 🛡️ **Segurança** - Proteção e defesa\n\n';
+        mensagem += '💡 **Como usar:** `.loja [categoria]`\n';
+        mensagem += '📝 **Exemplo:** `.loja propriedades`';
         
-        return { lista: lista };
+        return { mensagem: mensagem };
     }
     
     const categorias = {
@@ -1723,19 +1723,19 @@ function listarLoja(categoria = null) {
     const itens = categorias[categoria.toLowerCase()];
     if (!itens) return { erro: 'Categoria não encontrada!' };
     
-    let lista = `🛍️ **LOJA NEEXTCITY - ${categoria.toUpperCase()}**\n\n`;
+    let mensagem = `🛍️ **LOJA NEEXTCITY - ${categoria.toUpperCase()}**\n\n`;
     
     Object.values(itens).forEach(item => {
-        lista += `${item.emoji} **${item.nome}**\n`;
-        lista += `   💰 Preço: ${item.preco.toLocaleString()} Gold\n`;
-        lista += `   📝 ${item.beneficio}\n`;
-        lista += `   🆔 ID: \`${item.id}\`\n\n`;
+        mensagem += `${item.emoji} **${item.nome}**\n`;
+        mensagem += `   💰 Preço: ${item.preco.toLocaleString()} Gold\n`;
+        mensagem += `   📝 ${item.beneficio}\n`;
+        mensagem += `   🆔 ID: \`${item.id}\`\n\n`;
     });
     
-    lista += '💡 **Como comprar:** `.comprar [id] [quantidade]`\n';
-    lista += '📝 **Exemplo:** `.comprar casa_simples 1`';
+    mensagem += '💡 **Como comprar:** `.comprar [id] [quantidade]`\n';
+    mensagem += '📝 **Exemplo:** `.comprar casa_simples 1`';
     
-    return { lista: lista };
+    return { mensagem: mensagem };
 }
 
 // Obter perfil completo
@@ -1788,6 +1788,168 @@ function obterPerfilCompleto(userId) {
     };
 }
 
+// Função coletar
+function coletar(userId) {
+    return withLock(async () => {
+        const dados = carregarDadosRPG();
+        let usuario = dados.jogadores[userId];
+        if (!usuario) return { erro: 'Usuário não registrado' };
+        
+        usuario = ensureUserDefaults(usuario);
+        
+        // Verifica limite diário
+        const limite = verificarLimiteAtividade(usuario, 'coleta', 6);
+        if (limite.atingido) return { erro: 'Limite diário', mensagem: limite.mensagem };
+        
+        // Verifica cooldown
+        const cooldown = verificarCooldown(usuario.ultimaColeta || 0, 18 * 60 * 1000);
+        if (cooldown > 0) {
+            return { 
+                erro: 'Cooldown', 
+                mensagem: `🌱 Você precisa esperar **${formatarTempo(cooldown)}** para coletar novamente!`
+            };
+        }
+        
+        // Itens coletáveis
+        const itensColetaveis = [
+            { nome: 'Flores Raras', valor: 150, chance: 8, emoji: '🌺' },
+            { nome: 'Frutas Silvestres', valor: 100, chance: 15, emoji: '🍓' },
+            { nome: 'Ervas Medicinais', valor: 120, chance: 12, emoji: '🌿' },
+            { nome: 'Cogumelos', valor: 80, chance: 20, emoji: '🍄' },
+            { nome: 'Madeira', valor: 60, chance: 25, emoji: '🪵' },
+            { nome: 'Pedras', valor: 40, chance: 20, emoji: '🪨' }
+        ];
+        
+        let itemColetado = null;
+        const sorte = Math.random() * 100;
+        let chanceAcumulada = 0;
+        
+        for (const item of itensColetaveis) {
+            chanceAcumulada += item.chance;
+            if (sorte <= chanceAcumulada) {
+                itemColetado = item;
+                break;
+            }
+        }
+        
+        if (!itemColetado) {
+            usuario.ultimaColeta = Date.now();
+            usuario = atualizarContadorAtividade(usuario, 'coleta');
+            dados.jogadores[userId] = usuario;
+            salvarDadosRPG(dados);
+            
+            return { 
+                sucesso: false, 
+                mensagem: "🌱 **COLETA SEM SUCESSO** 😞\n\nNada útil foi encontrado desta vez!\n\n⏰ **Cooldown:** 18 minutos" 
+            };
+        }
+        
+        usuario.saldo += itemColetado.valor;
+        usuario.totalGanho += itemColetado.valor;
+        usuario.ultimaColeta = Date.now();
+        usuario.coletasFeitas = (usuario.coletasFeitas || 0) + 1;
+        usuario = atualizarContadorAtividade(usuario, 'coleta');
+        
+        const limitesRestantes = 6 - (usuario.limitesHoje.coleta || 0);
+        
+        dados.jogadores[userId] = usuario;
+        salvarDadosRPG(dados);
+        
+        return { 
+            sucesso: true, 
+            item: itemColetado,
+            mensagem: `🌱 **COLETA BEM-SUCEDIDA!** ${itemColetado.emoji}\n\n${itemColetado.nome} coletado!\n💰 **Ganhou:** ${itemColetado.valor} Gold\n💳 **Saldo:** ${usuario.saldo} Gold\n\n🌱 **Coletas restantes hoje:** ${limitesRestantes}\n⏰ **Cooldown:** 18 minutos`
+        };
+    });
+}
+
+// Função entrega
+function entrega(userId) {
+    return withLock(async () => {
+        const dados = carregarDadosRPG();
+        let usuario = dados.jogadores[userId];
+        if (!usuario) return { erro: 'Usuário não registrado' };
+        
+        usuario = ensureUserDefaults(usuario);
+        
+        // Verifica limite diário
+        const limite = verificarLimiteAtividade(usuario, 'entrega', 8);
+        if (limite.atingido) return { erro: 'Limite diário', mensagem: limite.mensagem };
+        
+        // Verifica se tem veículo
+        const temVeiculo = usuario.inventario.bike || usuario.inventario.moto || 
+                          usuario.inventario.carro || usuario.inventario.patinete;
+        
+        if (!temVeiculo) {
+            return { erro: 'Você precisa de um veículo para fazer entregas! Compre na loja.' };
+        }
+        
+        // Verifica cooldown
+        const cooldown = verificarCooldown(usuario.ultimaEntrega || 0, 12 * 60 * 1000);
+        if (cooldown > 0) {
+            return { 
+                erro: 'Cooldown', 
+                mensagem: `🛵 Você precisa esperar **${formatarTempo(cooldown)}** para fazer entregas novamente!`
+            };
+        }
+        
+        // Calcula bonus do veículo
+        let bonusVelocidade = 1;
+        let salarioBase = 80;
+        
+        if (usuario.inventario.carro_luxo) {
+            bonusVelocidade = 2.5;
+            salarioBase = 200;
+        } else if (usuario.inventario.carro) {
+            bonusVelocidade = 2;
+            salarioBase = 150;
+        } else if (usuario.inventario.moto_esportiva) {
+            bonusVelocidade = 2.2;
+            salarioBase = 180;
+        } else if (usuario.inventario.moto) {
+            bonusVelocidade = 1.8;
+            salarioBase = 120;
+        } else if (usuario.inventario.bike_eletrica) {
+            bonusVelocidade = 1.3;
+            salarioBase = 100;
+        } else if (usuario.inventario.bike) {
+            bonusVelocidade = 1.2;
+            salarioBase = 90;
+        }
+        
+        // Tipos de entrega
+        const entregas = [
+            { tipo: 'Comida', bonus: 1.2, emoji: '🍔' },
+            { tipo: 'Medicamentos', bonus: 1.5, emoji: '💊' },
+            { tipo: 'Flores', bonus: 1.1, emoji: '🌹' },
+            { tipo: 'Documentos', bonus: 1.3, emoji: '📄' },
+            { tipo: 'Eletrônicos', bonus: 1.4, emoji: '📱' },
+            { tipo: 'Roupas', bonus: 1.0, emoji: '👕' }
+        ];
+        
+        const entregaAleatoria = entregas[Math.floor(Math.random() * entregas.length)];
+        const ganho = Math.floor(salarioBase * entregaAleatoria.bonus * bonusVelocidade);
+        
+        usuario.saldo += ganho;
+        usuario.totalGanho += ganho;
+        usuario.ultimaEntrega = Date.now();
+        usuario.entregasFeitas = (usuario.entregasFeitas || 0) + 1;
+        usuario = atualizarContadorAtividade(usuario, 'entrega');
+        
+        const limitesRestantes = 8 - (usuario.limitesHoje.entrega || 0);
+        
+        dados.jogadores[userId] = usuario;
+        salvarDadosRPG(dados);
+        
+        return { 
+            sucesso: true, 
+            entrega: entregaAleatoria,
+            bonus: bonusVelocidade,
+            mensagem: `🛵 **ENTREGA REALIZADA!** ${entregaAleatoria.emoji}\n\n**Tipo:** ${entregaAleatoria.tipo}\n**Veículo:** ${bonusVelocidade}x velocidade\n💰 **Ganhou:** ${ganho} Gold\n💳 **Saldo:** ${usuario.saldo} Gold\n\n🛵 **Entregas restantes hoje:** ${limitesRestantes}\n⏰ **Cooldown:** 12 minutos`
+        };
+    });
+}
+
 module.exports = {
     carregarDadosRPG,
     salvarDadosRPG,
@@ -1800,7 +1962,9 @@ module.exports = {
     minerar,
     trabalhar,
     cacar,
+    coletar,
     agricultura,
+    entrega,
     jogarTigrinho,
     assaltar,
     roubar,

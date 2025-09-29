@@ -269,14 +269,24 @@ function normalizeMessage(m) {
 // Função reply genérica
 async function reply(sock, from, text, mentions = []) {
     try {
-        // Validação do texto
-        if (!text || typeof text !== 'string') {
-            console.error("❌ Texto da reply é inválido:", text);
-            text = "❌ Erro: Mensagem inválida";
+        // Validação rigorosa do texto
+        if (text === undefined || text === null) {
+            console.error("❌ Texto da reply é undefined/null:", text);
+            text = "❌ Erro: Mensagem não encontrada";
+        }
+        
+        if (typeof text !== 'string') {
+            console.error("❌ Texto da reply não é string:", typeof text, text);
+            text = String(text || "❌ Erro: Tipo de mensagem inválida");
+        }
+        
+        if (text.trim().length === 0) {
+            console.error("❌ Texto da reply está vazio");
+            text = "❌ Erro: Mensagem vazia";
         }
         
         await sock.sendMessage(from, {
-            text: String(text),
+            text: text,
             contextInfo: {
                 forwardingScore: 100000,
                 isForwarded: true,
@@ -285,13 +295,16 @@ async function reply(sock, from, text, mentions = []) {
                     newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
                 }
             },
-            mentions
+            mentions: mentions || []
         });
     } catch (err) {
         console.error("❌ Erro ao enviar reply:", err.message || err);
         // Tenta envio mais simples em caso de erro
         try {
-            await sock.sendMessage(from, { text: String(text || "❌ Erro na mensagem"), mentions });
+            await sock.sendMessage(from, { 
+                text: text || "❌ Erro na mensagem",
+                mentions: mentions || []
+            });
         } catch (secondErr) {
             console.error("❌ Falha no fallback reply:", secondErr.message || secondErr);
         }
@@ -2406,26 +2419,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 break;
             }
 
-            // Envia resultado com imagem
-            await sock.sendMessage(from, {
-                image: { url: resultado.imagem },
-                caption: resultado.mensagem,
-                contextInfo: {
-                    forwardingScore: 100000,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: "120363289739581116@newsletter",
-                        newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
-                    },
-                    externalAdReply: {
-                        title: "🎣 NeextCity - Sistema de Pesca",
-                        body: "© NEEXT LTDA",
-                        thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
-                        mediaType: 1,
-                        sourceUrl: "https://www.neext.online"
-                    }
-                }
-            }, { quoted: message });
+            // Envia resultado sem imagem
+            await reply(sock, from, resultado.mensagem);
 
             if (resultado.sucesso) {
                 await reagirMensagem(sock, message, "🎣");
@@ -2467,26 +2462,8 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 break;
             }
 
-            // Envia resultado com imagem
-            await sock.sendMessage(from, {
-                image: { url: resultado.imagem },
-                caption: resultado.mensagem,
-                contextInfo: {
-                    forwardingScore: 100000,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: "120363289739581116@newsletter",
-                        newsletterName: "🐦‍🔥⃝ 𝆅࿙⵿ׂ𝆆𝝢𝝣𝝣𝝬𝗧𓋌𝗟𝗧𝗗𝗔⦙⦙ꜣྀ"
-                    },
-                    externalAdReply: {
-                        title: "⛏️ NeextCity - Sistema de Mineração",
-                        body: "© NEEXT LTDA",
-                        thumbnailUrl: "https://i.ibb.co/nqgG6z6w/IMG-20250720-WA0041-2.jpg",
-                        mediaType: 1,
-                        sourceUrl: "https://www.neext.online"
-                    }
-                }
-            }, { quoted: message });
+            // Envia resultado sem imagem
+            await reply(sock, from, resultado.mensagem);
 
             if (resultado.sucesso) {
                 await reagirMensagem(sock, message, "⛏️");
@@ -3417,6 +3394,92 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             await reply(sock, from, resultado.mensagem);
             await reagirMensagem(sock, message, "🎮");
+        }
+        break;
+
+        case "coletar":
+        case "coleta": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
+                break;
+            }
+
+            const resultado = rpg.coletar(userId);
+
+            if (resultado.erro) {
+                if (resultado.erro === 'Cooldown') {
+                    await reply(sock, from, resultado.mensagem);
+                } else {
+                    await reply(sock, from, `❌ ${resultado.erro}`);
+                }
+                break;
+            }
+
+            await reply(sock, from, resultado.mensagem);
+            
+            if (resultado.sucesso) {
+                await reagirMensagem(sock, message, "🌱");
+            } else {
+                await reagirMensagem(sock, message, "😞");
+            }
+        }
+        break;
+
+        case "entrega":
+        case "delivery": {
+            // Só funciona em grupos com RPG ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ O sistema RPG só funciona em grupos.");
+                break;
+            }
+
+            if (!rpg.isRPGAtivo(from)) {
+                await reply(sock, from, "❌ O RPG não está ativo neste grupo.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const userId = sender.split('@')[0];
+
+            if (!rpg.isUsuarioRegistrado(userId)) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, "❌ Você precisa se registrar primeiro! Use `" + config.prefix + "registrar`");
+                break;
+            }
+
+            const resultado = rpg.entrega(userId);
+
+            if (resultado.erro) {
+                if (resultado.erro === 'Cooldown') {
+                    await reply(sock, from, resultado.mensagem);
+                } else {
+                    await reply(sock, from, `❌ ${resultado.erro}`);
+                }
+                break;
+            }
+
+            await reply(sock, from, resultado.mensagem);
+            
+            if (resultado.sucesso) {
+                await reagirMensagem(sock, message, "🛵");
+            } else {
+                await reagirMensagem(sock, message, "❌");
+            }
         }
         break;
 
