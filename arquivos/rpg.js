@@ -1,5 +1,5 @@
 
-// Sistema RPG NeextCity - REALISTA E COMPLETO
+// Sistema RPG NeextCity - NOVA GERAÇÃO COMPLETA
 const fs = require('fs');
 const path = require('path');
 const moment = require('moment-timezone');
@@ -7,7 +7,7 @@ const moment = require('moment-timezone');
 // Caminho para o arquivo de dados do RPG
 const rpgDataFile = path.join(__dirname, '../database/grupos/rpg_data.json');
 
-// Sistema de Mutex simples para evitar race conditions
+// Sistema de Mutex para evitar race conditions
 let rpgLock = false;
 
 async function withLock(fn) {
@@ -24,371 +24,611 @@ async function withLock(fn) {
 
 // ==================== CONSTANTES DO JOGO ====================
 
-// Bancos disponíveis
+// Bancos disponíveis (18 opções)
 const bancos = [
-    { id: 'caixa', nome: '🏦 Caixa Econômica Federal', emoji: '🏦' },
-    { id: 'santander', nome: '🔴 Santander', emoji: '🔴' },
     { id: 'nubank', nome: '💜 Nubank', emoji: '💜' },
+    { id: 'inter', nome: '🧡 Inter', emoji: '🧡' },
+    { id: 'santander', nome: '🔴 Santander', emoji: '🔴' },
     { id: 'bradesco', nome: '🔵 Bradesco', emoji: '🔵' },
     { id: 'itau', nome: '🟠 Itaú', emoji: '🟠' },
     { id: 'bb', nome: '🟡 Banco do Brasil', emoji: '🟡' },
-    { id: 'inter', nome: '🧡 Inter', emoji: '🧡' },
+    { id: 'caixa', nome: '🏦 Caixa', emoji: '🏦' },
     { id: 'picpay', nome: '💚 PicPay', emoji: '💚' },
     { id: 'c6bank', nome: '⚫ C6 Bank', emoji: '⚫' },
-    { id: 'next', nome: '⚪ Next', emoji: '⚪' }
+    { id: 'next', nome: '⚪ Next', emoji: '⚪' },
+    { id: 'neon', nome: '🔺 Neon', emoji: '🔺' },
+    { id: 'original', nome: '🟤 Original', emoji: '🟤' },
+    { id: 'safra', nome: '🟣 Safra', emoji: '🟣' },
+    { id: 'will', nome: '🔸 Will Bank', emoji: '🔸' },
+    { id: 'c6', nome: '⚪ C6 Bank', emoji: '⚪' },
+    { id: 'bs2', nome: '🟨 BS2', emoji: '🟨' },
+    { id: 'bmg', nome: '🟫 BMG', emoji: '🟫' },
+    { id: 'sicoob', nome: '🟢 Sicoob', emoji: '🟢' }
 ];
 
-// Níveis de educação
-const niveisEducacao = {
-    fundamental: { id: 'fundamental', nome: 'Ensino Fundamental', nivel: 1, preco: 0, tempo: 2 },
-    medio: { id: 'medio', nome: 'Ensino Médio', nivel: 2, preco: 500, tempo: 3, requer: 'fundamental' },
-    tecnico: { id: 'tecnico', nome: 'Curso Técnico', nivel: 3, preco: 1500, tempo: 4, requer: 'medio' },
-    graduacao: { id: 'graduacao', nome: 'Graduação', nivel: 4, preco: 5000, tempo: 6, requer: 'medio' },
-    mestrado: { id: 'mestrado', nome: 'Mestrado', nivel: 5, preco: 15000, tempo: 8, requer: 'graduacao' },
-    doutorado: { id: 'doutorado', nome: 'Doutorado', nivel: 6, preco: 30000, tempo: 12, requer: 'mestrado' }
+// Níveis de educação com progressão realista
+const educacao = {
+    1: { nome: 'Ensino Fundamental', custo: 0, tempo: 1, salarioMin: 50 },
+    2: { nome: 'Ensino Médio', custo: 1000, tempo: 2, salarioMin: 100 },
+    3: { nome: 'Curso Técnico', custo: 3000, tempo: 3, salarioMin: 200 },
+    4: { nome: 'Graduação', custo: 8000, tempo: 4, salarioMin: 400 },
+    5: { nome: 'Pós-graduação', custo: 15000, tempo: 5, salarioMin: 600 },
+    6: { nome: 'Mestrado', custo: 25000, tempo: 6, salarioMin: 800 },
+    7: { nome: 'Doutorado', custo: 40000, tempo: 8, salarioMin: 1200 }
 };
 
-// Cursos universitários
-const cursosUniversitarios = {
-    medicina: { id: 'medicina', nome: 'Medicina', preco: 50000, tempo: 12, nivel_min: 4 },
-    engenharia: { id: 'engenharia', nome: 'Engenharia', preco: 25000, tempo: 10, nivel_min: 4 },
-    direito: { id: 'direito', nome: 'Direito', preco: 20000, tempo: 10, nivel_min: 4 },
-    administracao: { id: 'administracao', nome: 'Administração', preco: 15000, tempo: 8, nivel_min: 4 },
-    ti: { id: 'ti', nome: 'Tecnologia da Informação', preco: 18000, tempo: 8, nivel_min: 4 },
-    psicologia: { id: 'psicologia', nome: 'Psicologia', preco: 22000, tempo: 10, nivel_min: 4 }
+// Cursos universitários específicos
+const faculdades = {
+    medicina: { nome: 'Medicina', custo: 100000, tempo: 12, salario: 2000 },
+    engenharia: { nome: 'Engenharia', custo: 60000, tempo: 10, salario: 1500 },
+    direito: { nome: 'Direito', custo: 50000, tempo: 10, salario: 1300 },
+    administracao: { nome: 'Administração', custo: 35000, tempo: 8, salario: 1000 },
+    ti: { nome: 'Tecnologia da Informação', custo: 45000, tempo: 8, salario: 1800 },
+    psicologia: { nome: 'Psicologia', custo: 40000, tempo: 10, salario: 900 },
+    odontologia: { nome: 'Odontologia', custo: 80000, tempo: 10, salario: 1600 },
+    veterinaria: { nome: 'Veterinária', custo: 70000, tempo: 10, salario: 1400 }
 };
 
-// CATÁLOGO COMPLETO DE ITENS (100+ itens)
-const catalogoItens = {
-    // ==================== FERRAMENTAS DE PESCA ====================
-    pescaria: {
-        vara_bambu: { 
-            id: 'vara_bambu', nome: '🎋 Vara de Bambu', preco: 50, categoria: 'pescaria', emoji: '🎋', 
-            durabilidade: 20, durabilidade_max: 20, beneficio: 'Pesca básica (+5% chance)', bonus_pesca: 5,
-            descricao: 'Vara simples para iniciantes na pesca'
-        },
-        vara_madeira: { 
-            id: 'vara_madeira', nome: '🪵 Vara de Madeira', preco: 150, categoria: 'pescaria', emoji: '🪵', 
-            durabilidade: 35, durabilidade_max: 35, beneficio: 'Pesca melhorada (+10% chance)', bonus_pesca: 10,
-            descricao: 'Vara mais resistente que a de bambu'
-        },
-        vara_ferro: { 
-            id: 'vara_ferro', nome: '🎣 Vara de Ferro', preco: 500, categoria: 'pescaria', emoji: '🎣', 
-            durabilidade: 60, durabilidade_max: 60, beneficio: 'Pesca avançada (+20% chance)', bonus_pesca: 20,
-            descricao: 'Vara profissional para pescadores experientes'
-        },
-        vara_carbono: { 
-            id: 'vara_carbono', nome: '🏴‍☠️ Vara de Carbono', preco: 1500, categoria: 'pescaria', emoji: '🏴‍☠️', 
-            durabilidade: 100, durabilidade_max: 100, beneficio: 'Pesca master (+35% chance)', bonus_pesca: 35,
-            descricao: 'A melhor vara disponível no mercado'
-        },
-        isca_minhoca: { 
-            id: 'isca_minhoca', nome: '🪱 Isca de Minhoca', preco: 20, categoria: 'pescaria', emoji: '🪱', 
-            durabilidade: 5, durabilidade_max: 5, beneficio: 'Atrai peixes básicos (+10% chance)', bonus_pesca: 10,
-            descricao: 'Isca natural para peixes pequenos'
-        },
-        isca_artificial: { 
-            id: 'isca_artificial', nome: '🎯 Isca Artificial', preco: 80, categoria: 'pescaria', emoji: '🎯', 
-            durabilidade: 15, durabilidade_max: 15, beneficio: 'Atrai peixes grandes (+25% chance)', bonus_pesca: 25,
-            descricao: 'Isca colorida que atrai peixes maiores'
-        }
-    },
-
-    // ==================== FERRAMENTAS DE MINERAÇÃO ====================
-    mineracao: {
-        picareta_madeira: { 
-            id: 'picareta_madeira', nome: '🪓 Picareta de Madeira', preco: 100, categoria: 'mineracao', emoji: '🪓', 
-            durabilidade: 25, durabilidade_max: 25, beneficio: 'Mineração básica (+5% chance)', bonus_mineracao: 5,
-            descricao: 'Ferramenta básica para mineração'
-        },
-        picareta_ferro: { 
-            id: 'picareta_ferro', nome: '⛏️ Picareta de Ferro', preco: 400, categoria: 'mineracao', emoji: '⛏️', 
-            durabilidade: 50, durabilidade_max: 50, beneficio: 'Mineração avançada (+15% chance)', bonus_mineracao: 15,
-            descricao: 'Picareta mais resistente para minerais duros'
-        },
-        picareta_diamante: { 
-            id: 'picareta_diamante', nome: '💎 Picareta de Diamante', preco: 2000, categoria: 'mineracao', emoji: '💎', 
-            durabilidade: 120, durabilidade_max: 120, beneficio: 'Mineração master (+30% chance)', bonus_mineracao: 30,
-            descricao: 'A picareta mais poderosa disponível'
-        },
-        capacete_mineracao: { 
-            id: 'capacete_mineracao', nome: '⛑️ Capacete de Mineração', preco: 300, categoria: 'mineracao', emoji: '⛑️', 
-            durabilidade: 100, durabilidade_max: 100, beneficio: 'Protege contra acidentes (-50% chance morte)', proteção: 50,
-            descricao: 'Equipamento de segurança essencial'
-        },
-        detector_metais: { 
-            id: 'detector_metais', nome: '📡 Detector de Metais', preco: 1500, categoria: 'mineracao', emoji: '📡', 
-            durabilidade: 200, durabilidade_max: 200, beneficio: 'Encontra metais preciosos (+40% chance)', bonus_mineracao: 40,
-            descricao: 'Tecnologia avançada para encontrar tesouros'
-        }
-    },
-
-    // ==================== ARMAS PARA CAÇA ====================
-    armas: {
-        rifle_madeira: { 
-            id: 'rifle_madeira', nome: '🔫 Rifle de Madeira', preco: 200, categoria: 'armas', emoji: '🔫', 
-            durabilidade: 30, durabilidade_max: 30, beneficio: 'Caça básica (+10% chance)', bonus_caca: 10, dano: 20,
-            descricao: 'Arma simples para caça de pequenos animais'
-        },
-        espingarda: { 
-            id: 'espingarda', nome: '💥 Espingarda', preco: 800, categoria: 'armas', emoji: '💥', 
-            durabilidade: 60, durabilidade_max: 60, beneficio: 'Caça avançada (+25% chance)', bonus_caca: 25, dano: 40,
-            descricao: 'Arma poderosa para animais médios'
-        },
-        rifle_precisao: { 
-            id: 'rifle_precisao', nome: '🎯 Rifle de Precisão', preco: 2500, categoria: 'armas', emoji: '🎯', 
-            durabilidade: 100, durabilidade_max: 100, beneficio: 'Caça master (+40% chance)', bonus_caca: 40, dano: 80,
-            descricao: 'Arma de elite para grandes predadores'
-        },
-        arco_flecha: { 
-            id: 'arco_flecha', nome: '🏹 Arco e Flecha', preco: 300, categoria: 'armas', emoji: '🏹', 
-            durabilidade: 40, durabilidade_max: 40, beneficio: 'Caça silenciosa (+15% chance)', bonus_caca: 15, dano: 25,
-            descricao: 'Arma silenciosa para não assustar outros animais'
-        },
-        municao: { 
-            id: 'municao', nome: '🔰 Munição', preco: 50, categoria: 'armas', emoji: '🔰', 
-            durabilidade: 10, durabilidade_max: 10, beneficio: 'Necessário para usar armas de fogo', 
-            descricao: 'Balas para rifles e espingardas'
-        },
-        flechas: { 
-            id: 'flechas', nome: '🏹 Flechas', preco: 30, categoria: 'armas', emoji: '🏹', 
-            durabilidade: 8, durabilidade_max: 8, beneficio: 'Necessário para arco e flecha',
-            descricao: 'Flechas para o arco'
-        }
-    },
-
-    // ==================== FERRAMENTAS AGRÍCOLAS ====================
-    agricultura: {
-        enxada_madeira: { 
-            id: 'enxada_madeira', nome: '🪓 Enxada de Madeira', preco: 80, categoria: 'agricultura', emoji: '🪓', 
-            durabilidade: 20, durabilidade_max: 20, beneficio: 'Plantio básico (+5% produção)', bonus_agricultura: 5,
-            descricao: 'Ferramenta básica para agricultura'
-        },
-        enxada_ferro: { 
-            id: 'enxada_ferro', nome: '⚒️ Enxada de Ferro', preco: 300, categoria: 'agricultura', emoji: '⚒️', 
-            durabilidade: 50, durabilidade_max: 50, beneficio: 'Plantio avançado (+15% produção)', bonus_agricultura: 15,
-            descricao: 'Enxada mais eficiente para plantações'
-        },
-        sementes_trigo: { 
-            id: 'sementes_trigo', nome: '🌾 Sementes de Trigo', preco: 25, categoria: 'agricultura', emoji: '🌾', 
-            durabilidade: 1, durabilidade_max: 1, beneficio: 'Planta trigo (valor: 100 gold)', valor_plantio: 100,
-            descricao: 'Sementes para plantar trigo'
-        },
-        sementes_milho: { 
-            id: 'sementes_milho', nome: '🌽 Sementes de Milho', preco: 40, categoria: 'agricultura', emoji: '🌽', 
-            durabilidade: 1, durabilidade_max: 1, beneficio: 'Planta milho (valor: 150 gold)', valor_plantio: 150,
-            descricao: 'Sementes para plantar milho'
-        },
-        fertilizante: { 
-            id: 'fertilizante', nome: '🧪 Fertilizante', preco: 60, categoria: 'agricultura', emoji: '🧪', 
-            durabilidade: 5, durabilidade_max: 5, beneficio: 'Aumenta produção (+30%)', bonus_agricultura: 30,
-            descricao: 'Produto químico que aumenta a produtividade'
-        },
-        trator: { 
-            id: 'trator', nome: '🚜 Trator', preco: 15000, categoria: 'agricultura', emoji: '🚜', 
-            durabilidade: 500, durabilidade_max: 500, beneficio: 'Plantio em massa (+100% produção)', bonus_agricultura: 100,
-            descricao: 'Máquina agrícola para grandes plantações'
-        }
-    },
-
-    // ==================== VEÍCULOS ====================
-    veiculos: {
-        bicicleta: { 
-            id: 'bicicleta', nome: '🚲 Bicicleta', preco: 500, categoria: 'veiculos', emoji: '🚲', 
-            durabilidade: 100, durabilidade_max: 100, beneficio: 'Transporte básico (+10% speed trabalhos)', bonus_velocidade: 10,
-            descricao: 'Meio de transporte ecológico'
-        },
-        motocicleta: { 
-            id: 'motocicleta', nome: '🏍️ Motocicleta', preco: 3000, categoria: 'veiculos', emoji: '🏍️', 
-            durabilidade: 200, durabilidade_max: 200, beneficio: 'Transporte rápido (+25% speed)', bonus_velocidade: 25,
-            descricao: 'Moto para trabalhos de entrega'
-        },
-        carro_popular: { 
-            id: 'carro_popular', nome: '🚗 Carro Popular', preco: 15000, categoria: 'veiculos', emoji: '🚗', 
-            durabilidade: 300, durabilidade_max: 300, beneficio: 'Conforto (+20% ganhos trabalho)', bonus_trabalho: 20,
-            descricao: 'Carro básico para o dia a dia'
-        },
-        carro_luxo: { 
-            id: 'carro_luxo', nome: '🏎️ Carro de Luxo', preco: 80000, categoria: 'veiculos', emoji: '🏎️', 
-            durabilidade: 500, durabilidade_max: 500, beneficio: 'Prestígio (+50% ganhos)', bonus_trabalho: 50,
-            descricao: 'Carro de alto padrão que impressiona'
-        },
-        caminhao: { 
-            id: 'caminhao', nome: '🚛 Caminhão', preco: 50000, categoria: 'veiculos', emoji: '🚛', 
-            durabilidade: 400, durabilidade_max: 400, beneficio: 'Transporte pesado (trabalhos especiais)', bonus_trabalho: 30,
-            descricao: 'Veículo para trabalhos pesados'
-        }
-    },
-
-    // ==================== PROPRIEDADES ====================
+// Loja completa com 8 categorias e +100 itens
+const loja = {
+    // CATEGORIA 1: PROPRIEDADES (15 itens)
     propriedades: {
         barraca: { 
-            id: 'barraca', nome: '⛺ Barraca', preco: 200, categoria: 'propriedades', emoji: '⛺', 
-            durabilidade: 50, durabilidade_max: 50, beneficio: 'Abrigo básico (+5 gold/dia)', renda_passiva: 5,
-            descricao: 'Abrigo temporário básico'
+            id: 'barraca', nome: '⛺ Barraca', preco: 500, categoria: 'propriedades', emoji: '⛺',
+            durabilidade: 50, durabilidade_max: 50, beneficio: '+10 gold/dia (renda passiva)', renda_passiva: 10,
+            descricao: 'Abrigo básico para começar'
         },
         casa_madeira: { 
-            id: 'casa_madeira', nome: '🏠 Casa de Madeira', preco: 5000, categoria: 'propriedades', emoji: '🏠', 
-            durabilidade: 200, durabilidade_max: 200, beneficio: 'Moradia simples (+25 gold/dia)', renda_passiva: 25,
-            descricao: 'Casa básica para morar'
+            id: 'casa_madeira', nome: '🏠 Casa de Madeira', preco: 15000, categoria: 'propriedades', emoji: '🏠',
+            durabilidade: 200, durabilidade_max: 200, beneficio: '+50 gold/dia (renda passiva)', renda_passiva: 50,
+            descricao: 'Casa simples mas confortável'
         },
         casa_alvenaria: { 
-            id: 'casa_alvenaria', nome: '🏘️ Casa de Alvenaria', preco: 25000, categoria: 'propriedades', emoji: '🏘️', 
-            durabilidade: 500, durabilidade_max: 500, beneficio: 'Moradia confortável (+75 gold/dia)', renda_passiva: 75,
-            descricao: 'Casa sólida e confortável'
+            id: 'casa_alvenaria', nome: '🏘️ Casa de Alvenaria', preco: 50000, categoria: 'propriedades', emoji: '🏘️',
+            durabilidade: 500, durabilidade_max: 500, beneficio: '+150 gold/dia (renda passiva)', renda_passiva: 150,
+            descricao: 'Casa resistente e espaçosa'
+        },
+        apartamento: { 
+            id: 'apartamento', nome: '🏢 Apartamento', preco: 80000, categoria: 'propriedades', emoji: '🏢',
+            durabilidade: 800, durabilidade_max: 800, beneficio: '+200 gold/dia (renda passiva)', renda_passiva: 200,
+            descricao: 'Apartamento moderno na cidade'
         },
         mansao: { 
-            id: 'mansao', nome: '🏰 Mansão', preco: 150000, categoria: 'propriedades', emoji: '🏰', 
-            durabilidade: 1000, durabilidade_max: 1000, beneficio: 'Luxo máximo (+300 gold/dia)', renda_passiva: 300,
-            descricao: 'A casa dos sonhos'
+            id: 'mansao', nome: '🏰 Mansão', preco: 300000, categoria: 'propriedades', emoji: '🏰',
+            durabilidade: 1500, durabilidade_max: 1500, beneficio: '+500 gold/dia (renda passiva)', renda_passiva: 500,
+            descricao: 'Casa de luxo para os ricos'
         },
         fazenda: { 
-            id: 'fazenda', nome: '🚜 Fazenda', preco: 80000, categoria: 'propriedades', emoji: '🚜', 
-            durabilidade: 800, durabilidade_max: 800, beneficio: 'Produção agrícola (+150 gold/dia)', renda_passiva: 150,
-            descricao: 'Propriedade rural para agricultura'
-        }
-    },
-
-    // ==================== NEGÓCIOS ====================
-    negocios: {
-        barraquinha: { 
-            id: 'barraquinha', nome: '🏪 Barraquinha', preco: 2000, categoria: 'negocios', emoji: '🏪', 
-            durabilidade: 100, durabilidade_max: 100, beneficio: 'Negócio básico (+50 gold/dia)', renda_passiva: 50,
-            descricao: 'Pequeno comércio de rua'
-        },
-        loja_roupas: { 
-            id: 'loja_roupas', nome: '👕 Loja de Roupas', preco: 15000, categoria: 'negocios', emoji: '👕', 
-            durabilidade: 300, durabilidade_max: 300, beneficio: 'Comércio de moda (+120 gold/dia)', renda_passiva: 120,
-            descricao: 'Loja especializada em roupas'
-        },
-        restaurante: { 
-            id: 'restaurante', nome: '🍽️ Restaurante', preco: 50000, categoria: 'negocios', emoji: '🍽️', 
-            durabilidade: 400, durabilidade_max: 400, beneficio: 'Gastronomia (+250 gold/dia)', renda_passiva: 250,
-            descricao: 'Estabelecimento gastronômico'
+            id: 'fazenda', nome: '🚜 Fazenda', preco: 150000, categoria: 'propriedades', emoji: '🚜',
+            durabilidade: 1000, durabilidade_max: 1000, beneficio: '+300 gold/dia (agricultura)', renda_passiva: 300,
+            descricao: 'Propriedade rural produtiva'
         },
         hotel: { 
-            id: 'hotel', nome: '🏨 Hotel', preco: 200000, categoria: 'negocios', emoji: '🏨', 
-            durabilidade: 800, durabilidade_max: 800, beneficio: 'Hospedagem (+600 gold/dia)', renda_passiva: 600,
-            descricao: 'Negócio de hospedagem de luxo'
+            id: 'hotel', nome: '🏨 Hotel', preco: 500000, categoria: 'propriedades', emoji: '🏨',
+            durabilidade: 2000, durabilidade_max: 2000, beneficio: '+800 gold/dia (turismo)', renda_passiva: 800,
+            descricao: 'Negócio de hospedagem lucrativo'
         },
-        banco: { 
-            id: 'banco', nome: '🏦 Banco', preco: 1000000, categoria: 'negocios', emoji: '🏦', 
-            durabilidade: 2000, durabilidade_max: 2000, beneficio: 'Império financeiro (+2000 gold/dia)', renda_passiva: 2000,
-            descricao: 'O negócio mais lucrativo'
+        shopping: { 
+            id: 'shopping', nome: '🏬 Shopping Center', preco: 1000000, categoria: 'propriedades', emoji: '🏬',
+            durabilidade: 3000, durabilidade_max: 3000, beneficio: '+1500 gold/dia (comércio)', renda_passiva: 1500,
+            descricao: 'Centro comercial gigantesco'
+        },
+        ilha_privada: { 
+            id: 'ilha_privada', nome: '🏝️ Ilha Privada', preco: 5000000, categoria: 'propriedades', emoji: '🏝️',
+            durabilidade: 9999, durabilidade_max: 9999, beneficio: '+3000 gold/dia (paraíso)', renda_passiva: 3000,
+            descricao: 'Seu próprio paraíso particular'
+        },
+        cidade: { 
+            id: 'cidade', nome: '🌆 Cidade Inteira', preco: 20000000, categoria: 'propriedades', emoji: '🌆',
+            durabilidade: 9999, durabilidade_max: 9999, beneficio: '+10000 gold/dia (prefeito)', renda_passiva: 10000,
+            descricao: 'Você é o dono de uma cidade!'
+        },
+        castelo: { 
+            id: 'castelo', nome: '🏯 Castelo Medieval', preco: 2000000, categoria: 'propriedades', emoji: '🏯',
+            durabilidade: 5000, durabilidade_max: 5000, beneficio: '+1200 gold/dia (realeza)', renda_passiva: 1200,
+            descricao: 'Castelo histórico majestoso'
+        },
+        bunker: { 
+            id: 'bunker', nome: '🏢 Bunker Nuclear', preco: 3000000, categoria: 'propriedades', emoji: '🏢',
+            durabilidade: 8000, durabilidade_max: 8000, beneficio: 'Proteção total contra ataques', protecao: 100,
+            descricao: 'Abrigo à prova de tudo'
+        },
+        predio: { 
+            id: 'predio', nome: '🏗️ Prédio Comercial', preco: 800000, categoria: 'propriedades', emoji: '🏗️',
+            durabilidade: 2500, durabilidade_max: 2500, beneficio: '+1000 gold/dia (aluguel)', renda_passiva: 1000,
+            descricao: 'Prédio para alugar escritórios'
+        },
+        universidade: { 
+            id: 'universidade', nome: '🎓 Universidade Própria', preco: 10000000, categoria: 'propriedades', emoji: '🎓',
+            durabilidade: 9999, durabilidade_max: 9999, beneficio: '+5000 gold/dia (educação)', renda_passiva: 5000,
+            descricao: 'Sua própria instituição de ensino'
+        },
+        porto: { 
+            id: 'porto', nome: '⚓ Porto Marítimo', preco: 8000000, categoria: 'propriedades', emoji: '⚓',
+            durabilidade: 6000, durabilidade_max: 6000, beneficio: '+4000 gold/dia (comércio)', renda_passiva: 4000,
+            descricao: 'Porto para navios cargueiros'
         }
     },
 
-    // ==================== ANIMAIS ====================
+    // CATEGORIA 2: ANIMAIS (15 itens)
     animais: {
         galinha: { 
-            id: 'galinha', nome: '🐔 Galinha', preco: 150, categoria: 'animais', emoji: '🐔', 
-            durabilidade: 60, durabilidade_max: 60, beneficio: 'Produz 2 ovos/dia (40 gold)', producao_diaria: 40,
-            descricao: 'Ave doméstica que produz ovos'
+            id: 'galinha', nome: '🐔 Galinha', preco: 200, categoria: 'animais', emoji: '🐔',
+            durabilidade: 60, durabilidade_max: 60, beneficio: '+30 gold/dia (ovos)', renda_passiva: 30,
+            descricao: 'Produz ovos diariamente'
         },
         vaca: { 
-            id: 'vaca', nome: '🐄 Vaca', preco: 2000, categoria: 'animais', emoji: '🐄', 
-            durabilidade: 150, durabilidade_max: 150, beneficio: 'Produz leite (80 gold/dia)', producao_diaria: 80,
-            descricao: 'Animal que produz leite fresco'
+            id: 'vaca', nome: '🐄 Vaca', preco: 3000, categoria: 'animais', emoji: '🐄',
+            durabilidade: 120, durabilidade_max: 120, beneficio: '+100 gold/dia (leite)', renda_passiva: 100,
+            descricao: 'Produz leite fresco'
         },
         porco: { 
-            id: 'porco', nome: '🐷 Porco', preco: 800, categoria: 'animais', emoji: '🐷', 
-            durabilidade: 100, durabilidade_max: 100, beneficio: 'Produz carne (120 gold eventual)', producao_eventual: 120,
-            descricao: 'Suíno para produção de carne'
+            id: 'porco', nome: '🐷 Porco', preco: 1500, categoria: 'animais', emoji: '🐷',
+            durabilidade: 80, durabilidade_max: 80, beneficio: '+80 gold/dia (carne)', renda_passiva: 80,
+            descricao: 'Criação para consumo'
         },
         cavalo: { 
-            id: 'cavalo', nome: '🐴 Cavalo', preco: 5000, categoria: 'animais', emoji: '🐴', 
-            durabilidade: 200, durabilidade_max: 200, beneficio: 'Transporte (+15% velocidade)', bonus_velocidade: 15,
-            descricao: 'Animal de transporte e trabalho'
+            id: 'cavalo', nome: '🐴 Cavalo', preco: 8000, categoria: 'animais', emoji: '🐴',
+            durabilidade: 200, durabilidade_max: 200, beneficio: '+25% velocidade trabalhos', bonus_velocidade: 25,
+            descricao: 'Animal de transporte nobre'
         },
         cachorro: { 
-            id: 'cachorro', nome: '🐕 Cachorro', preco: 400, categoria: 'animais', emoji: '🐕', 
-            durabilidade: 120, durabilidade_max: 120, beneficio: 'Proteção (+20% defesa assaltos)', bonus_defesa: 20,
-            descricao: 'Fiel companheiro e guardião'
+            id: 'cachorro', nome: '🐕 Cachorro', preco: 1000, categoria: 'animais', emoji: '🐕',
+            durabilidade: 150, durabilidade_max: 150, beneficio: '+30% proteção assaltos', bonus_defesa: 30,
+            descricao: 'Fiel guardião da família'
+        },
+        gato: { 
+            id: 'gato', nome: '🐱 Gato', preco: 500, categoria: 'animais', emoji: '🐱',
+            durabilidade: 120, durabilidade_max: 120, beneficio: '+10 gold/dia (companionship)', renda_passiva: 10,
+            descricao: 'Pet carinhoso e independente'
+        },
+        ovelha: { 
+            id: 'ovelha', nome: '🐑 Ovelha', preco: 2000, categoria: 'animais', emoji: '🐑',
+            durabilidade: 100, durabilidade_max: 100, beneficio: '+70 gold/dia (lã)', renda_passiva: 70,
+            descricao: 'Produz lã de qualidade'
+        },
+        tigre: { 
+            id: 'tigre', nome: '🐅 Tigre', preco: 50000, categoria: 'animais', emoji: '🐅',
+            durabilidade: 300, durabilidade_max: 300, beneficio: '+50% proteção + intimidação', bonus_defesa: 50,
+            descricao: 'Predador exótico impressionante'
+        },
+        leao: { 
+            id: 'leao', nome: '🦁 Leão', preco: 80000, categoria: 'animais', emoji: '🦁',
+            durabilidade: 350, durabilidade_max: 350, beneficio: '+60% proteção + status', bonus_defesa: 60,
+            descricao: 'Rei da selva como pet'
+        },
+        elefante: { 
+            id: 'elefante', nome: '🐘 Elefante', preco: 150000, categoria: 'animais', emoji: '🐘',
+            durabilidade: 500, durabilidade_max: 500, beneficio: '+40% ganhos trabalho pesado', bonus_trabalho: 40,
+            descricao: 'Gigante gentil e trabalhador'
+        },
+        dragao: { 
+            id: 'dragao', nome: '🐲 Dragão', preco: 1000000, categoria: 'animais', emoji: '🐲',
+            durabilidade: 9999, durabilidade_max: 9999, beneficio: '+100% proteção + voo', bonus_defesa: 100,
+            descricao: 'Criatura mítica lendária'
+        },
+        unicornio: { 
+            id: 'unicornio', nome: '🦄 Unicórnio', preco: 800000, categoria: 'animais', emoji: '🦄',
+            durabilidade: 9999, durabilidade_max: 9999, beneficio: '+500 gold/dia (magia)', renda_passiva: 500,
+            descricao: 'Ser mágico que traz sorte'
+        },
+        aguia: { 
+            id: 'aguia', nome: '🦅 Águia', preco: 10000, categoria: 'animais', emoji: '🦅',
+            durabilidade: 200, durabilidade_max: 200, beneficio: '+20% chance crítica trabalhos', bonus_critico: 20,
+            descricao: 'Ave de rapina majestosa'
+        },
+        lobo: { 
+            id: 'lobo', nome: '🐺 Lobo', preco: 25000, categoria: 'animais', emoji: '🐺',
+            durabilidade: 250, durabilidade_max: 250, beneficio: '+40% proteção noturna', bonus_defesa: 40,
+            descricao: 'Predador feroz e leal'
+        },
+        tubarao: { 
+            id: 'tubarao', nome: '🦈 Tubarão', preco: 100000, categoria: 'animais', emoji: '🦈',
+            durabilidade: 400, durabilidade_max: 400, beneficio: '+200% ganhos pesca', bonus_pesca: 200,
+            descricao: 'Predador aquático temível'
         }
     },
 
-    // ==================== EQUIPAMENTOS DE PROTEÇÃO ====================
-    protecao: {
+    // CATEGORIA 3: FERRAMENTAS (20 itens)
+    ferramentas: {
+        // Pesca
+        vara_bambu: { 
+            id: 'vara_bambu', nome: '🎋 Vara de Bambu', preco: 100, categoria: 'ferramentas', emoji: '🎋',
+            durabilidade: 30, durabilidade_max: 30, beneficio: 'Pesca básica (+20% sucesso)', bonus_pesca: 20,
+            descricao: 'Vara simples para iniciantes'
+        },
+        vara_carbono: { 
+            id: 'vara_carbono', nome: '🎣 Vara de Carbono', preco: 2000, categoria: 'ferramentas', emoji: '🎣',
+            durabilidade: 150, durabilidade_max: 150, beneficio: 'Pesca avançada (+60% sucesso)', bonus_pesca: 60,
+            descricao: 'Vara profissional de alta qualidade'
+        },
+        rede_pesca: { 
+            id: 'rede_pesca', nome: '🕸️ Rede de Pesca', preco: 5000, categoria: 'ferramentas', emoji: '🕸️',
+            durabilidade: 100, durabilidade_max: 100, beneficio: 'Pesca em massa (+100% ganhos)', bonus_pesca: 100,
+            descricao: 'Captura múltiplos peixes'
+        },
+        
+        // Mineração
+        picareta_ferro: { 
+            id: 'picareta_ferro', nome: '⛏️ Picareta de Ferro', preco: 500, categoria: 'ferramentas', emoji: '⛏️',
+            durabilidade: 50, durabilidade_max: 50, beneficio: 'Mineração básica (+30% sucesso)', bonus_mineracao: 30,
+            descricao: 'Ferramenta padrão de mineração'
+        },
+        picareta_diamante: { 
+            id: 'picareta_diamante', nome: '💎 Picareta de Diamante', preco: 10000, categoria: 'ferramentas', emoji: '💎',
+            durabilidade: 200, durabilidade_max: 200, beneficio: 'Mineração avançada (+80% sucesso)', bonus_mineracao: 80,
+            descricao: 'A melhor picareta disponível'
+        },
+        britadeira: { 
+            id: 'britadeira', nome: '🔨 Britadeira Industrial', preco: 50000, categoria: 'ferramentas', emoji: '🔨',
+            durabilidade: 300, durabilidade_max: 300, beneficio: 'Mineração industrial (+150% ganhos)', bonus_mineracao: 150,
+            descricao: 'Máquina pesada para grandes extrações'
+        },
+        
+        // Caça
+        rifle_caca: { 
+            id: 'rifle_caca', nome: '🔫 Rifle de Caça', preco: 3000, categoria: 'ferramentas', emoji: '🔫',
+            durabilidade: 80, durabilidade_max: 80, beneficio: 'Caça básica (+40% sucesso)', bonus_caca: 40,
+            descricao: 'Arma padrão para caça'
+        },
+        espingarda: { 
+            id: 'espingarda', nome: '💥 Espingarda 12', preco: 8000, categoria: 'ferramentas', emoji: '💥',
+            durabilidade: 120, durabilidade_max: 120, beneficio: 'Caça avançada (+70% sucesso)', bonus_caca: 70,
+            descricao: 'Arma poderosa para grandes presas'
+        },
+        rifle_sniper: { 
+            id: 'rifle_sniper', nome: '🎯 Rifle Sniper', preco: 25000, categoria: 'ferramentas', emoji: '🎯',
+            durabilidade: 200, durabilidade_max: 200, beneficio: 'Caça de precisão (+120% sucesso)', bonus_caca: 120,
+            descricao: 'Precisão milimétrica para alvos distantes'
+        },
+        
+        // Agricultura
+        enxada: { 
+            id: 'enxada', nome: '🪓 Enxada Básica', preco: 200, categoria: 'ferramentas', emoji: '🪓',
+            durabilidade: 40, durabilidade_max: 40, beneficio: 'Plantio básico (+25% produção)', bonus_agricultura: 25,
+            descricao: 'Ferramenta essencial para agricultura'
+        },
+        trator: { 
+            id: 'trator', nome: '🚜 Trator Agrícola', preco: 80000, categoria: 'ferramentas', emoji: '🚜',
+            durabilidade: 500, durabilidade_max: 500, beneficio: 'Agricultura industrial (+200% produção)', bonus_agricultura: 200,
+            descricao: 'Máquina para grandes plantações'
+        },
+        drone_agricola: { 
+            id: 'drone_agricola', nome: '🛸 Drone Agrícola', preco: 150000, categoria: 'ferramentas', emoji: '🛸',
+            durabilidade: 300, durabilidade_max: 300, beneficio: 'Agricultura de precisão (+300% produção)', bonus_agricultura: 300,
+            descricao: 'Tecnologia avançada para fazendas'
+        },
+        
+        // Proteção
         colete_kevlar: { 
-            id: 'colete_kevlar', nome: '🦺 Colete de Kevlar', preco: 3000, categoria: 'protecao', emoji: '🦺', 
-            durabilidade: 80, durabilidade_max: 80, beneficio: 'Proteção contra ataques (-70% dano)', bonus_defesa: 70,
+            id: 'colete_kevlar', nome: '🦺 Colete à Prova de Balas', preco: 15000, categoria: 'ferramentas', emoji: '🦺',
+            durabilidade: 100, durabilidade_max: 100, beneficio: '+60% proteção contra ataques', bonus_defesa: 60,
             descricao: 'Proteção corporal avançada'
         },
         capacete_seguranca: { 
-            id: 'capacete_seguranca', nome: '⛑️ Capacete de Segurança', preco: 200, categoria: 'protecao', emoji: '⛑️', 
-            durabilidade: 50, durabilidade_max: 50, beneficio: 'Proteção da cabeça (-40% chance morte)', bonus_defesa: 40,
-            descricao: 'Equipamento de proteção individual'
+            id: 'capacete_seguranca', nome: '⛑️ Capacete de Segurança', preco: 800, categoria: 'ferramentas', emoji: '⛑️',
+            durabilidade: 60, durabilidade_max: 60, beneficio: '+30% proteção acidentes trabalho', bonus_defesa: 30,
+            descricao: 'Proteção para trabalhos perigosos'
         },
-        kit_primeiros_socorros: { 
-            id: 'kit_primeiros_socorros', nome: '🏥 Kit Primeiros Socorros', preco: 150, categoria: 'protecao', emoji: '🏥', 
-            durabilidade: 10, durabilidade_max: 10, beneficio: 'Recupera vida em emergências', cura: 100,
-            descricao: 'Kit médico para emergências'
+        
+        // Medicina
+        kit_medico: { 
+            id: 'kit_medico', nome: '🏥 Kit Médico Avançado', preco: 5000, categoria: 'ferramentas', emoji: '🏥',
+            durabilidade: 20, durabilidade_max: 20, beneficio: 'Cura 100% da vida', cura: 100,
+            descricao: 'Kit completo para emergências médicas'
+        },
+        desfibrilador: { 
+            id: 'desfibrilador', nome: '⚡ Desfibrilador', preco: 30000, categoria: 'ferramentas', emoji: '⚡',
+            durabilidade: 50, durabilidade_max: 50, beneficio: 'Revive automaticamente após morte', revive: true,
+            descricao: 'Equipamento que pode salvar vidas'
+        },
+        
+        // Diversos
+        lupa_detetive: { 
+            id: 'lupa_detetive', nome: '🔍 Lupa de Detetive', preco: 2000, categoria: 'ferramentas', emoji: '🔍',
+            durabilidade: 100, durabilidade_max: 100, beneficio: '+50% chance encontrar itens raros', bonus_sorte: 50,
+            descricao: 'Aumenta chances de descobertas'
+        },
+        ima_poderoso: { 
+            id: 'ima_poderoso', nome: '🧲 Ímã Poderoso', preco: 8000, categoria: 'ferramentas', emoji: '🧲',
+            durabilidade: 80, durabilidade_max: 80, beneficio: 'Atrai metais preciosos (+100% mineração)', bonus_mineracao: 100,
+            descricao: 'Atrai metais valiosos automaticamente'
+        },
+        detector_metais: { 
+            id: 'detector_metais', nome: '📡 Detector de Metais', preco: 12000, categoria: 'ferramentas', emoji: '📡',
+            durabilidade: 150, durabilidade_max: 150, beneficio: '+80% chance tesouros enterrados', bonus_sorte: 80,
+            descricao: 'Encontra tesouros escondidos'
         }
     },
 
-    // ==================== TECNOLOGIA ====================
-    tecnologia: {
-        celular_basico: { 
-            id: 'celular_basico', nome: '📱 Celular Básico', preco: 300, categoria: 'tecnologia', emoji: '📱', 
-            durabilidade: 60, durabilidade_max: 60, beneficio: 'Comunicação básica (+5% trabalhos)', bonus_trabalho: 5,
-            descricao: 'Telefone simples para comunicação'
+    // CATEGORIA 4: VEÍCULOS (20 itens)
+    veiculos: {
+        bicicleta: { 
+            id: 'bicicleta', nome: '🚲 Bicicleta', preco: 800, categoria: 'veiculos', emoji: '🚲',
+            durabilidade: 200, durabilidade_max: 200, beneficio: '+15% velocidade trabalhos', bonus_velocidade: 15,
+            descricao: 'Transporte ecológico e saudável'
         },
-        smartphone: { 
-            id: 'smartphone', nome: '📲 Smartphone', preco: 1500, categoria: 'tecnologia', emoji: '📲', 
-            durabilidade: 100, durabilidade_max: 100, beneficio: 'Tecnologia avançada (+15% trabalhos)', bonus_trabalho: 15,
-            descricao: 'Telefone inteligente com apps'
+        motocicleta: { 
+            id: 'motocicleta', nome: '🏍️ Motocicleta', preco: 15000, categoria: 'veiculos', emoji: '🏍️',
+            durabilidade: 300, durabilidade_max: 300, beneficio: '+30% velocidade trabalhos', bonus_velocidade: 30,
+            descricao: 'Moto ágil para a cidade'
+        },
+        carro_popular: { 
+            id: 'carro_popular', nome: '🚗 Carro Popular', preco: 40000, categoria: 'veiculos', emoji: '🚗',
+            durabilidade: 500, durabilidade_max: 500, beneficio: '+25% ganhos trabalho', bonus_trabalho: 25,
+            descricao: 'Carro básico confiável'
+        },
+        carro_luxo: { 
+            id: 'carro_luxo', nome: '🏎️ Carro de Luxo', preco: 200000, categoria: 'veiculos', emoji: '🏎️',
+            durabilidade: 800, durabilidade_max: 800, beneficio: '+60% ganhos trabalho + status', bonus_trabalho: 60,
+            descricao: 'Veículo de alto padrão'
+        },
+        ferrari: { 
+            id: 'ferrari', nome: '🏁 Ferrari', preco: 1000000, categoria: 'veiculos', emoji: '🏁',
+            durabilidade: 1000, durabilidade_max: 1000, beneficio: '+100% ganhos + máximo status', bonus_trabalho: 100,
+            descricao: 'Supercarro dos sonhos'
+        },
+        lamborghini: { 
+            id: 'lamborghini', nome: '🚗 Lamborghini', preco: 1500000, categoria: 'veiculos', emoji: '🚗',
+            durabilidade: 1200, durabilidade_max: 1200, beneficio: '+120% ganhos + exclusividade', bonus_trabalho: 120,
+            descricao: 'Supercarro exclusivo italiano'
+        },
+        caminhao: { 
+            id: 'caminhao', nome: '🚛 Caminhão', preco: 120000, categoria: 'veiculos', emoji: '🚛',
+            durabilidade: 600, durabilidade_max: 600, beneficio: '+80% ganhos trabalho pesado', bonus_trabalho: 80,
+            descricao: 'Veículo para cargas pesadas'
+        },
+        onibus: { 
+            id: 'onibus', nome: '🚌 Ônibus', preco: 200000, categoria: 'veiculos', emoji: '🚌',
+            durabilidade: 1000, durabilidade_max: 1000, beneficio: '+300 gold/dia (transporte público)', renda_passiva: 300,
+            descricao: 'Negócio de transporte urbano'
+        },
+        barco: { 
+            id: 'barco', nome: '🚤 Lancha', preco: 80000, categoria: 'veiculos', emoji: '🚤',
+            durabilidade: 400, durabilidade_max: 400, beneficio: '+150% ganhos pesca aquática', bonus_pesca: 150,
+            descricao: 'Embarcação para pesca em alto mar'
+        },
+        iate: { 
+            id: 'iate', nome: '🛥️ Iate de Luxo', preco: 2000000, categoria: 'veiculos', emoji: '🛥️',
+            durabilidade: 1500, durabilidade_max: 1500, beneficio: '+800 gold/dia (turismo de luxo)', renda_passiva: 800,
+            descricao: 'Embarcação de luxo para os ricos'
+        },
+        jato_particular: { 
+            id: 'jato_particular', nome: '✈️ Jato Particular', preco: 10000000, categoria: 'veiculos', emoji: '✈️',
+            durabilidade: 2000, durabilidade_max: 2000, beneficio: '+200% ganhos trabalho internacional', bonus_trabalho: 200,
+            descricao: 'Avião privado para negócios globais'
+        },
+        helicoptero: { 
+            id: 'helicoptero', nome: '🚁 Helicóptero', preco: 5000000, categoria: 'veiculos', emoji: '🚁',
+            durabilidade: 1000, durabilidade_max: 1000, beneficio: '+1500 gold/dia (táxi aéreo)', renda_passiva: 1500,
+            descricao: 'Transporte aéreo executivo'
+        },
+        navio_carga: { 
+            id: 'navio_carga', nome: '🚢 Navio Cargueiro', preco: 15000000, categoria: 'veiculos', emoji: '🚢',
+            durabilidade: 3000, durabilidade_max: 3000, beneficio: '+5000 gold/dia (comércio marítimo)', renda_passiva: 5000,
+            descricao: 'Embarcação para comércio internacional'
+        },
+        submarino: { 
+            id: 'submarino', nome: '🛸 Submarino', preco: 8000000, categoria: 'veiculos', emoji: '🛸',
+            durabilidade: 1500, durabilidade_max: 1500, beneficio: '+500% ganhos pesca submarina', bonus_pesca: 500,
+            descricao: 'Exploração dos oceanos profundos'
+        },
+        trem: { 
+            id: 'trem', nome: '🚂 Locomotiva', preco: 3000000, categoria: 'veiculos', emoji: '🚂',
+            durabilidade: 2000, durabilidade_max: 2000, beneficio: '+1000 gold/dia (transporte ferroviário)', renda_passiva: 1000,
+            descricao: 'Transporte ferroviário de massa'
+        },
+        foguete: { 
+            id: 'foguete', nome: '🚀 Foguete Espacial', preco: 50000000, categoria: 'veiculos', emoji: '🚀',
+            durabilidade: 5000, durabilidade_max: 5000, beneficio: '+10000 gold/dia (turismo espacial)', renda_passiva: 10000,
+            descricao: 'Viagens ao espaço sideral'
+        },
+        ovni: { 
+            id: 'ovni', nome: '🛸 OVNI', preco: 100000000, categoria: 'veiculos', emoji: '🛸',
+            durabilidade: 9999, durabilidade_max: 9999, beneficio: '+20000 gold/dia (tecnologia alienígena)', renda_passiva: 20000,
+            descricao: 'Tecnologia extraterrestre avançada'
+        },
+        jetpack: { 
+            id: 'jetpack', nome: '🎒 Jetpack', preco: 500000, categoria: 'veiculos', emoji: '🎒',
+            durabilidade: 200, durabilidade_max: 200, beneficio: '+100% velocidade + voo pessoal', bonus_velocidade: 100,
+            descricao: 'Mochila voadora futurística'
+        },
+        hover_board: { 
+            id: 'hover_board', nome: '🛹 Hoverboard', preco: 50000, categoria: 'veiculos', emoji: '🛹',
+            durabilidade: 150, durabilidade_max: 150, beneficio: '+40% velocidade + estilo', bonus_velocidade: 40,
+            descricao: 'Skate voador tecnológico'
+        },
+        robo_transformers: { 
+            id: 'robo_transformers', nome: '🤖 Robô Transformers', preco: 20000000, categoria: 'veiculos', emoji: '🤖',
+            durabilidade: 3000, durabilidade_max: 3000, beneficio: 'Todos os bônus de veículos', bonus_universal: 50,
+            descricao: 'Robô que se transforma em qualquer veículo'
+        }
+    },
+
+    // CATEGORIA 5: NEGÓCIOS (15 itens)
+    negocios: {
+        barraquinha: { 
+            id: 'barraquinha', nome: '🏪 Barraquinha', preco: 5000, categoria: 'negocios', emoji: '🏪',
+            durabilidade: 100, durabilidade_max: 100, beneficio: '+150 gold/dia', renda_passiva: 150,
+            descricao: 'Pequeno comércio de rua'
+        },
+        lanchonete: { 
+            id: 'lanchonete', nome: '🍔 Lanchonete', preco: 25000, categoria: 'negocios', emoji: '🍔',
+            durabilidade: 300, durabilidade_max: 300, beneficio: '+400 gold/dia', renda_passiva: 400,
+            descricao: 'Negócio de fast food'
+        },
+        restaurante: { 
+            id: 'restaurante', nome: '🍽️ Restaurante', preco: 100000, categoria: 'negocios', emoji: '🍽️',
+            durabilidade: 500, durabilidade_max: 500, beneficio: '+800 gold/dia', renda_passiva: 800,
+            descricao: 'Estabelecimento gastronômico refinado'
+        },
+        academia: { 
+            id: 'academia', nome: '💪 Academia', preco: 80000, categoria: 'negocios', emoji: '💪',
+            durabilidade: 600, durabilidade_max: 600, beneficio: '+600 gold/dia', renda_passiva: 600,
+            descricao: 'Centro de fitness e musculação'
+        },
+        loja_roupas: { 
+            id: 'loja_roupas', nome: '👕 Loja de Roupas', preco: 60000, categoria: 'negocios', emoji: '👕',
+            durabilidade: 400, durabilidade_max: 400, beneficio: '+500 gold/dia', renda_passiva: 500,
+            descricao: 'Boutique de moda'
+        },
+        posto_gasolina: { 
+            id: 'posto_gasolina', nome: '⛽ Posto de Gasolina', preco: 300000, categoria: 'negocios', emoji: '⛽',
+            durabilidade: 800, durabilidade_max: 800, beneficio: '+1200 gold/dia', renda_passiva: 1200,
+            descricao: 'Abastecimento automotivo'
+        },
+        supermercado: { 
+            id: 'supermercado', nome: '🏬 Supermercado', preco: 500000, categoria: 'negocios', emoji: '🏬',
+            durabilidade: 1000, durabilidade_max: 1000, beneficio: '+2000 gold/dia', renda_passiva: 2000,
+            descricao: 'Rede de varejo alimentício'
+        },
+        farmacia: { 
+            id: 'farmacia', nome: '💊 Farmácia', preco: 200000, categoria: 'negocios', emoji: '💊',
+            durabilidade: 600, durabilidade_max: 600, beneficio: '+900 gold/dia', renda_passiva: 900,
+            descricao: 'Drogaria e produtos de saúde'
+        },
+        banco_proprio: { 
+            id: 'banco_proprio', nome: '🏦 Banco Próprio', preco: 10000000, categoria: 'negocios', emoji: '🏦',
+            durabilidade: 5000, durabilidade_max: 5000, beneficio: '+8000 gold/dia', renda_passiva: 8000,
+            descricao: 'Instituição financeira própria'
+        },
+        cassino: { 
+            id: 'cassino', nome: '🎰 Cassino', preco: 5000000, categoria: 'negocios', emoji: '🎰',
+            durabilidade: 2000, durabilidade_max: 2000, beneficio: '+4000 gold/dia', renda_passiva: 4000,
+            descricao: 'Casa de jogos e apostas'
+        },
+        empresa_ti: { 
+            id: 'empresa_ti', nome: '💻 Empresa de TI', preco: 2000000, categoria: 'negocios', emoji: '💻',
+            durabilidade: 1500, durabilidade_max: 1500, beneficio: '+3000 gold/dia', renda_passiva: 3000,
+            descricao: 'Desenvolvimento de software'
+        },
+        construtora: { 
+            id: 'construtora', nome: '🏗️ Construtora', preco: 8000000, categoria: 'negocios', emoji: '🏗️',
+            durabilidade: 3000, durabilidade_max: 3000, beneficio: '+6000 gold/dia', renda_passiva: 6000,
+            descricao: 'Empresa de construção civil'
+        },
+        mineradora: { 
+            id: 'mineradora', nome: '⛏️ Mineradora', preco: 15000000, categoria: 'negocios', emoji: '⛏️',
+            durabilidade: 4000, durabilidade_max: 4000, beneficio: '+10000 gold/dia', renda_passiva: 10000,
+            descricao: 'Extração industrial de minérios'
+        },
+        petroleira: { 
+            id: 'petroleira', nome: '🛢️ Petrolífera', preco: 50000000, categoria: 'negocios', emoji: '🛢️',
+            durabilidade: 8000, durabilidade_max: 8000, beneficio: '+25000 gold/dia', renda_passiva: 25000,
+            descricao: 'Extração e refino de petróleo'
+        },
+        multinacional: { 
+            id: 'multinacional', nome: '🌍 Multinacional', preco: 100000000, categoria: 'negocios', emoji: '🌍',
+            durabilidade: 9999, durabilidade_max: 9999, beneficio: '+50000 gold/dia', renda_passiva: 50000,
+            descricao: 'Corporação global dominante'
+        }
+    },
+
+    // CATEGORIA 6: TECNOLOGIA (15 itens)
+    tecnologia: {
+        celular: { 
+            id: 'celular', nome: '📱 Smartphone', preco: 1500, categoria: 'tecnologia', emoji: '📱',
+            durabilidade: 200, durabilidade_max: 200, beneficio: '+20% ganhos trabalho', bonus_trabalho: 20,
+            descricao: 'Telefone inteligente moderno'
         },
         laptop: { 
-            id: 'laptop', nome: '💻 Laptop', preco: 3000, categoria: 'tecnologia', emoji: '💻', 
-            durabilidade: 150, durabilidade_max: 150, beneficio: 'Trabalho digital (+25% programação)', bonus_programacao: 25,
-            descricao: 'Computador portátil para trabalho'
+            id: 'laptop', nome: '💻 Laptop Gamer', preco: 8000, categoria: 'tecnologia', emoji: '💻',
+            durabilidade: 300, durabilidade_max: 300, beneficio: '+50% ganhos programação', bonus_programacao: 50,
+            descricao: 'Computador portátil de alta performance'
+        },
+        pc_gamer: { 
+            id: 'pc_gamer', nome: '🖥️ PC Gamer', preco: 25000, categoria: 'tecnologia', emoji: '🖥️',
+            durabilidade: 500, durabilidade_max: 500, beneficio: '+100% ganhos streaming/programação', bonus_programacao: 100,
+            descricao: 'Computador desktop poderoso'
         },
         servidor: { 
-            id: 'servidor', nome: '🖥️ Servidor', preco: 20000, categoria: 'tecnologia', emoji: '🖥️', 
-            durabilidade: 300, durabilidade_max: 300, beneficio: 'Renda digital (+100 gold/dia)', renda_passiva: 100,
+            id: 'servidor', nome: '🖥️ Servidor Dedicado', preco: 100000, categoria: 'tecnologia', emoji: '🖥️',
+            durabilidade: 1000, durabilidade_max: 1000, beneficio: '+500 gold/dia (hosting)', renda_passiva: 500,
             descricao: 'Servidor para negócios online'
-        }
-    },
-
-    // ==================== CONSUMÍVEIS ====================
-    consumiveis: {
-        energia_drink: { 
-            id: 'energia_drink', nome: '⚡ Energy Drink', preco: 50, categoria: 'consumiveis', emoji: '⚡', 
-            durabilidade: 1, durabilidade_max: 1, beneficio: 'Reduz cooldown em 50% (próxima ação)', bonus_energia: 50,
-            descricao: 'Bebida energética que acelera ações'
         },
-        proteina: { 
-            id: 'proteina', nome: '💪 Proteína', preco: 80, categoria: 'consumiveis', emoji: '💪', 
-            durabilidade: 1, durabilidade_max: 1, beneficio: 'Aumenta força (+20% ganhos físicos)', bonus_forca: 20,
-            descricao: 'Suplemento para aumentar força física'
+        tablet: { 
+            id: 'tablet', nome: '📱 Tablet Pro', preco: 3000, categoria: 'tecnologia', emoji: '📱',
+            durabilidade: 250, durabilidade_max: 250, beneficio: '+30% ganhos design', bonus_trabalho: 30,
+            descricao: 'Tablet profissional para criação'
         },
-        livro_skill: { 
-            id: 'livro_skill', nome: '📚 Livro de Habilidades', preco: 200, categoria: 'consumiveis', emoji: '📚', 
-            durabilidade: 1, durabilidade_max: 1, beneficio: 'Aumenta XP de trabalho (+50%)', bonus_xp: 50,
-            descricao: 'Livro que ensina novas habilidades'
+        camera_profissional: { 
+            id: 'camera_profissional', nome: '📷 Câmera Profissional', preco: 15000, categoria: 'tecnologia', emoji: '📷',
+            durabilidade: 400, durabilidade_max: 400, beneficio: '+200% ganhos fotografia/video', bonus_arte: 200,
+            descricao: 'Equipamento para fotografia profissional'
+        },
+        drone_camera: { 
+            id: 'drone_camera', nome: '🛸 Drone com Câmera', preco: 12000, categoria: 'tecnologia', emoji: '🛸',
+            durabilidade: 200, durabilidade_max: 200, beneficio: '+150% ganhos vídeos aéreos', bonus_arte: 150,
+            descricao: 'Drone para filmagens aéreas'
+        },
+        setup_streaming: { 
+            id: 'setup_streaming', nome: '🎬 Setup de Stream', preco: 35000, categoria: 'tecnologia', emoji: '🎬',
+            durabilidade: 800, durabilidade_max: 800, beneficio: '+300% ganhos streaming', bonus_streaming: 300,
+            descricao: 'Equipamentos completos para streaming'
+        },
+        estudio_gravacao: { 
+            id: 'estudio_gravacao', nome: '🎵 Estúdio de Gravação', preco: 200000, categoria: 'tecnologia', emoji: '🎵',
+            durabilidade: 1500, durabilidade_max: 1500, beneficio: '+1000 gold/dia (música)', renda_passiva: 1000,
+            descricao: 'Estúdio profissional de música'
+        },
+        impressora_3d: { 
+            id: 'impressora_3d', nome: '🖨️ Impressora 3D', preco: 25000, categoria: 'tecnologia', emoji: '🖨️',
+            durabilidade: 500, durabilidade_max: 500, beneficio: '+400 gold/dia (prototipagem)', renda_passiva: 400,
+            descricao: 'Impressão tridimensional avançada'
+        },
+        vr_headset: { 
+            id: 'vr_headset', nome: '🥽 VR Headset', preco: 8000, categoria: 'tecnologia', emoji: '🥽',
+            durabilidade: 300, durabilidade_max: 300, beneficio: '+100% ganhos desenvolvimento VR', bonus_programacao: 100,
+            descricao: 'Óculos de realidade virtual'
+        },
+        robo_assistente: { 
+            id: 'robo_assistente', nome: '🤖 Robô Assistente', preco: 500000, categoria: 'tecnologia', emoji: '🤖',
+            durabilidade: 2000, durabilidade_max: 2000, beneficio: '+50% eficiência todos trabalhos', bonus_universal: 50,
+            descricao: 'Inteligência artificial pessoal'
+        },
+        hologram_projetor: { 
+            id: 'hologram_projetor', nome: '🌟 Projetor de Hologramas', preco: 800000, categoria: 'tecnologia', emoji: '🌟',
+            durabilidade: 1000, durabilidade_max: 1000, beneficio: '+2000 gold/dia (entretenimento)', renda_passiva: 2000,
+            descricao: 'Tecnologia holográfica futurística'
+        },
+        quantum_computer: { 
+            id: 'quantum_computer', nome: '⚛️ Computador Quântico', preco: 10000000, categoria: 'tecnologia', emoji: '⚛️',
+            durabilidade: 5000, durabilidade_max: 5000, beneficio: '+10000 gold/dia (pesquisa)', renda_passiva: 10000,
+            descricao: 'Computação quântica revolucionária'
+        },
+        satelite_pessoal: { 
+            id: 'satelite_pessoal', nome: '🛰️ Satélite Pessoal', preco: 50000000, categoria: 'tecnologia', emoji: '🛰️',
+            durabilidade: 9999, durabilidade_max: 9999, beneficio: '+20000 gold/dia (telecomunicações)', renda_passiva: 20000,
+            descricao: 'Seu próprio satélite em órbita'
         }
     }
 };
 
-// Trabalhos disponíveis com requisitos
-const trabalhos = {
-    basicos: {
-        faxineiro: { nome: 'Faxineiro', salario: [80, 120], emoji: '🧹', educacao_min: 0, requisitos: [] },
-        entregador: { nome: 'Entregador', salario: [100, 160], emoji: '🚴', educacao_min: 0, requisitos: ['bicicleta'] },
-        vendedor: { nome: 'Vendedor', salario: [120, 180], emoji: '🛒', educacao_min: 1, requisitos: [] },
-        seguranca: { nome: 'Segurança', salario: [150, 220], emoji: '👮', educacao_min: 2, requisitos: [] }
-    },
-    tecnicos: {
-        eletricista: { nome: 'Eletricista', salario: [200, 300], emoji: '⚡', educacao_min: 3, requisitos: [] },
-        mecanico: { nome: 'Mecânico', salario: [180, 280], emoji: '🔧', educacao_min: 3, requisitos: [] },
-        programador_jr: { nome: 'Programador Júnior', salario: [250, 400], emoji: '💻', educacao_min: 3, requisitos: ['laptop'] }
-    },
-    superiores: {
-        engenheiro: { nome: 'Engenheiro', salario: [500, 800], emoji: '🏗️', educacao_min: 4, requisitos: [], curso: 'engenharia' },
-        medico: { nome: 'Médico', salario: [800, 1200], emoji: '👨‍⚕️', educacao_min: 4, requisitos: [], curso: 'medicina' },
-        advogado: { nome: 'Advogado', salario: [600, 1000], emoji: '⚖️', educacao_min: 4, requisitos: [], curso: 'direito' },
-        administrador: { nome: 'Administrador', salario: [400, 700], emoji: '👨‍💼', educacao_min: 4, requisitos: [], curso: 'administracao' }
-    }
+// Locais para roubar
+const locaisRoubo = {
+    casa: { nome: 'Casa Simples', min: 100, max: 500, risco: 20, tempo: 5 },
+    loja: { nome: 'Loja de Conveniência', min: 200, max: 800, risco: 30, tempo: 8 },
+    mercado: { nome: 'Supermercado', min: 500, max: 1500, risco: 40, tempo: 12 },
+    joalheria: { nome: 'Joalheria', min: 1000, max: 3000, risco: 60, tempo: 15 },
+    banco: { nome: 'Agência Bancária', min: 2000, max: 8000, risco: 80, tempo: 20 },
+    mansao: { nome: 'Mansão de Luxo', min: 3000, max: 12000, risco: 70, tempo: 25 },
+    cassino: { nome: 'Cassino', min: 5000, max: 15000, risco: 90, tempo: 30 },
+    shopping: { nome: 'Shopping Center', min: 8000, max: 25000, risco: 85, tempo: 40 },
+    aeroporto: { nome: 'Aeroporto', min: 10000, max: 30000, risco: 95, tempo: 50 },
+    banco_central: { nome: 'Banco Central', min: 20000, max: 100000, risco: 99, tempo: 60 },
+    casa_moeda: { nome: 'Casa da Moeda', min: 50000, max: 200000, risco: 99, tempo: 80 },
+    pentágono: { nome: 'Pentágono', min: 100000, max: 500000, risco: 100, tempo: 120 }
+};
+
+// Tipos de investimentos
+const investimentos = {
+    poupanca: { nome: 'Poupança', rendimento: 0.5, risco: 0, tempo: 24 },
+    cdb: { nome: 'CDB', rendimento: 8, risco: 5, tempo: 48 },
+    acoes: { nome: 'Ações', rendimento: 15, risco: 30, tempo: 72 },
+    bitcoin: { nome: 'Bitcoin', rendimento: 25, risco: 50, tempo: 96 },
+    forex: { nome: 'Forex', rendimento: 40, risco: 70, tempo: 24 },
+    imoveis: { nome: 'Imóveis', rendimento: 12, risco: 10, tempo: 168 },
+    ouro: { nome: 'Ouro', rendimento: 6, risco: 8, tempo: 120 }
 };
 
 // ==================== FUNÇÕES AUXILIARES ====================
@@ -421,7 +661,7 @@ function salvarDadosRPG(data) {
 }
 
 // Função para garantir estrutura completa do usuário
-function ensureUserDefaults(usuario) {
+function garantirEstruturaUsuario(usuario) {
     return {
         nome: usuario.nome || 'Jogador',
         banco: usuario.banco || bancos[0],
@@ -430,36 +670,44 @@ function ensureUserDefaults(usuario) {
         vida_max: usuario.vida_max || 100,
         registrado: usuario.registrado || new Date().toISOString(),
         inventario: usuario.inventario || {},
-        educacao: usuario.educacao || { nivel: 0, curso_atual: null, progresso: 0 },
-        cursos_concluidos: usuario.cursos_concluidos || [],
+        educacao_nivel: usuario.educacao_nivel || 1,
+        faculdades_completas: usuario.faculdades_completas || [],
         trabalho_atual: usuario.trabalho_atual || null,
-        experiencia: usuario.experiencia || {},
         // Estatísticas
         pescasFeitas: usuario.pescasFeitas || 0,
         mineracoesFeitas: usuario.mineracoesFeitas || 0,
         trabalhosFeitos: usuario.trabalhosFeitos || 0,
-        assaltosFeitos: usuario.assaltosFeitos || 0,
         cacadasFeitas: usuario.cacadasFeitas || 0,
-        plantiosFeitos: usuario.plantiosFeitos || 0,
-        mortesEvitadas: usuario.mortesEvitadas || 0,
+        roubosFeitos: usuario.roubosFeitos || 0,
+        investimentosFeitos: usuario.investimentosFeitos || 0,
         // Cooldowns
         ultimaPesca: usuario.ultimaPesca || 0,
         ultimaMineracao: usuario.ultimaMineracao || 0,
         ultimoTrabalho: usuario.ultimoTrabalho || 0,
-        ultimoAssalto: usuario.ultimoAssalto || 0,
         ultimaCaca: usuario.ultimaCaca || 0,
-        ultimoPlantio: usuario.ultimoPlantio || 0,
+        ultimoRoubo: usuario.ultimoRoubo || 0,
         ultimoEstudo: usuario.ultimoEstudo || 0,
-        // Outros
-        totalGanho: usuario.totalGanho || 0,
+        ultimoInvestimento: usuario.ultimoInvestimento || 0,
+        ultimoYoutube: usuario.ultimoYoutube || 0,
+        ultimoTiktok: usuario.ultimoTiktok || 0,
+        ultimoTwitch: usuario.ultimoTwitch || 0,
+        // Estados especiais
         morreu: usuario.morreu || false,
-        causa_morte: usuario.causa_morte || null
+        preso: usuario.preso || false,
+        tempo_prisao: usuario.tempo_prisao || 0,
+        causa_morte: usuario.causa_morte || null,
+        investimentos_ativos: usuario.investimentos_ativos || {},
+        // Totais
+        totalGanho: usuario.totalGanho || 0,
+        totalGasto: usuario.totalGasto || 0,
+        nivelInfluenciador: usuario.nivelInfluenciador || 1,
+        seguidores: usuario.seguidores || 0
     };
 }
 
 // Encontra item em qualquer categoria
 function encontrarItem(itemId) {
-    for (const categoria of Object.values(catalogoItens)) {
+    for (const categoria of Object.values(loja)) {
         if (categoria[itemId]) {
             return categoria[itemId];
         }
@@ -468,19 +716,21 @@ function encontrarItem(itemId) {
 }
 
 // Verifica se usuário tem item
-function temItem(usuario, itemId, quantidade = 1) {
-    return (usuario.inventario[itemId] || 0) >= quantidade;
+function temItem(usuario, itemId) {
+    return usuario.inventario[itemId] && usuario.inventario[itemId].quantidade > 0;
 }
 
 // Usa item (reduz durabilidade)
 function usarItem(usuario, itemId) {
-    if (!usuario.inventario[itemId]) return false;
-    
+    if (!usuario.inventario[itemId] || usuario.inventario[itemId].quantidade <= 0) {
+        return { erro: 'Item não encontrado no inventário' };
+    }
+
     const item = encontrarItem(itemId);
-    if (!item) return false;
+    if (!item) return { erro: 'Item não existe' };
 
     // Reduz durabilidade
-    usuario.inventario[itemId].durabilidade = (usuario.inventario[itemId].durabilidade || item.durabilidade) - 1;
+    usuario.inventario[itemId].durabilidade -= 1;
     
     // Remove item se durabilidade chegou a 0
     if (usuario.inventario[itemId].durabilidade <= 0) {
@@ -492,14 +742,14 @@ function usarItem(usuario, itemId) {
 }
 
 // Adiciona item ao inventário
-function adicionarItem(usuario, itemId, quantidade = 1, durabilidade = null) {
+function adicionarItem(usuario, itemId, quantidade = 1) {
     const item = encontrarItem(itemId);
     if (!item) return false;
 
     if (!usuario.inventario[itemId]) {
         usuario.inventario[itemId] = {
             quantidade: 0,
-            durabilidade: durabilidade || item.durabilidade_max
+            durabilidade: item.durabilidade_max
         };
     }
     
@@ -523,17 +773,6 @@ function formatarTempo(ms) {
         return `${horas}h ${minutosRestantes}min`;
     }
     return `${minutos} minutos`;
-}
-
-// Itens iniciais para novos jogadores
-function obterItensIniciais() {
-    return {
-        vara_bambu: { quantidade: 1, durabilidade: 20 },
-        rifle_madeira: { quantidade: 1, durabilidade: 30 },
-        picareta_madeira: { quantidade: 1, durabilidade: 25 },
-        enxada_madeira: { quantidade: 1, durabilidade: 20 },
-        kit_primeiros_socorros: { quantidade: 2, durabilidade: 10 }
-    };
 }
 
 // ==================== FUNÇÕES PRINCIPAIS ====================
@@ -566,11 +805,17 @@ function registrarUsuario(userId, nome, bancoId) {
     const banco = bancos.find(b => b.id === bancoId);
     if (!banco) return false;
 
-    dados.jogadores[userId] = ensureUserDefaults({
+    dados.jogadores[userId] = garantirEstruturaUsuario({
         nome: nome,
         banco: banco,
-        saldo: 500, // Começa com mais dinheiro
-        inventario: obterItensIniciais()
+        saldo: 1000, // Saldo inicial
+        inventario: {
+            // Itens iniciais
+            vara_bambu: { quantidade: 1, durabilidade: 30 },
+            picareta_ferro: { quantidade: 1, durabilidade: 50 },
+            rifle_caca: { quantidade: 1, durabilidade: 80 },
+            enxada: { quantidade: 1, durabilidade: 40 }
+        }
     });
 
     return salvarDadosRPG(dados);
@@ -581,35 +826,28 @@ function obterDadosUsuario(userId) {
     const dados = carregarDadosRPG();
     let usuario = dados.jogadores[userId];
     if (!usuario) return null;
-
-    return ensureUserDefaults(usuario);
+    return garantirEstruturaUsuario(usuario);
 }
 
-// ==================== SISTEMA DE PESCA REALISTA ====================
-function pescar(userId) {
+// ==================== SISTEMA DE PESCA ====================
+async function pescar(userId) {
     return withLock(async () => {
         const dados = carregarDadosRPG();
         let usuario = dados.jogadores[userId];
         if (!usuario) return { erro: 'Usuário não registrado' };
 
-        usuario = ensureUserDefaults(usuario);
+        usuario = garantirEstruturaUsuario(usuario);
 
-        // Verifica se está morto
-        if (usuario.morreu) {
-            return { erro: 'Você está morto! Use o comando reviver.' };
-        }
+        if (usuario.morreu) return { erro: 'Você está morto! Use .reviver' };
+        if (usuario.preso) return { erro: `Você está preso por mais ${Math.ceil(usuario.tempo_prisao / 60)} minutos!` };
 
-        // Verifica cooldown
-        const cooldown = verificarCooldown(usuario.ultimaPesca, 10 * 60 * 1000); // 10 minutos
+        const cooldown = verificarCooldown(usuario.ultimaPesca, 15 * 60 * 1000); // 15 min
         if (cooldown > 0) {
-            return { 
-                erro: 'Cooldown', 
-                mensagem: `🎣 Você precisa esperar **${formatarTempo(cooldown)}** para pescar novamente!`
-            };
+            return { erro: 'Cooldown', mensagem: `🎣 Aguarde **${formatarTempo(cooldown)}** para pescar novamente!` };
         }
 
-        // Verifica se tem vara de pescar
-        const varas = ['vara_bambu', 'vara_madeira', 'vara_ferro', 'vara_carbono'];
+        // Verifica se tem vara
+        const varas = ['vara_bambu', 'vara_carbono', 'rede_pesca'];
         let varaUsada = null;
         let bonusPesca = 0;
 
@@ -623,29 +861,19 @@ function pescar(userId) {
         }
 
         if (!varaUsada) {
-            return { erro: 'Você precisa de uma vara de pescar! Compre uma na loja.' };
+            return { erro: 'Você precisa comprar uma vara de pescar na loja!' };
         }
 
-        // Usa a vara (reduz durabilidade)
+        // Usa a vara
         const resultadoUso = usarItem(usuario, varaUsada);
         let mensagemQuebra = '';
         if (resultadoUso.quebrou) {
             mensagemQuebra = `\n💥 Sua ${resultadoUso.item.nome} quebrou!`;
         }
 
-        // Verifica se tem isca para bonus
-        let bonusIsca = 0;
-        if (temItem(usuario, 'isca_minhoca')) {
-            usarItem(usuario, 'isca_minhoca');
-            bonusIsca = 10;
-        } else if (temItem(usuario, 'isca_artificial')) {
-            usarItem(usuario, 'isca_artificial');
-            bonusIsca = 25;
-        }
-
-        // Calcula chance de sucesso
-        const chanceBase = 60;
-        const chanceTotal = Math.min(95, chanceBase + bonusPesca + bonusIsca);
+        // Calcula chance de sucesso (50% base + bônus)
+        const chanceBase = 50;
+        const chanceTotal = Math.min(90, chanceBase + bonusPesca);
         const sucesso = Math.random() * 100 < chanceTotal;
 
         usuario.ultimaPesca = Date.now();
@@ -654,22 +882,22 @@ function pescar(userId) {
         if (!sucesso) {
             dados.jogadores[userId] = usuario;
             salvarDadosRPG(dados);
-
             return { 
                 sucesso: false, 
-                mensagem: `🎣 **PESCA SEM SUCESSO**\n\nOs peixes não morderam a isca desta vez!${mensagemQuebra}\n\n⏰ **Cooldown:** 10 minutos` 
+                mensagem: `🎣 **PESCA SEM SUCESSO**\n\nOs peixes não morderam a isca!${mensagemQuebra}\n\n⏰ Cooldown: 15 minutos` 
             };
         }
 
-        // Peixes com raridades e valores
+        // Peixes disponíveis
         const peixes = [
-            { nome: 'Peixe Dourado Lendário', valor: 800, chance: 2, emoji: '🐠' },
-            { nome: 'Salmão Grande', valor: 400, chance: 8, emoji: '🐟' },
-            { nome: 'Truta Prateada', valor: 250, chance: 15, emoji: '🐟' },
+            { nome: 'Peixe Dourado Lendário', valor: 1000, chance: 5, emoji: '🐠' },
+            { nome: 'Salmão Grande', valor: 500, chance: 15, emoji: '🐟' },
+            { nome: 'Truta Prateada', valor: 300, chance: 25, emoji: '🐟' },
             { nome: 'Sardinha', valor: 150, chance: 30, emoji: '🐟' },
-            { nome: 'Bagre', valor: 100, chance: 45, emoji: '🐟' }
+            { nome: 'Peixe Comum', valor: 80, chance: 25, emoji: '🐟' }
         ];
 
+        // Seleciona peixe baseado na chance
         const sorte = Math.random() * 100;
         let chanceAcumulada = 0;
         let peixePescado = null;
@@ -682,10 +910,7 @@ function pescar(userId) {
             }
         }
 
-        // Fallback para o peixe mais comum
-        if (!peixePescado) {
-            peixePescado = peixes[peixes.length - 1];
-        }
+        if (!peixePescado) peixePescado = peixes[peixes.length - 1];
 
         usuario.saldo += peixePescado.valor;
         usuario.totalGanho += peixePescado.valor;
@@ -696,34 +921,30 @@ function pescar(userId) {
         return { 
             sucesso: true, 
             peixe: peixePescado,
-            mensagem: `🎣 **PESCA BEM-SUCEDIDA!** ${peixePescado.emoji}\n\n${peixePescado.nome} pescado!\n💰 **Ganhou:** ${peixePescado.valor} Gold\n💳 **Saldo:** ${usuario.saldo} Gold${mensagemQuebra}\n\n⏰ **Cooldown:** 10 minutos`
+            mensagem: `🎣 **PESCA BEM-SUCEDIDA!** ${peixePescado.emoji}\n\n${peixePescado.nome} pescado!\n💰 **Ganhou:** ${peixePescado.valor.toLocaleString()} Gold\n💳 **Saldo:** ${usuario.saldo.toLocaleString()} Gold${mensagemQuebra}\n\n⏰ Cooldown: 15 minutos`
         };
     });
 }
 
-// ==================== SISTEMA DE MINERAÇÃO REALISTA ====================
-function minerar(userId) {
+// ==================== SISTEMA DE MINERAÇÃO ====================
+async function minerar(userId) {
     return withLock(async () => {
         const dados = carregarDadosRPG();
         let usuario = dados.jogadores[userId];
         if (!usuario) return { erro: 'Usuário não registrado' };
 
-        usuario = ensureUserDefaults(usuario);
+        usuario = garantirEstruturaUsuario(usuario);
 
-        if (usuario.morreu) {
-            return { erro: 'Você está morto! Use o comando reviver.' };
-        }
+        if (usuario.morreu) return { erro: 'Você está morto! Use .reviver' };
+        if (usuario.preso) return { erro: `Você está preso por mais ${Math.ceil(usuario.tempo_prisao / 60)} minutos!` };
 
-        const cooldown = verificarCooldown(usuario.ultimaMineracao, 15 * 60 * 1000); // 15 minutos
+        const cooldown = verificarCooldown(usuario.ultimaMineracao, 20 * 60 * 1000); // 20 min
         if (cooldown > 0) {
-            return { 
-                erro: 'Cooldown', 
-                mensagem: `⛏️ Você precisa esperar **${formatarTempo(cooldown)}** para minerar novamente!`
-            };
+            return { erro: 'Cooldown', mensagem: `⛏️ Aguarde **${formatarTempo(cooldown)}** para minerar novamente!` };
         }
 
         // Verifica se tem picareta
-        const picaretas = ['picareta_madeira', 'picareta_ferro', 'picareta_diamante'];
+        const picaretas = ['picareta_ferro', 'picareta_diamante', 'britadeira'];
         let picaretaUsada = null;
         let bonusMineracao = 0;
 
@@ -737,29 +958,26 @@ function minerar(userId) {
         }
 
         if (!picaretaUsada) {
-            return { erro: 'Você precisa de uma picareta! Compre uma na loja.' };
+            return { erro: 'Você precisa comprar uma picareta na loja!' };
         }
 
-        // Verifica proteção
-        let protecao = 0;
-        if (temItem(usuario, 'capacete_mineracao')) {
-            protecao = 50;
-        }
+        // Risco de acidente (morte) - 15% base
+        let riscoAcidente = 15;
+        if (temItem(usuario, 'capacete_seguranca')) riscoAcidente -= 10;
+        if (temItem(usuario, 'colete_kevlar')) riscoAcidente -= 5;
 
-        // Risco de acidente na mineração (morte)
-        const chanceAcidente = Math.max(5, 20 - protecao); // 5-20% de chance
-        if (Math.random() * 100 < chanceAcidente) {
+        if (Math.random() * 100 < riscoAcidente) {
             usuario.vida = 0;
             usuario.morreu = true;
             usuario.causa_morte = 'Acidente de mineração';
-            usuario.saldo = Math.floor(usuario.saldo * 0.5); // Perde 50% do dinheiro
+            usuario.saldo = Math.floor(usuario.saldo * 0.6); // Perde 40%
 
             dados.jogadores[userId] = usuario;
             salvarDadosRPG(dados);
 
             return {
                 sucesso: false,
-                mensagem: `💀 **ACIDENTE FATAL NA MINERAÇÃO!**\n\nUm desabamento te matou!\n💰 Perdeu 50% do seu dinheiro\n⚰️ Use o comando \`.reviver\` para voltar\n\n💡 **Dica:** Use capacete de mineração para reduzir riscos!`
+                mensagem: `💀 **ACIDENTE FATAL NA MINERAÇÃO!**\n\nDesabamento na mina!\n💰 Perdeu 40% do dinheiro (${Math.floor(usuario.saldo * 0.4).toLocaleString()} Gold)\n⚰️ Use **.reviver** para voltar ao jogo`
             };
         }
 
@@ -770,9 +988,9 @@ function minerar(userId) {
             mensagemQuebra = `\n💥 Sua ${resultadoUso.item.nome} quebrou!`;
         }
 
-        // Calcula sucesso
-        const chanceBase = 50;
-        const chanceTotal = Math.min(90, chanceBase + bonusMineracao);
+        // Calcula sucesso (40% base + bônus)
+        const chanceBase = 40;
+        const chanceTotal = Math.min(85, chanceBase + bonusMineracao);
         const sucesso = Math.random() * 100 < chanceTotal;
 
         usuario.ultimaMineracao = Date.now();
@@ -781,20 +999,19 @@ function minerar(userId) {
         if (!sucesso) {
             dados.jogadores[userId] = usuario;
             salvarDadosRPG(dados);
-
             return { 
                 sucesso: false, 
-                mensagem: `⛏️ **MINERAÇÃO SEM SUCESSO**\n\nApenas pedras comuns foram encontradas!${mensagemQuebra}\n\n⏰ **Cooldown:** 15 minutos` 
+                mensagem: `⛏️ **MINERAÇÃO SEM SUCESSO**\n\nApenas pedras sem valor!${mensagemQuebra}\n\n⏰ Cooldown: 20 minutos` 
             };
         }
 
-        // Minerais com raridades
+        // Minérios disponíveis
         const minerais = [
-            { nome: 'Diamante Puro', valor: 1500, chance: 1, emoji: '💎' },
-            { nome: 'Ouro Bruto', valor: 800, chance: 5, emoji: '🥇' },
-            { nome: 'Prata', valor: 400, chance: 12, emoji: '🥈' },
-            { nome: 'Ferro', valor: 200, chance: 30, emoji: '⚡' },
-            { nome: 'Carvão', valor: 100, chance: 52, emoji: '⚫' }
+            { nome: 'Diamante Puro', valor: 2000, chance: 3, emoji: '💎' },
+            { nome: 'Ouro Bruto', valor: 1200, chance: 8, emoji: '🥇' },
+            { nome: 'Prata', valor: 600, chance: 15, emoji: '🥈' },
+            { nome: 'Ferro', valor: 300, chance: 30, emoji: '⚡' },
+            { nome: 'Carvão', valor: 150, chance: 44, emoji: '⚫' }
         ];
 
         const sorte = Math.random() * 100;
@@ -809,9 +1026,7 @@ function minerar(userId) {
             }
         }
 
-        if (!mineralEncontrado) {
-            mineralEncontrado = minerais[minerais.length - 1];
-        }
+        if (!mineralEncontrado) mineralEncontrado = minerais[minerais.length - 1];
 
         usuario.saldo += mineralEncontrado.valor;
         usuario.totalGanho += mineralEncontrado.valor;
@@ -822,68 +1037,44 @@ function minerar(userId) {
         return { 
             sucesso: true, 
             mineral: mineralEncontrado,
-            mensagem: `⛏️ **MINERAÇÃO BEM-SUCEDIDA!** ${mineralEncontrado.emoji}\n\n${mineralEncontrado.nome} encontrado!\n💰 **Ganhou:** ${mineralEncontrado.valor} Gold\n💳 **Saldo:** ${usuario.saldo} Gold${mensagemQuebra}\n\n⏰ **Cooldown:** 15 minutos`
+            mensagem: `⛏️ **MINERAÇÃO BEM-SUCEDIDA!** ${mineralEncontrado.emoji}\n\n${mineralEncontrado.nome} extraído!\n💰 **Ganhou:** ${mineralEncontrado.valor.toLocaleString()} Gold\n💳 **Saldo:** ${usuario.saldo.toLocaleString()} Gold${mensagemQuebra}\n\n⏰ Cooldown: 20 minutos`
         };
     });
 }
 
-// ==================== SISTEMA DE CAÇA REALISTA ====================
-function cacar(userId) {
+// ==================== SISTEMA DE CAÇA ====================
+async function cacar(userId) {
     return withLock(async () => {
         const dados = carregarDadosRPG();
         let usuario = dados.jogadores[userId];
         if (!usuario) return { erro: 'Usuário não registrado' };
 
-        usuario = ensureUserDefaults(usuario);
+        usuario = garantirEstruturaUsuario(usuario);
 
-        if (usuario.morreu) {
-            return { erro: 'Você está morto! Use o comando reviver.' };
-        }
+        if (usuario.morreu) return { erro: 'Você está morto! Use .reviver' };
+        if (usuario.preso) return { erro: `Você está preso por mais ${Math.ceil(usuario.tempo_prisao / 60)} minutos!` };
 
-        const cooldown = verificarCooldown(usuario.ultimaCaca, 20 * 60 * 1000); // 20 minutos
+        const cooldown = verificarCooldown(usuario.ultimaCaca, 25 * 60 * 1000); // 25 min
         if (cooldown > 0) {
-            return { 
-                erro: 'Cooldown', 
-                mensagem: `🔫 Você precisa esperar **${formatarTempo(cooldown)}** para caçar novamente!`
-            };
+            return { erro: 'Cooldown', mensagem: `🔫 Aguarde **${formatarTempo(cooldown)}** para caçar novamente!` };
         }
 
         // Verifica se tem arma
-        const armas = ['rifle_madeira', 'espingarda', 'rifle_precisao', 'arco_flecha'];
+        const armas = ['rifle_caca', 'espingarda', 'rifle_sniper'];
         let armaUsada = null;
         let bonusCaca = 0;
-        let danoArma = 0;
 
         for (const arma of armas) {
             if (temItem(usuario, arma)) {
                 armaUsada = arma;
                 const item = encontrarItem(arma);
                 bonusCaca = item.bonus_caca || 0;
-                danoArma = item.dano || 0;
                 break;
             }
         }
 
         if (!armaUsada) {
-            return { erro: 'Você precisa de uma arma para caçar! Compre uma na loja.' };
-        }
-
-        // Verifica munição
-        let temMunicao = false;
-        if (armaUsada === 'arco_flecha') {
-            if (temItem(usuario, 'flechas')) {
-                usarItem(usuario, 'flechas');
-                temMunicao = true;
-            }
-        } else {
-            if (temItem(usuario, 'municao')) {
-                usarItem(usuario, 'municao');
-                temMunicao = true;
-            }
-        }
-
-        if (!temMunicao) {
-            return { erro: `Você precisa de ${armaUsada === 'arco_flecha' ? 'flechas' : 'munição'}!` };
+            return { erro: 'Você precisa comprar uma arma de caça na loja!' };
         }
 
         // Usa a arma
@@ -893,16 +1084,15 @@ function cacar(userId) {
             mensagemQuebra = `\n💥 Sua ${resultadoUso.item.nome} quebrou!`;
         }
 
-        // Animais com diferentes níveis de perigo
+        // Animais disponíveis com diferentes riscos
         const animais = [
-            { nome: 'Coelho', valor: 100, chance: 40, perigo: 0, emoji: '🐰' },
-            { nome: 'Veado', valor: 250, chance: 25, perigo: 5, emoji: '🦌' },
-            { nome: 'Javali', valor: 400, chance: 20, perigo: 25, emoji: '🐗' },
-            { nome: 'Urso', valor: 800, chance: 10, perigo: 60, emoji: '🐻' },
-            { nome: 'Leão', valor: 1200, chance: 5, perigo: 80, emoji: '🦁' }
+            { nome: 'Coelho', valor: 120, chance: 35, perigo: 0, emoji: '🐰' },
+            { nome: 'Veado', valor: 350, chance: 30, perigo: 5, emoji: '🦌' },
+            { nome: 'Javali', valor: 600, chance: 20, perigo: 25, emoji: '🐗' },
+            { nome: 'Urso', valor: 1200, chance: 10, perigo: 60, emoji: '🐻' },
+            { nome: 'Leão da Montanha', valor: 2000, chance: 5, perigo: 80, emoji: '🦁' }
         ];
 
-        // Seleciona animal aleatório
         const sorte = Math.random() * 100;
         let chanceAcumulada = 0;
         let animalEncontrado = null;
@@ -915,23 +1105,19 @@ function cacar(userId) {
             }
         }
 
-        if (!animalEncontrado) {
-            animalEncontrado = animais[0];
-        }
+        if (!animalEncontrado) animalEncontrado = animais[0];
 
-        // Verifica se consegue matar o animal
-        const chanceSuccesso = Math.min(95, 60 + bonusCaca - (animalEncontrado.perigo / 2));
-        const matou = Math.random() * 100 < chanceSuccesso;
+        // Verifica se consegue abater
+        const chanceAbate = Math.max(30, 70 + bonusCaca - animalEncontrado.perigo);
+        const abateu = Math.random() * 100 < chanceAbate;
 
-        // Se não matou, animal pode contra-atacar
-        if (!matou && animalEncontrado.perigo > 0) {
-            const chanceContraAtaque = animalEncontrado.perigo;
-            if (Math.random() * 100 < chanceContraAtaque) {
-                // Verifica proteção
+        // Se não abateu e o animal é perigoso, pode atacar
+        if (!abateu && animalEncontrado.perigo > 0) {
+            const chanceAtaque = animalEncontrado.perigo;
+            if (Math.random() * 100 < chanceAtaque) {
                 let protecao = 0;
-                if (temItem(usuario, 'colete_kevlar')) {
-                    protecao = 70;
-                }
+                if (temItem(usuario, 'colete_kevlar')) protecao += 60;
+                if (temItem(usuario, 'capacete_seguranca')) protecao += 30;
 
                 const danoRecebido = Math.floor(animalEncontrado.perigo * (1 - protecao / 100));
                 usuario.vida -= danoRecebido;
@@ -940,37 +1126,36 @@ function cacar(userId) {
                     usuario.vida = 0;
                     usuario.morreu = true;
                     usuario.causa_morte = `Atacado por ${animalEncontrado.nome}`;
-                    usuario.saldo = Math.floor(usuario.saldo * 0.3); // Perde 70% do dinheiro
+                    usuario.saldo = Math.floor(usuario.saldo * 0.7);
 
                     dados.jogadores[userId] = usuario;
                     salvarDadosRPG(dados);
 
                     return {
                         sucesso: false,
-                        mensagem: `💀 **MORTO POR ${animalEncontrado.nome.toUpperCase()}!** ${animalEncontrado.emoji}\n\nO animal te atacou e você morreu!\n💰 Perdeu 70% do seu dinheiro\n⚰️ Use o comando \`.reviver\` para voltar\n\n💡 **Dica:** Use equipamentos de proteção!`
-                    };
-                } else {
-                    dados.jogadores[userId] = usuario;
-                    salvarDadosRPG(dados);
-
-                    return {
-                        sucesso: false,
-                        mensagem: `🩸 **ATACADO POR ${animalEncontrado.nome.toUpperCase()}!** ${animalEncontrado.emoji}\n\nO animal te atacou!\n❤️ **Vida:** ${usuario.vida}/${usuario.vida_max}\n💡 **Dica:** Use kit de primeiros socorros para se curar!${mensagemQuebra}`
+                        mensagem: `💀 **MORTO POR ${animalEncontrado.nome.toUpperCase()}!** ${animalEncontrado.emoji}\n\nO animal te atacou fatalmente!\n💰 Perdeu 30% do dinheiro\n⚰️ Use **.reviver** para voltar`
                     };
                 }
+
+                dados.jogadores[userId] = usuario;
+                salvarDadosRPG(dados);
+
+                return {
+                    sucesso: false,
+                    mensagem: `🩸 **ATACADO!** ${animalEncontrado.emoji}\n\n${animalEncontrado.nome} te feriu!\n❤️ **Vida:** ${usuario.vida}/${usuario.vida_max}\n💡 Use kit médico para se curar!${mensagemQuebra}`
+                };
             }
         }
 
         usuario.ultimaCaca = Date.now();
         usuario.cacadasFeitas++;
 
-        if (!matou) {
+        if (!abateu) {
             dados.jogadores[userId] = usuario;
             salvarDadosRPG(dados);
-
             return { 
                 sucesso: false, 
-                mensagem: `🔫 **CAÇA SEM SUCESSO**\n\nVocê errou o tiro no ${animalEncontrado.nome}!${mensagemQuebra}\n\n⏰ **Cooldown:** 20 minutos` 
+                mensagem: `🔫 **CAÇA FRACASSOU**\n\nVocê errou o tiro!${mensagemQuebra}\n\n⏰ Cooldown: 25 minutos` 
             };
         }
 
@@ -983,182 +1168,222 @@ function cacar(userId) {
         return { 
             sucesso: true, 
             animal: animalEncontrado,
-            mensagem: `🔫 **CAÇA BEM-SUCEDIDA!** ${animalEncontrado.emoji}\n\n${animalEncontrado.nome} abatido!\n💰 **Ganhou:** ${animalEncontrado.valor} Gold\n💳 **Saldo:** ${usuario.saldo} Gold${mensagemQuebra}\n\n⏰ **Cooldown:** 20 minutos`
+            mensagem: `🔫 **CAÇA BEM-SUCEDIDA!** ${animalEncontrado.emoji}\n\n${animalEncontrado.nome} abatido!\n💰 **Ganhou:** ${animalEncontrado.valor.toLocaleString()} Gold\n💳 **Saldo:** ${usuario.saldo.toLocaleString()} Gold${mensagemQuebra}\n\n⏰ Cooldown: 25 minutos`
         };
     });
 }
 
-// ==================== SISTEMA DE TRABALHO REALISTA ====================
-function trabalhar(userId) {
+// ==================== SISTEMA DE TRABALHO ====================
+async function trabalhar(userId) {
     return withLock(async () => {
         const dados = carregarDadosRPG();
         let usuario = dados.jogadores[userId];
         if (!usuario) return { erro: 'Usuário não registrado' };
 
-        usuario = ensureUserDefaults(usuario);
+        usuario = garantirEstruturaUsuario(usuario);
 
-        if (usuario.morreu) {
-            return { erro: 'Você está morto! Use o comando reviver.' };
-        }
+        if (usuario.morreu) return { erro: 'Você está morto! Use .reviver' };
+        if (usuario.preso) return { erro: `Você está preso por mais ${Math.ceil(usuario.tempo_prisao / 60)} minutos!` };
 
-        const cooldown = verificarCooldown(usuario.ultimoTrabalho, 30 * 60 * 1000); // 30 minutos
+        const cooldown = verificarCooldown(usuario.ultimoTrabalho, 30 * 60 * 1000); // 30 min
         if (cooldown > 0) {
-            return { 
-                erro: 'Cooldown', 
-                mensagem: `💼 Você precisa esperar **${formatarTempo(cooldown)}** para trabalhar novamente!`
-            };
+            return { erro: 'Cooldown', mensagem: `💼 Aguarde **${formatarTempo(cooldown)}** para trabalhar novamente!` };
         }
 
-        // Filtra trabalhos disponíveis baseado na educação
-        const nivelEducacao = usuario.educacao.nivel;
-        const cursosCompletos = usuario.cursos_concluidos || [];
-        
-        let trabalhosDisponiveis = [];
-        
-        // Adiciona trabalhos básicos
-        for (const trabalho of Object.values(trabalhos.basicos)) {
-            if (nivelEducacao >= trabalho.educacao_min) {
-                // Verifica requisitos
-                const temRequisitos = trabalho.requisitos.every(req => temItem(usuario, req));
-                if (temRequisitos) {
-                    trabalhosDisponiveis.push(trabalho);
-                }
-            }
-        }
+        // Calcula salário base pela educação
+        const nivelEducacao = usuario.educacao_nivel || 1;
+        const salarioBase = educacao[nivelEducacao]?.salarioMin || 50;
+        let salarioFinal = salarioBase + Math.floor(Math.random() * salarioBase);
 
-        // Adiciona trabalhos técnicos
-        for (const trabalho of Object.values(trabalhos.tecnicos)) {
-            if (nivelEducacao >= trabalho.educacao_min) {
-                const temRequisitos = trabalho.requisitos.every(req => temItem(usuario, req));
-                if (temRequisitos) {
-                    trabalhosDisponiveis.push(trabalho);
-                }
-            }
-        }
-
-        // Adiciona trabalhos superiores
-        for (const trabalho of Object.values(trabalhos.superiores)) {
-            if (nivelEducacao >= trabalho.educacao_min) {
-                if (!trabalho.curso || cursosCompletos.includes(trabalho.curso)) {
-                    trabalhosDisponiveis.push(trabalho);
-                }
-            }
-        }
-
-        if (trabalhosDisponiveis.length === 0) {
-            return { 
-                erro: 'Nenhum trabalho disponível para seu nível de educação ou faltam requisitos!' 
-            };
-        }
-
-        // Escolhe trabalho aleatório
-        const trabalhoEscolhido = trabalhosDisponiveis[Math.floor(Math.random() * trabalhosDisponiveis.length)];
-        
-        // Calcula salário
-        const [salarioMin, salarioMax] = trabalhoEscolhido.salario;
-        let salario = Math.floor(Math.random() * (salarioMax - salarioMin + 1)) + salarioMin;
-
-        // Bonus por veículos e tecnologia
+        // Bônus por itens
         let bonusTotal = 0;
-        if (temItem(usuario, 'carro_luxo')) bonusTotal += 50;
-        else if (temItem(usuario, 'carro_popular')) bonusTotal += 20;
-        else if (temItem(usuario, 'motocicleta')) bonusTotal += 25;
-        else if (temItem(usuario, 'bicicleta')) bonusTotal += 10;
+        let itensUsados = [];
 
-        if (temItem(usuario, 'smartphone')) bonusTotal += 15;
-        else if (temItem(usuario, 'celular_basico')) bonusTotal += 5;
+        // Veículos
+        if (temItem(usuario, 'ferrari')) { bonusTotal += 100; itensUsados.push('Ferrari'); }
+        else if (temItem(usuario, 'lamborghini')) { bonusTotal += 120; itensUsados.push('Lamborghini'); }
+        else if (temItem(usuario, 'carro_luxo')) { bonusTotal += 60; itensUsados.push('Carro de Luxo'); }
+        else if (temItem(usuario, 'carro_popular')) { bonusTotal += 25; itensUsados.push('Carro Popular'); }
+        else if (temItem(usuario, 'motocicleta')) { bonusTotal += 30; itensUsados.push('Motocicleta'); }
+        else if (temItem(usuario, 'bicicleta')) { bonusTotal += 15; itensUsados.push('Bicicleta'); }
 
-        if (temItem(usuario, 'laptop')) bonusTotal += 25;
+        // Tecnologia
+        if (temItem(usuario, 'laptop')) { bonusTotal += 50; itensUsados.push('Laptop'); }
+        if (temItem(usuario, 'celular')) { bonusTotal += 20; itensUsados.push('Smartphone'); }
 
-        salario = Math.floor(salario * (1 + bonusTotal / 100));
+        // Faculdades completas
+        let bonusFaculdade = 0;
+        if (usuario.faculdades_completas && usuario.faculdades_completas.length > 0) {
+            const melhorFaculdade = usuario.faculdades_completas.reduce((melhor, faculdadeId) => {
+                const faculdade = faculdades[faculdadeId];
+                return (faculdade && faculdade.salario > melhor) ? faculdade.salario : melhor;
+            }, 0);
+            bonusFaculdade = melhorFaculdade;
+        }
 
-        usuario.saldo += salario;
-        usuario.totalGanho += salario;
+        salarioFinal = Math.floor(salarioFinal * (1 + bonusTotal / 100)) + bonusFaculdade;
+
+        usuario.saldo += salarioFinal;
+        usuario.totalGanho += salarioFinal;
         usuario.ultimoTrabalho = Date.now();
         usuario.trabalhosFeitos++;
 
         dados.jogadores[userId] = usuario;
         salvarDadosRPG(dados);
 
+        let trabalhoDescricao = '';
+        if (bonusFaculdade > 0) {
+            trabalhoDescricao = `Trabalho especializado (formação superior)`;
+        } else if (nivelEducacao >= 4) {
+            trabalhoDescricao = `Trabalho de nível superior`;
+        } else if (nivelEducacao >= 3) {
+            trabalhoDescricao = `Trabalho técnico`;
+        } else {
+            trabalhoDescricao = `Trabalho básico`;
+        }
+
         return { 
-            sucesso: true, 
-            trabalho: trabalhoEscolhido,
-            salario: salario,
-            bonus: bonusTotal,
-            mensagem: `💼 **TRABALHO CONCLUÍDO!** ${trabalhoEscolhido.emoji}\n\n**Profissão:** ${trabalhoEscolhido.nome}\n💰 **Salário:** ${salario} Gold\n📊 **Bonus:** +${bonusTotal}%\n💳 **Saldo:** ${usuario.saldo} Gold\n\n⏰ **Cooldown:** 30 minutos`
+            sucesso: true,
+            mensagem: `💼 **TRABALHO CONCLUÍDO!**\n\n📋 **Tipo:** ${trabalhoDescricao}\n💰 **Salário:** ${salarioFinal.toLocaleString()} Gold\n📊 **Bônus:** +${bonusTotal}%\n🎓 **Nível Educação:** ${nivelEducacao}\n💳 **Saldo:** ${usuario.saldo.toLocaleString()} Gold\n\n⏰ Cooldown: 30 minutos`
         };
     });
 }
 
-// ==================== SISTEMA DE EDUCAÇÃO ====================
-function estudar(userId, curso = null) {
+// ==================== SISTEMA DE ROUBO ====================
+async function roubar(userId, local) {
     return withLock(async () => {
         const dados = carregarDadosRPG();
         let usuario = dados.jogadores[userId];
         if (!usuario) return { erro: 'Usuário não registrado' };
 
-        usuario = ensureUserDefaults(usuario);
+        usuario = garantirEstruturaUsuario(usuario);
 
-        if (usuario.morreu) {
-            return { erro: 'Você está morto! Use o comando reviver.' };
+        if (usuario.morreu) return { erro: 'Você está morto! Use .reviver' };
+        if (usuario.preso) return { erro: `Você está preso por mais ${Math.ceil(usuario.tempo_prisao / 60)} minutos!` };
+
+        const cooldown = verificarCooldown(usuario.ultimoRoubo, 60 * 60 * 1000); // 1 hora
+        if (cooldown > 0) {
+            return { erro: 'Cooldown', mensagem: `🏴‍☠️ Aguarde **${formatarTempo(cooldown)}** para roubar novamente!` };
         }
 
-        const cooldown = verificarCooldown(usuario.ultimoEstudo, 60 * 60 * 1000); // 1 hora
-        if (cooldown > 0) {
-            return { 
-                erro: 'Cooldown', 
-                mensagem: `📚 Você precisa esperar **${formatarTempo(cooldown)}** para estudar novamente!`
+        if (!local) {
+            let lista = '🏴‍☠️ **LOCAIS PARA ROUBAR**\n\n';
+            Object.entries(locaisRoubo).forEach(([id, dados]) => {
+                lista += `🎯 **${dados.nome}**\n`;
+                lista += `   💰 ${dados.min.toLocaleString()} - ${dados.max.toLocaleString()} Gold\n`;
+                lista += `   ⚠️ Risco: ${dados.risco}%\n`;
+                lista += `   ⏱️ Tempo: ${dados.tempo} min\n\n`;
+            });
+            lista += '💡 **Use:** `.roubar [local]`';
+            return { mensagem: lista };
+        }
+
+        const localRoubo = locaisRoubo[local.toLowerCase()];
+        if (!localRoubo) {
+            return { erro: 'Local inválido! Use .roubar para ver os locais disponíveis.' };
+        }
+
+        // Redução de risco por itens
+        let riscoFinal = localRoubo.risco;
+        if (temItem(usuario, 'colete_kevlar')) riscoFinal -= 20;
+        if (temItem(usuario, 'carro_luxo') || temItem(usuario, 'ferrari')) riscoFinal -= 10;
+
+        riscoFinal = Math.max(5, riscoFinal); // Mínimo 5% de risco
+
+        // Verifica se foi pego
+        if (Math.random() * 100 < riscoFinal) {
+            // Foi preso
+            usuario.preso = true;
+            usuario.tempo_prisao = localRoubo.tempo * 60 * 1000; // Converte para ms
+            usuario.ultimoRoubo = Date.now();
+
+            dados.jogadores[userId] = usuario;
+            salvarDadosRPG(dados);
+
+            return {
+                sucesso: false,
+                mensagem: `🚨 **PRESO EM FLAGRANTE!**\n\n👮‍♂️ Você foi pego tentando roubar **${localRoubo.nome}**!\n⛓️ **Tempo de prisão:** ${localRoubo.tempo} minutos\n📱 Pode usar outros comandos após sair da prisão`
             };
         }
 
-        // Se não especificou curso, mostra opções
-        if (!curso) {
-            let opcoes = '📚 **SISTEMA DE EDUCAÇÃO**\n\n';
-            opcoes += `🎓 **Seu nível atual:** ${usuario.educacao.nivel}\n\n`;
-            opcoes += '**Cursos disponíveis:**\n';
+        // Roubo bem-sucedido
+        const valorRoubado = Math.floor(Math.random() * (localRoubo.max - localRoubo.min + 1)) + localRoubo.min;
+        
+        usuario.saldo += valorRoubado;
+        usuario.totalGanho += valorRoubado;
+        usuario.ultimoRoubo = Date.now();
+        usuario.roubosFeitos++;
 
-            for (const [id, nivel] of Object.entries(niveisEducacao)) {
-                if (nivel.nivel <= usuario.educacao.nivel + 1) {
-                    const disponivel = !nivel.requer || usuario.educacao.nivel >= niveisEducacao[nivel.requer].nivel;
-                    const status = usuario.educacao.nivel >= nivel.nivel ? '✅' : disponivel ? '📖' : '🔒';
-                    opcoes += `${status} **${nivel.nome}** - ${nivel.preco} Gold\n`;
-                }
-            }
+        dados.jogadores[userId] = usuario;
+        salvarDadosRPG(dados);
 
-            opcoes += '\n**Cursos universitários:**\n';
-            for (const [id, curso_obj] of Object.entries(cursosUniversitarios)) {
-                if (usuario.educacao.nivel >= curso_obj.nivel_min) {
-                    const completo = usuario.cursos_concluidos.includes(id);
-                    const status = completo ? '✅' : '🎓';
-                    opcoes += `${status} **${curso_obj.nome}** - ${curso_obj.preco} Gold\n`;
-                }
-            }
+        return {
+            sucesso: true,
+            mensagem: `🏴‍☠️ **ROUBO BEM-SUCEDIDO!** 💰\n\n🎯 **Local:** ${localRoubo.nome}\n💰 **Valor roubado:** ${valorRoubado.toLocaleString()} Gold\n💳 **Saldo:** ${usuario.saldo.toLocaleString()} Gold\n\n⚠️ **Risco assumido:** ${riscoFinal}%\n⏰ Cooldown: 1 hora`
+        };
+    });
+}
 
-            opcoes += '\n💡 **Use:** `.estudar [curso]`';
-            return { mensagem: opcoes };
+// ==================== SISTEMA DE EDUCAÇÃO ====================
+async function estudar(userId, nivel) {
+    return withLock(async () => {
+        const dados = carregarDadosRPG();
+        let usuario = dados.jogadores[userId];
+        if (!usuario) return { erro: 'Usuário não registrado' };
+
+        usuario = garantirEstruturaUsuario(usuario);
+
+        if (usuario.morreu) return { erro: 'Você está morto! Use .reviver' };
+
+        const cooldown = verificarCooldown(usuario.ultimoEstudo, 2 * 60 * 60 * 1000); // 2 horas
+        if (cooldown > 0) {
+            return { erro: 'Cooldown', mensagem: `📚 Aguarde **${formatarTempo(cooldown)}** para estudar novamente!` };
         }
 
-        // Verifica se é curso básico
-        if (niveisEducacao[curso]) {
-            const nivelCurso = niveisEducacao[curso];
+        if (!nivel) {
+            let lista = '🎓 **SISTEMA DE EDUCAÇÃO**\n\n';
+            lista += `📊 **Seu nível atual:** ${usuario.educacao_nivel || 1}\n\n`;
             
-            // Verifica se já completou
-            if (usuario.educacao.nivel >= nivelCurso.nivel) {
+            lista += '**📚 EDUCAÇÃO BÁSICA:**\n';
+            Object.entries(educacao).forEach(([num, dados]) => {
+                const status = (usuario.educacao_nivel >= num) ? '✅' : '📖';
+                lista += `${status} **${dados.nome}** (Nível ${num})\n`;
+                lista += `   💰 Custo: ${dados.custo.toLocaleString()} Gold\n`;
+                lista += `   💼 Salário mínimo: ${dados.salarioMin.toLocaleString()} Gold/trabalho\n\n`;
+            });
+
+            lista += '**🎓 FACULDADES ESPECIALIZADAS:**\n';
+            Object.entries(faculdades).forEach(([id, dados]) => {
+                const completa = usuario.faculdades_completas?.includes(id) ? '✅' : '🎓';
+                lista += `${completa} **${dados.nome}**\n`;
+                lista += `   💰 Custo: ${dados.custo.toLocaleString()} Gold\n`;
+                lista += `   💼 Salário: +${dados.salario.toLocaleString()} Gold/trabalho\n\n`;
+            });
+
+            lista += '💡 **Use:** `.estudar [nível]` ou `.estudar [faculdade]`';
+            return { mensagem: lista };
+        }
+
+        // Verifica se é nível básico de educação
+        const nivelNum = parseInt(nivel);
+        if (nivelNum && educacao[nivelNum]) {
+            const cursoEducacao = educacao[nivelNum];
+            
+            if (usuario.educacao_nivel >= nivelNum) {
                 return { erro: 'Você já completou este nível de educação!' };
             }
 
-            // Verifica pré-requisitos
-            if (nivelCurso.requer && usuario.educacao.nivel < niveisEducacao[nivelCurso.requer].nivel) {
-                return { erro: `Você precisa completar ${niveisEducacao[nivelCurso.requer].nome} primeiro!` };
+            if (usuario.educacao_nivel < nivelNum - 1) {
+                return { erro: `Você precisa completar o nível ${nivelNum - 1} primeiro!` };
             }
 
-            // Verifica dinheiro
-            if (usuario.saldo < nivelCurso.preco) {
-                return { erro: `Você precisa de ${nivelCurso.preco} Gold para este curso!` };
+            if (usuario.saldo < cursoEducacao.custo) {
+                return { erro: `Você precisa de ${cursoEducacao.custo.toLocaleString()} Gold para este curso!` };
             }
 
-            usuario.saldo -= nivelCurso.preco;
-            usuario.educacao.nivel = nivelCurso.nivel;
+            usuario.saldo -= cursoEducacao.custo;
+            usuario.totalGasto += cursoEducacao.custo;
+            usuario.educacao_nivel = nivelNum;
             usuario.ultimoEstudo = Date.now();
 
             dados.jogadores[userId] = usuario;
@@ -1166,31 +1391,29 @@ function estudar(userId, curso = null) {
 
             return {
                 sucesso: true,
-                mensagem: `🎓 **CURSO CONCLUÍDO!**\n\n📚 **${nivelCurso.nome}** completado!\n💰 **Custo:** ${nivelCurso.preco} Gold\n🎓 **Novo nível:** ${nivelCurso.nivel}\n💳 **Saldo:** ${usuario.saldo} Gold\n\n✨ Novos trabalhos desbloqueados!`
+                mensagem: `🎓 **EDUCAÇÃO CONCLUÍDA!**\n\n📚 **${cursoEducacao.nome}** completado!\n💰 **Custo:** ${cursoEducacao.custo.toLocaleString()} Gold\n🎯 **Novo nível:** ${nivelNum}\n💼 **Novo salário mínimo:** ${cursoEducacao.salarioMin.toLocaleString()} Gold\n💳 **Saldo:** ${usuario.saldo.toLocaleString()} Gold\n\n✨ Novos trabalhos desbloqueados!`
             };
         }
 
-        // Verifica se é curso universitário
-        if (cursosUniversitarios[curso]) {
-            const cursoUniv = cursosUniversitarios[curso];
-
-            // Verifica se já completou
-            if (usuario.cursos_concluidos.includes(curso)) {
-                return { erro: 'Você já completou este curso!' };
+        // Verifica se é faculdade
+        const faculdade = faculdades[nivel.toLowerCase()];
+        if (faculdade) {
+            if (usuario.faculdades_completas?.includes(nivel.toLowerCase())) {
+                return { erro: 'Você já completou esta faculdade!' };
             }
 
-            // Verifica nível mínimo
-            if (usuario.educacao.nivel < cursoUniv.nivel_min) {
-                return { erro: `Você precisa de nível ${cursoUniv.nivel_min} de educação para este curso!` };
+            if (usuario.educacao_nivel < 4) {
+                return { erro: 'Você precisa ter pelo menos graduação (nível 4) para fazer faculdade!' };
             }
 
-            // Verifica dinheiro
-            if (usuario.saldo < cursoUniv.preco) {
-                return { erro: `Você precisa de ${cursoUniv.preco} Gold para este curso!` };
+            if (usuario.saldo < faculdade.custo) {
+                return { erro: `Você precisa de ${faculdade.custo.toLocaleString()} Gold para esta faculdade!` };
             }
 
-            usuario.saldo -= cursoUniv.preco;
-            usuario.cursos_concluidos.push(curso);
+            usuario.saldo -= faculdade.custo;
+            usuario.totalGasto += faculdade.custo;
+            if (!usuario.faculdades_completas) usuario.faculdades_completas = [];
+            usuario.faculdades_completas.push(nivel.toLowerCase());
             usuario.ultimoEstudo = Date.now();
 
             dados.jogadores[userId] = usuario;
@@ -1198,11 +1421,148 @@ function estudar(userId, curso = null) {
 
             return {
                 sucesso: true,
-                mensagem: `🎓 **CURSO UNIVERSITÁRIO CONCLUÍDO!**\n\n📚 **${cursoUniv.nome}** completado!\n💰 **Custo:** ${cursoUniv.preco} Gold\n💳 **Saldo:** ${usuario.saldo} Gold\n\n✨ Trabalhos especializados desbloqueados!`
+                mensagem: `🎓 **FACULDADE CONCLUÍDA!**\n\n🎯 **${faculdade.nome}** completado!\n💰 **Custo:** ${faculdade.custo.toLocaleString()} Gold\n💼 **Bônus salarial:** +${faculdade.salario.toLocaleString()} Gold/trabalho\n💳 **Saldo:** ${usuario.saldo.toLocaleString()} Gold\n\n✨ Trabalho especializado desbloqueado!`
             };
         }
 
-        return { erro: 'Curso não encontrado!' };
+        return { erro: 'Curso não encontrado! Use .estudar para ver as opções.' };
+    });
+}
+
+// ==================== SISTEMA DE INVESTIMENTOS ====================
+async function investir(userId, tipo, valor) {
+    return withLock(async () => {
+        const dados = carregarDadosRPG();
+        let usuario = dados.jogadores[userId];
+        if (!usuario) return { erro: 'Usuário não registrado' };
+
+        usuario = garantirEstruturaUsuario(usuario);
+
+        if (usuario.morreu) return { erro: 'Você está morto! Use .reviver' };
+
+        if (!tipo || !valor) {
+            let lista = '💹 **TIPOS DE INVESTIMENTOS**\n\n';
+            Object.entries(investimentos).forEach(([id, dados]) => {
+                lista += `📈 **${dados.nome}**\n`;
+                lista += `   💰 Rendimento: ${dados.rendimento}%\n`;
+                lista += `   ⚠️ Risco: ${dados.risco}%\n`;
+                lista += `   ⏱️ Tempo: ${dados.tempo}h\n\n`;
+            });
+            lista += '💡 **Use:** `.investir [tipo] [valor]`\n';
+            lista += '📊 **Exemplo:** `.investir bitcoin 5000`';
+            return { mensagem: lista };
+        }
+
+        const tipoInvestimento = investimentos[tipo.toLowerCase()];
+        if (!tipoInvestimento) {
+            return { erro: 'Tipo de investimento inválido! Use .investir para ver as opções.' };
+        }
+
+        const valorInvestir = parseInt(valor);
+        if (isNaN(valorInvestir) || valorInvestir < 100) {
+            return { erro: 'Valor mínimo para investir: 100 Gold' };
+        }
+
+        if (usuario.saldo < valorInvestir) {
+            return { erro: 'Saldo insuficiente!' };
+        }
+
+        // Verifica se já tem investimento ativo do mesmo tipo
+        if (usuario.investimentos_ativos[tipo.toLowerCase()]) {
+            return { erro: 'Você já tem um investimento ativo deste tipo!' };
+        }
+
+        usuario.saldo -= valorInvestir;
+        usuario.totalGasto += valorInvestir;
+        usuario.investimentosFeitos++;
+
+        // Cria o investimento
+        const tempoVencimento = Date.now() + (tipoInvestimento.tempo * 60 * 60 * 1000);
+        usuario.investimentos_ativos[tipo.toLowerCase()] = {
+            valor_investido: valorInvestir,
+            tipo: tipo.toLowerCase(),
+            vencimento: tempoVencimento,
+            rendimento_esperado: tipoInvestimento.rendimento,
+            risco: tipoInvestimento.risco
+        };
+
+        dados.jogadores[userId] = usuario;
+        salvarDadosRPG(dados);
+
+        return {
+            sucesso: true,
+            mensagem: `💹 **INVESTIMENTO REALIZADO!**\n\n📈 **Tipo:** ${tipoInvestimento.nome}\n💰 **Valor investido:** ${valorInvestir.toLocaleString()} Gold\n📊 **Rendimento esperado:** ${tipoInvestimento.rendimento}%\n⚠️ **Risco:** ${tipoInvestimento.risco}%\n⏰ **Vencimento:** ${tipoInvestimento.tempo} horas\n\n💳 **Saldo restante:** ${usuario.saldo.toLocaleString()} Gold`
+        };
+    });
+}
+
+// ==================== SISTEMA DE LOJA ====================
+function listarLoja(categoria) {
+    if (!categoria) {
+        return {
+            mensagem: '🛍️ **LOJA NEEXTCITY - MEGA STORE**\n\n' +
+                     '**📦 CATEGORIAS (100+ ITENS):**\n\n' +
+                     '🏠 `propriedades` - Casas, fazendas, ilhas (15 itens)\n' +
+                     '🐾 `animais` - Pets, gado, dragões (15 itens)\n' +
+                     '🔧 `ferramentas` - Varas, picaretas, armas (20 itens)\n' +
+                     '🚗 `veiculos` - Carros, aviões, foguetes (20 itens)\n' +
+                     '🏢 `negocios` - Lojas, empresas, bancos (15 itens)\n' +
+                     '💻 `tecnologia` - PCs, servidores, IA (15 itens)\n\n' +
+                     '💡 **Use:** `.loja [categoria]`\n' +
+                     '🛒 **Comprar:** `.comprar [id_item] [quantidade]`'
+        };
+    }
+
+    const itens = loja[categoria.toLowerCase()];
+    if (!itens) return { erro: 'Categoria não encontrada!' };
+
+    let mensagem = `🛍️ **LOJA - ${categoria.toUpperCase()}**\n\n`;
+
+    Object.values(itens).forEach(item => {
+        mensagem += `${item.emoji} **${item.nome}**\n`;
+        mensagem += `   💰 ${item.preco.toLocaleString()} Gold\n`;
+        mensagem += `   🔧 ${item.durabilidade_max || 'Permanente'} usos\n`;
+        mensagem += `   📝 ${item.beneficio}\n`;
+        mensagem += `   🆔 \`${item.id}\`\n\n`;
+    });
+
+    mensagem += '💡 **Use:** `.comprar [id] [quantidade]`';
+    return { mensagem: mensagem };
+}
+
+// Função comprar
+function comprarItem(userId, itemId, quantidade = 1) {
+    return withLock(async () => {
+        const dados = carregarDadosRPG();
+        let usuario = dados.jogadores[userId];
+        if (!usuario) return { erro: 'Usuário não registrado' };
+
+        usuario = garantirEstruturaUsuario(usuario);
+
+        const item = encontrarItem(itemId);
+        if (!item) return { erro: 'Item não encontrado!' };
+
+        const qtd = Math.max(1, Math.min(10, quantidade)); // Máximo 10 por compra
+        const custoTotal = item.preco * qtd;
+
+        if (usuario.saldo < custoTotal) {
+            return { erro: `Saldo insuficiente! Você precisa de ${custoTotal.toLocaleString()} Gold` };
+        }
+
+        usuario.saldo -= custoTotal;
+        usuario.totalGasto += custoTotal;
+        
+        for (let i = 0; i < qtd; i++) {
+            adicionarItem(usuario, itemId, 1);
+        }
+
+        dados.jogadores[userId] = usuario;
+        salvarDadosRPG(dados);
+
+        return {
+            sucesso: true,
+            mensagem: `🛒 **COMPRA REALIZADA!**\n\n${item.emoji} **${item.nome}** x${qtd}\n💰 **Custo total:** ${custoTotal.toLocaleString()} Gold\n💳 **Saldo:** ${usuario.saldo.toLocaleString()} Gold\n\n💡 **Benefício:** ${item.beneficio}`
+        };
     });
 }
 
@@ -1215,18 +1575,19 @@ function reviver(userId) {
         let usuario = dados.jogadores[userId];
         if (!usuario) return { erro: 'Usuário não registrado' };
 
-        usuario = ensureUserDefaults(usuario);
+        usuario = garantirEstruturaUsuario(usuario);
 
         if (!usuario.morreu) {
             return { erro: 'Você não está morto!' };
         }
 
-        const custoReviver = 1000;
+        const custoReviver = 2000;
         if (usuario.saldo < custoReviver) {
-            return { erro: `Você precisa de ${custoReviver} Gold para reviver!` };
+            return { erro: `Você precisa de ${custoReviver.toLocaleString()} Gold para reviver!` };
         }
 
         usuario.saldo -= custoReviver;
+        usuario.totalGasto += custoReviver;
         usuario.vida = usuario.vida_max;
         usuario.morreu = false;
         usuario.causa_morte = null;
@@ -1236,165 +1597,71 @@ function reviver(userId) {
 
         return {
             sucesso: true,
-            mensagem: `⚡ **REVIVIDO!**\n\nVocê voltou à vida!\n💰 **Custo:** ${custoReviver} Gold\n❤️ **Vida:** ${usuario.vida}/${usuario.vida_max}\n💳 **Saldo:** ${usuario.saldo} Gold`
+            mensagem: `⚡ **REVIVIDO COM SUCESSO!**\n\nVocê voltou à vida!\n💰 **Custo:** ${custoReviver.toLocaleString()} Gold\n❤️ **Vida:** ${usuario.vida}/${usuario.vida_max}\n💳 **Saldo:** ${usuario.saldo.toLocaleString()} Gold\n\n✨ Bem-vindo de volta à NeextCity!`
         };
     });
 }
 
-// Função usar (para usar itens como kit de primeiros socorros)
-function usarConsumivel(userId, itemId) {
-    return withLock(async () => {
-        const dados = carregarDadosRPG();
-        let usuario = dados.jogadores[userId];
-        if (!usuario) return { erro: 'Usuário não registrado' };
-
-        usuario = ensureUserDefaults(usuario);
-
-        if (!temItem(usuario, itemId)) {
-            return { erro: 'Você não tem este item!' };
-        }
-
-        const item = encontrarItem(itemId);
-        if (!item) return { erro: 'Item não encontrado!' };
-
-        let mensagem = '';
-
-        // Kit de primeiros socorros
-        if (itemId === 'kit_primeiros_socorros') {
-            if (usuario.vida >= usuario.vida_max) {
-                return { erro: 'Sua vida já está no máximo!' };
-            }
-            
-            const cura = item.cura || 50;
-            usuario.vida = Math.min(usuario.vida_max, usuario.vida + cura);
-            mensagem = `🏥 **KIT USADO!**\n\nVida restaurada!\n❤️ **Vida:** ${usuario.vida}/${usuario.vida_max}`;
-        }
-
-        // Remove o item do inventário
-        usarItem(usuario, itemId);
-
-        dados.jogadores[userId] = usuario;
-        salvarDadosRPG(dados);
-
-        return { sucesso: true, mensagem: mensagem };
-    });
-}
-
-// ==================== LOJA E INVENTÁRIO ====================
-
-// Função listar loja
-function listarLoja(categoria) {
-    if (!categoria) {
-        return {
-            mensagem: '🛍️ **LOJA NEEXTCITY - NOVA GERAÇÃO**\n\n' +
-                     '**📦 Categorias disponíveis:**\n' +
-                     '🎣 pescaria - Equipamentos de pesca\n' +
-                     '⛏️ mineracao - Ferramentas de mineração\n' +
-                     '🔫 armas - Armas para caça\n' +
-                     '🌾 agricultura - Ferramentas agrícolas\n' +
-                     '🚗 veiculos - Meios de transporte\n' +
-                     '🏠 propriedades - Casas e terrenos\n' +
-                     '🏢 negocios - Empreendimentos\n' +
-                     '🐾 animais - Animais domésticos\n' +
-                     '🛡️ protecao - Equipamentos de proteção\n' +
-                     '💻 tecnologia - Eletrônicos\n' +
-                     '💊 consumiveis - Itens de uso único\n\n' +
-                     '💡 **Use:** `.loja [categoria]`\n' +
-                     '🛒 **Comprar:** `.comprar [id_item]`'
-        };
-    }
-
-    const itens = catalogoItens[categoria.toLowerCase()];
-    if (!itens) return { erro: 'Categoria não encontrada!' };
-
-    let mensagem = `🛍️ **LOJA - ${categoria.toUpperCase()}**\n\n`;
-
-    Object.values(itens).forEach(item => {
-        mensagem += `${item.emoji} **${item.nome}**\n`;
-        mensagem += `   💰 ${item.preco.toLocaleString()} Gold\n`;
-        mensagem += `   🔧 ${item.durabilidade_max || 'N/A'} usos\n`;
-        mensagem += `   📝 ${item.beneficio}\n`;
-        mensagem += `   🆔 \`${item.id}\`\n\n`;
-    });
-
-    mensagem += '💡 **Use:** `.comprar [id]`';
-
-    return { mensagem: mensagem };
-}
-
-// Função comprar
-function comprarItem(userId, itemId, quantidade = 1) {
-    return withLock(async () => {
-        const dados = carregarDadosRPG();
-        let usuario = dados.jogadores[userId];
-        if (!usuario) return { erro: 'Usuário não registrado' };
-
-        usuario = ensureUserDefaults(usuario);
-
-        const item = encontrarItem(itemId);
-        if (!item) return { erro: 'Item não encontrado!' };
-
-        const custoTotal = item.preco * quantidade;
-        if (usuario.saldo < custoTotal) {
-            return { erro: `Saldo insuficiente! Você precisa de ${custoTotal.toLocaleString()} Gold` };
-        }
-
-        usuario.saldo -= custoTotal;
-        
-        for (let i = 0; i < quantidade; i++) {
-            adicionarItem(usuario, itemId, 1);
-        }
-
-        dados.jogadores[userId] = usuario;
-        salvarDadosRPG(dados);
-
-        return {
-            mensagem: `🛒 **COMPRA REALIZADA!**\n\n${item.emoji} **${item.nome}** x${quantidade}\n💰 **Custo:** ${custoTotal.toLocaleString()} Gold\n💳 **Saldo:** ${usuario.saldo.toLocaleString()} Gold\n\n💡 **Benefício:** ${item.beneficio}`
-        };
-    });
-}
-
-// Função obter perfil completo
-function obterPerfilCompleto(userId) {
+// Função perfil
+function obterPerfil(userId) {
     const dados = carregarDadosRPG();
     let usuario = dados.jogadores[userId];
     if (!usuario) return null;
 
-    usuario = ensureUserDefaults(usuario);
-
-    // Conta itens no inventário
-    const itensInventario = Object.entries(usuario.inventario);
-    const totalItens = itensInventario.reduce((total, [_, data]) => total + (data.quantidade || 1), 0);
-    let valorInventario = 0;
+    usuario = garantirEstruturaUsuario(usuario);
 
     // Calcula valor do inventário
-    itensInventario.forEach(([itemId, data]) => {
+    let valorInventario = 0;
+    let totalItens = 0;
+    Object.entries(usuario.inventario).forEach(([itemId, dados]) => {
         const item = encontrarItem(itemId);
         if (item) {
-            valorInventario += item.preco * (data.quantidade || 1);
+            valorInventario += item.preco * dados.quantidade;
+            totalItens += dados.quantidade;
         }
     });
 
-    // Texto do inventário
-    let inventarioTexto = '';
-    if (totalItens > 0) {
-        itensInventario.forEach(([itemId, data]) => {
-            const item = encontrarItem(itemId);
-            if (item) {
-                const quantidade = data.quantidade || 1;
-                const durabilidade = data.durabilidade || 'N/A';
-                inventarioTexto += `${item.emoji} ${item.nome} x${quantidade} (${durabilidade}/${item.durabilidade_max || 'N/A'})\n`;
-            }
-        });
-    } else {
-        inventarioTexto = 'Inventário vazio';
-    }
+    // Status do usuário
+    let status = '✅ Vivo';
+    if (usuario.morreu) status = `💀 Morto (${usuario.causa_morte})`;
+    else if (usuario.preso) status = `⛓️ Preso (${Math.ceil(usuario.tempo_prisao / 60000)} min)`;
+
+    // Investimentos ativos
+    let investimentosAtivos = 0;
+    Object.keys(usuario.investimentos_ativos || {}).forEach(tipo => {
+        investimentosAtivos++;
+    });
+
+    const perfil = `👤 **PERFIL - ${usuario.nome.toUpperCase()}**\n\n` +
+                  `${usuario.banco.emoji} **Banco:** ${usuario.banco.nome}\n` +
+                  `💰 **Saldo:** ${usuario.saldo.toLocaleString()} Gold\n` +
+                  `❤️ **Vida:** ${usuario.vida}/${usuario.vida_max}\n` +
+                  `🎯 **Status:** ${status}\n` +
+                  `🎓 **Educação:** Nível ${usuario.educacao_nivel}\n` +
+                  `🎓 **Faculdades:** ${usuario.faculdades_completas?.length || 0}\n\n` +
+                  
+                  `📊 **ESTATÍSTICAS:**\n` +
+                  `🎣 Pescas: ${usuario.pescasFeitas}\n` +
+                  `⛏️ Minerações: ${usuario.mineracoesFeitas}\n` +
+                  `💼 Trabalhos: ${usuario.trabalhosFeitos}\n` +
+                  `🔫 Caçadas: ${usuario.cacadasFeitas}\n` +
+                  `🏴‍☠️ Roubos: ${usuario.roubosFeitos || 0}\n` +
+                  `💹 Investimentos: ${usuario.investimentosFeitos || 0}\n\n` +
+                  
+                  `💼 **PATRIMÔNIO:**\n` +
+                  `🎒 Itens no inventário: ${totalItens}\n` +
+                  `💎 Valor do inventário: ${valorInventario.toLocaleString()} Gold\n` +
+                  `💹 Investimentos ativos: ${investimentosAtivos}\n` +
+                  `📈 Total ganho: ${usuario.totalGanho.toLocaleString()} Gold\n` +
+                  `📉 Total gasto: ${usuario.totalGasto.toLocaleString()} Gold\n\n` +
+                  
+                  `📅 **Registro:** ${new Date(usuario.registrado).toLocaleDateString('pt-BR')}`;
 
     return {
         usuario: usuario,
+        mensagem: perfil,
         totalItens: totalItens,
-        valorInventario: valorInventario,
-        inventarioTexto: inventarioTexto
+        valorInventario: valorInventario
     };
 }
 
@@ -1410,46 +1677,65 @@ function obterRanking() {
         return { mensagem: '📊 Nenhum jogador registrado ainda!' };
     }
 
-    let ranking = '🏆 **RANKING NEEXTCITY - NOVA ERA**\n\n';
+    let ranking = '🏆 **RANKING NEEXTCITY - TOP 10**\n\n';
 
     jogadores.forEach((jogador, index) => {
         const posicao = index + 1;
         const medal = posicao === 1 ? '🥇' : posicao === 2 ? '🥈' : posicao === 3 ? '🥉' : `${posicao}°`;
-        const status = jogador.morreu ? '💀' : '✅';
+        const status = jogador.morreu ? '💀' : jogador.preso ? '⛓️' : '✅';
 
         ranking += `${medal} **${jogador.nome}** ${status}\n`;
-        ranking += `   ${jogador.banco.emoji} ${jogador.banco.nome}\n`;
-        ranking += `   💰 ${jogador.saldo.toLocaleString()} Gold\n`;
-        ranking += `   🎓 Nível Educação: ${jogador.educacao?.nivel || 0}\n\n`;
+        ranking += `   ${jogador.banco.emoji} ${jogador.saldo.toLocaleString()} Gold\n`;
+        ranking += `   🎓 Educação: Nível ${jogador.educacao_nivel || 1}\n`;
+        ranking += `   💼 Trabalhos: ${jogador.trabalhosFeitos || 0}\n\n`;
     });
 
     return { mensagem: ranking };
 }
 
 // ==================== EXPORTAÇÕES ====================
-
 module.exports = {
+    // Dados base
     carregarDadosRPG,
     salvarDadosRPG,
+    bancos,
+    loja,
+    educacao,
+    faculdades,
+    investimentos,
+    locaisRoubo,
+
+    // Controle básico
     isRPGAtivo,
     toggleRPG,
     isUsuarioRegistrado,
     registrarUsuario,
     obterDadosUsuario,
+
+    // Ações principais
     pescar,
     minerar,
-    trabalhar,
     cacar,
+    trabalhar,
+    roubar,
     estudar,
-    reviver,
-    usarConsumivel,
+    investir,
+
+    // Loja e itens
     listarLoja,
     comprarItem,
-    obterPerfilCompleto,
+    encontrarItem,
+    temItem,
+    usarItem,
+    adicionarItem,
+
+    // Perfil e ranking
+    obterPerfil,
     obterRanking,
-    bancos,
-    catalogoItens,
-    trabalhos,
-    niveisEducacao,
-    cursosUniversitarios
+    reviver,
+
+    // Utilitários
+    verificarCooldown,
+    formatarTempo,
+    garantirEstruturaUsuario
 };
