@@ -269,7 +269,7 @@ function normalizeMessage(m) {
 // Função reply genérica
 async function reply(sock, from, text, mentions = []) {
     try {
-        // Validação rigorosa do texto
+        // Validação e correção do texto
         if (text === undefined || text === null) {
             console.error("❌ Texto da reply é undefined/null:", text);
             text = "❌ Erro: Mensagem não encontrada";
@@ -285,8 +285,11 @@ async function reply(sock, from, text, mentions = []) {
             text = "❌ Erro: Mensagem vazia";
         }
         
+        // Garante que o texto seja uma string válida
+        const mensagemFinal = text.toString().trim() || "❌ Erro: Mensagem vazia";
+        
         await sock.sendMessage(from, {
-            text: text,
+            text: mensagemFinal,
             contextInfo: {
                 forwardingScore: 100000,
                 isForwarded: true,
@@ -302,7 +305,7 @@ async function reply(sock, from, text, mentions = []) {
         // Tenta envio mais simples em caso de erro
         try {
             await sock.sendMessage(from, { 
-                text: text || "❌ Erro na mensagem",
+                text: "❌ Erro na mensagem",
                 mentions: mentions || []
             });
         } catch (secondErr) {
@@ -2625,41 +2628,15 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 break;
             }
 
-            if (args.length > 0) {
-                // Iniciar curso específico
-                const cursoNum = parseInt(args[0]);
-                const resultado = rpg.iniciarCurso(userId, cursoNum);
-                
-                if (resultado.erro) {
-                    await reply(sock, from, `❌ ${resultado.erro}`);
-                    break;
-                }
+            const resultado = rpg.estudar(userId);
 
-                await reply(sock, from, resultado.mensagem);
-                if (resultado.sucesso) {
-                    await reagirMensagem(sock, message, "📚");
-                }
-            } else {
-                // Mostra lista de cursos ou verifica se terminou algum
-                const resultado = rpg.estudar(userId);
-
-                if (resultado.erro) {
-                    if (resultado.erro === 'Cooldown') {
-                        await reply(sock, from, resultado.mensagem);
-                    } else {
-                        await reply(sock, from, `❌ ${resultado.erro}`);
-                    }
-                    break;
-                }
-
-                await reply(sock, from, resultado.mensagem);
-                
-                if (resultado.sucesso && resultado.cursoCompleto) {
-                    await reagirMensagem(sock, message, "🎓");
-                } else if (resultado.listaCursos) {
-                    await reagirMensagem(sock, message, "📚");
-                }
+            if (resultado.erro) {
+                await reply(sock, from, `❌ ${resultado.erro}`);
+                break;
             }
+
+            await reply(sock, from, resultado.mensagem);
+            await reagirMensagem(sock, message, "📚");
         }
         break;
 
@@ -2684,27 +2661,15 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 break;
             }
 
-            const tipoInvestimento = args[0] ? parseInt(args[0]) : null;
-            const valor = args[1] ? parseInt(args[1]) : null;
-            
-            const resultado = rpg.investir(userId, tipoInvestimento, valor);
+            const resultado = rpg.investir(userId);
 
             if (resultado.erro) {
-                if (resultado.erro === 'Cooldown') {
-                    await reply(sock, from, resultado.mensagem);
-                } else {
-                    await reply(sock, from, `❌ ${resultado.erro}`);
-                }
+                await reply(sock, from, `❌ ${resultado.erro}`);
                 break;
             }
 
             await reply(sock, from, resultado.mensagem);
-            
-            if (resultado.sucesso !== undefined) {
-                await reagirMensagem(sock, message, resultado.sucesso ? "📈" : "📉");
-            } else {
-                await reagirMensagem(sock, message, "💼");
-            }
+            await reagirMensagem(sock, message, resultado.sucesso ? "📈" : "📉");
         }
         break;
 
@@ -2730,25 +2695,15 @@ Seu ID foi salvo com segurança em nosso sistema!`;
             }
 
             const valor = args[0] ? parseInt(args[0]) : null;
-            
             const resultado = rpg.apostar(userId, valor);
 
             if (resultado.erro) {
-                if (resultado.erro === 'Cooldown') {
-                    await reply(sock, from, resultado.mensagem);
-                } else {
-                    await reply(sock, from, `❌ ${resultado.erro}`);
-                }
+                await reply(sock, from, `❌ ${resultado.erro}`);
                 break;
             }
 
             await reply(sock, from, resultado.mensagem);
-            
-            if (resultado.sucesso !== undefined) {
-                await reagirMensagem(sock, message, resultado.sucesso ? "🎲" : "💔");
-            } else {
-                await reagirMensagem(sock, message, "🎯");
-            }
+            await reagirMensagem(sock, message, resultado.sucesso ? "🎲" : "💔");
         }
         break;
 
@@ -2839,19 +2794,12 @@ Seu ID foi salvo com segurança em nosso sistema!`;
 
             if (!args[0]) {
                 const config = obterConfiguracoes();
-                await reply(sock, from, `🛒 **COMO COMPRAR**\n\nUse: \`${config.prefix}comprar [item_id] [quantidade]\`\n\n💡 **Exemplo:**\n\`${config.prefix}comprar casa_simples 1\`\n\n📋 **Para ver itens:** \`${config.prefix}loja\``);
+                await reply(sock, from, `🛒 **COMO COMPRAR**\n\nUse: \`${config.prefix}comprar [item_id]\`\n\n💡 **Exemplo:**\n\`${config.prefix}comprar casa_simples\`\n\n📋 **Para ver itens:** \`${config.prefix}loja\``);
                 break;
             }
 
             const itemId = args[0];
-            const quantidade = args[1] ? parseInt(args[1]) : 1;
-
-            if (!Number.isInteger(quantidade) || quantidade < 1 || quantidade > 10) {
-                await reply(sock, from, "❌ Quantidade deve ser um número inteiro entre 1 e 10!");
-                break;
-            }
-
-            const resultado = await rpg.comprarItem(userId, itemId, quantidade);
+            const resultado = rpg.comprarItem(userId, itemId);
 
             if (resultado.erro) {
                 await reply(sock, from, `❌ ${resultado.erro}`);
