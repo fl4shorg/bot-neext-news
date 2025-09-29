@@ -141,29 +141,43 @@ Sistema completo de economia virtual com loja, trabalhos, jogos e inventário:
 - ✅ Proteção contra spam com cooldowns
 - ✅ Dados salvos em JSON (database/grupos/rpg_data.json)
 
-### 🛡️ Sistema Antilink
-Sistema completo de proteção contra links em grupos:
+### 🛡️ Sistema Anti-Spam Avançado
+Sistema completo de proteção contra diversos tipos de conteúdo:
 
-#### Como Usar:
-- **`.antilink on`** - Ativa antilink no grupo
-- **`.antilink off`** - Desativa antilink no grupo
-- **`.antilink`** - Verifica status atual
+#### 🔗 Proteção Contra Links:
+- **`.antilink on/off`** - Anti-links básico
+- **`.antilinkhard on/off`** - Anti-links avançado (detecta w.w.w, bit(.)ly, etc)
+
+#### 🔞 Proteção de Conteúdo:
+- **`.antiporno on/off`** - Detecta e bloqueia conteúdo pornográfico
+- **`.antipalavrao on/off`** - Detecta e bloqueia palavrões
+
+#### 📱 Outras Proteções:
+- **`.anticontato on/off`** - Anti-contatos
+- **`.antidocumento on/off`** - Anti-documentos
+- **`.antivideo on/off`** - Anti-vídeos
+- **`.antiaudio on/off`** - Anti-áudios
+- **`.antisticker on/off`** - Anti-stickers
+- **`.antiflod on/off`** - Anti-flood
+- **`.antifake on/off`** - Anti-números fake
+- **`.x9 on/off`** - Anti-X9 Monitor
+
+#### 🛡️ Proteções do Dono:
+- **`.antipv on/off`** - Bloqueia PVs de não-donos (apenas dono)
+- **`.anticall on/off`** - Rejeita chamadas automaticamente (apenas dono)
+
+#### ✨ Comando Especial:
+- **`.hidetag [texto]`** - Marcação oculta (admins) - menciona todos sem mostrar as menções
 
 #### Recursos:
-- ✅ Detecta automaticamente links em mensagens
-- ✅ Remove mensagens com links instantaneamente
+- ✅ Detecta automaticamente conteúdo proibido
+- ✅ Remove mensagens e bane usuários instantaneamente
 - ✅ Protege admins e dono (não remove suas mensagens)
 - ✅ Configuração por grupo (salva em JSON)
-- ✅ Apenas admins podem ativar/desativar
+- ✅ Apenas admins podem ativar/desativar (exceto antipv/anticall)
 - ✅ Feedback visual com reações e mensagens
-
-#### Links Detectados:
-- URLs com http/https
-- Links do WhatsApp (wa.me, chat.whatsapp.com)
-- Redes sociais (Instagram, Facebook, Twitter, TikTok, YouTube)
-- Telegram (t.me)
-- Discord (discord.gg)
-- E muito mais...
+- ✅ Normalização de acentos para detecção precisa
+- ✅ Suporte a texto e legendas de mídia
 
 ### 🔧 Configurações
 As configurações do bot estão em `settings/settings.json`:
@@ -221,6 +235,12 @@ O bot é executado automaticamente via Workflow do Replit:
 - ✅ **MAIS RECENTE**: Sistema de inventário com 5 categorias e 25+ itens
 - ✅ **MAIS RECENTE**: Backend robusto com cooldowns e persistência de dados
 - ✅ **MAIS RECENTE**: Menu RPG atualizado com todas as funcionalidades
+- ✅ **ÚLTIMO**: Implementados 6 comandos de moderação avançada (antiporno, antilinkhard, antipalavrao, antipv, anticall, hidetag)
+- ✅ **ÚLTIMO**: Sistema anti-spam expandido com detecção de pornografia e palavrões
+- ✅ **ÚLTIMO**: Normalização de acentos para detecção precisa em português
+- ✅ **ÚLTIMO**: Proteções do dono (bloqueio de PV e chamadas)
+- ✅ **ÚLTIMO**: Comando hidetag para marcação oculta
+- ✅ **ÚLTIMO**: Menus atualizados com todas as novas funcionalidades
 
 ## Estado Atual
 ✅ **Bot Online e Funcionando no Replit**
