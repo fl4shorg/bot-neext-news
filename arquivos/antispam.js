@@ -168,9 +168,10 @@ function detectarPorno(texto, message) {
     if (message) {
         const caption = message.imageMessage?.caption || message.videoMessage?.caption || '';
         if (caption) {
-            const captionLimpa = caption.toLowerCase().replace(/[^a-zA-Z0-9\s]/g, '');
+            const captionLimpa = normalizarTexto(caption);
             for (const palavra of palavrasPorno) {
-                if (captionLimpa.includes(palavra.toLowerCase())) {
+                const palavraNormalizada = normalizarTexto(palavra);
+                if (captionLimpa.includes(palavraNormalizada)) {
                     return true;
                 }
             }
