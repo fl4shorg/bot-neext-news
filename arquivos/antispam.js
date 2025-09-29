@@ -52,6 +52,7 @@ function carregarConfigGrupo(groupId) {
                 antipv: false,
                 anticall: false,
                 rankativo: false,
+                welcome1: false,
                 listanegra: [],
                 floodConfig: {
                     maxMensagens: 5,

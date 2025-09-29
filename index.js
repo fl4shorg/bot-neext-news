@@ -35,6 +35,9 @@ const antiSpam = require("./arquivos/antispam.js");
 // Sistema de Ranking de Ativos
 const rankAtivo = require("./arquivos/rankativo.js");
 
+// Sistema de Welcome/Boas-vindas
+const welcomeSystem = require("./arquivos/welcome.js");
+
 // Sistema de Registros
 const registros = require("./arquivos/registros.js");
 
@@ -1049,7 +1052,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
         case "antiporno":
         case "antilinkhard":
         case "antipalavrao":
-        case "rankativo": {
+        case "rankativo":
+        case "welcome1": {
             // Só funciona em grupos
             if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
                 await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
@@ -1079,7 +1083,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 'antiporno': '🔞 ANTIPORNO',
                 'antilinkhard': '🔗 ANTILINK HARD',
                 'antipalavrao': '🤬 ANTIPALAVRAO',
-                'rankativo': '🔥 RANK DE ATIVOS'
+                'rankativo': '🔥 RANK DE ATIVOS',
+                'welcome1': '🎉 BEM-VINDO'
             };
 
             const featureName = featureNames[command];
@@ -1111,12 +1116,38 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 }
             }
 
+            // Lógica especial para o comando welcome1  
+            if (command === "welcome1") {
+                // Se não tem argumentos, verifica se está ativo para mostrar configuração ou instruções
+                if (!acao) {
+                    if (estadoAtual) {
+                        // Está ativo, mostra configuração atual
+                        await reagirMensagem(sock, message, "🎉");
+                        const configWelcome = welcomeSystem.obterConfig(from);
+                        let mensagemConfig = `✅ *🎉 BEM-VINDO ATIVADO*\n\n📱 *Status:* 🟢 Ativo\n\n🎯 *Configuração atual:*\n• Sistema de boas-vindas automático\n• Mensagem personalizada configurada\n• Welcome card com foto do membro\n\n📝 *Como personalizar:*\n• \`.mensagembemvindo1 [sua mensagem]\` - Define mensagem personalizada\n\n💡 *Placeholders disponíveis:*\n• \`#numerodele#\` - Menciona quem entrou\n• \`#nomedogrupo\` - Nome do grupo\n• \`#totalmembros\` - Total de membros\n• \`#descricao\` - Sua descrição personalizada\n\n⚠️ Use \`.welcome1 off\` para desativar`;
+                        
+                        if (configWelcome) {
+                            mensagemConfig += `\n\n🎨 *Descrição atual:*\n"${configWelcome.descricao}"`;
+                        }
+                        
+                        await reply(sock, from, mensagemConfig);
+                    } else {
+                        // Está inativo, mostra como ativar
+                        await reagirMensagem(sock, message, "⚠️");
+                        await reply(sock, from, `⚠️ *🎉 BEM-VINDO DESATIVADO*\n\n📱 O sistema de boas-vindas não está ativo neste grupo.\n\n📝 *Para ativar:*\n• \`.welcome1 on\` - Ativa o sistema\n\n✨ *Após ativar:*\n• Digite \`.welcome1\` para ver configurações\n• Use \`.mensagembemvindo1\` para personalizar\n• Boas-vindas automáticas para novos membros\n• Welcome card com foto e informações\n\n🎯 *Recursos inclusos:*\n• Mensagem de texto personalizada\n• Imagem de boas-vindas (API PopCat)\n• Placeholders dinâmicos\n• Foto de perfil do novo membro\n\n⚠️ Apenas admins podem ativar/desativar`);
+                    }
+                    break;
+                }
+            }
+
             if (acao === "on" || acao === "ativar" || acao === "1") {
                 if (estadoAtual) {
                     // Já está ativo
                     await reagirMensagem(sock, message, "⚠️");
                     if (command === "rankativo") {
                         await reply(sock, from, `⚠️ *${featureName} JÁ ESTÁ ATIVO!*\n\n✅ O sistema já está rastreando atividades\n📊 Digite \`.rankativo\` para ver o ranking atual`);
+                    } else if (command === "welcome1") {
+                        await reply(sock, from, `⚠️ *${featureName} JÁ ESTÁ ATIVO!*\n\n✅ O sistema de boas-vindas já está funcionando\n🎉 Novos membros receberão boas-vindas automáticas`);
                     } else {
                         await reply(sock, from, `⚠️ *${featureName} JÁ ESTÁ ATIVO!*\n\n✅ A proteção já está funcionando\n⚔️ Links/conteúdo será removido e usuário banido`);
                     }
@@ -1127,6 +1158,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                         await reagirMensagem(sock, message, "✅");
                         if (command === "rankativo") {
                             await reply(sock, from, `✅ *${featureName} ATIVADO*\n\n📊 O bot agora rastreará:\n• 💬 Mensagens enviadas\n• ⌨️ Comandos executados\n• 🖼️ Stickers enviados\n• 📱 Mídias compartilhadas\n\n🔥 Digite \`.rankativo\` para ver o ranking a qualquer momento!`);
+                        } else if (command === "welcome1") {
+                            await reply(sock, from, `✅ *${featureName} ATIVADO*\n\n🎉 Sistema de boas-vindas está ativo!\n💡 Digite \`.welcome1\` para ver configurações\n🎨 Use \`.mensagembemvindo1\` para personalizar\n👥 Novos membros receberão boas-vindas automáticas`);
                         } else {
                             await reply(sock, from, `✅ *${featureName} ATIVADO*\n\n⚔️ Conteúdo será removido e usuário será BANIDO\n🛡️ Admins e dono são protegidos\n🚫 Ação dupla: Delete + Ban automático`);
                         }
@@ -1141,6 +1174,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     await reagirMensagem(sock, message, "⚠️");
                     if (command === "rankativo") {
                         await reply(sock, from, `⚠️ *${featureName} JÁ ESTÁ DESATIVADO!*\n\n✅ O sistema já estava desligado\n💡 Use \`.rankativo on\` para ativar`);
+                    } else if (command === "welcome1") {
+                        await reply(sock, from, `⚠️ *${featureName} JÁ ESTÁ DESATIVADO!*\n\n✅ O sistema já estava desligado\n💡 Use \`.welcome1 on\` para ativar`);
                     } else {
                         await reply(sock, from, `⚠️ *${featureName} JÁ ESTÁ DESATIVADO!*\n\n✅ A proteção já estava desligada\n💡 Use \`${config.prefix}${command} on\` para ativar`);
                     }
@@ -1151,6 +1186,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                         await reagirMensagem(sock, message, "❌");
                         if (command === "rankativo") {
                             await reply(sock, from, `❌ *${featureName} DESATIVADO*\n\n📊 O bot parou de rastrear atividades\n💡 Use \`.rankativo on\` para reativar\n⚠️ Dados existentes são mantidos`);
+                        } else if (command === "welcome1") {
+                            await reply(sock, from, `❌ *${featureName} DESATIVADO*\n\n🎉 Sistema de boas-vindas desligado\n💡 Use \`.welcome1 on\` para reativar\n⚠️ Configurações são mantidas`);
                         } else {
                             await reply(sock, from, `❌ *${featureName} DESATIVADO*\n\n✅ Conteúdo agora é permitido\n💡 Use \`${config.prefix}${command} on\` para reativar`);
                         }
@@ -1171,7 +1208,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     'antiflod': 'Remove flood (spam) e bane usuário',
                     'antifake': 'Remove usuários não brasileiros',
                     'x9': 'Monitora ações administrativas do grupo (promover, rebaixar, adicionar, remover)',
-                    'rankativo': 'Rastreia atividades e gera ranking dos usuários mais ativos'
+                    'rankativo': 'Rastreia atividades e gera ranking dos usuários mais ativos',
+                    'welcome1': 'Envia boas-vindas automáticas com mensagem e imagem personalizada'
                 };
 
                 let extraInfo = "";
@@ -1179,6 +1217,8 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                     extraInfo = `\n\n📊 *O que o X9 Monitor detecta:*\n• 👑 Promoções para admin\n• ⬇️ Rebaixamentos de admin\n• ➕ Membros adicionados\n• ➖ Membros removidos\n• 👨‍💼 Quem realizou cada ação\n\n⚠️ Status do X9 no grupo: ${status}`;
                 } else if (command === 'rankativo') {
                     extraInfo = `\n\n🔥 *O que o Rank de Ativos rastreia:*\n• 💬 Mensagens de texto\n• ⌨️ Comandos executados\n• 🖼️ Stickers enviados\n• 📱 Mídias (fotos, vídeos)\n• 📊 Calcula ranking dos top 6\n\n⚠️ Status do Ranking: ${status}`;
+                } else if (command === 'welcome1') {
+                    extraInfo = `\n\n🎉 *O que o Bem-Vindo inclui:*\n• 💬 Mensagem personalizada automática\n• 🖼️ Welcome card com foto do membro\n• 🏷️ Placeholders dinâmicos\n• 👤 Foto de perfil automática\n• 📊 Informações do grupo em tempo real\n\n⚠️ Status do Bem-Vindo: ${status}`;
                 }
 
                 await reply(sock, from, `📊 *${featureName}*\n\nStatus: ${status}\n\n📝 *Como usar:*\n• \`${config.prefix}${command} on\` - Ativar\n• \`${config.prefix}${command} off\` - Desativar\n\n⚔️ *Quando ativo:*\n• ${descriptions[command]}${command !== 'x9' ? '\n• Protege admins e dono' : ''}${extraInfo}\n\n⚠️ Apenas admins podem usar`);
