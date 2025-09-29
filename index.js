@@ -4822,10 +4822,310 @@ async function enviarGif(sock, from, gifUrl, caption, mentions = [], quoted = nu
 
             const tabuleiro =
                 `${global.jogoDaVelha[from].tabuleiro[0]} ${global.jogoDaVelha[from].tabuleiro[1]} ${global.jogoDaVelha[from].tabuleiro[2]}\n` +
-                `${global.jogoDaVelha[from].tabuleiro[3]} ${global.jogoDaVelha[from].tabuleiro[4]} ${global.jogoDaVelha[\n  +---+\n  |   |\n      |\n      |\n      |\n      |\n=========```",
-                        "```\n  +---+\n  |   |\n  O   |\n      |\n      |\n      |\n=========```",
-                        "```\n  +---+\n  |   |\n  O   |\n  |   |\n      |\n      |\n=========```",
-                        "```\n  +---+\n  |   |\n  O   |\n /|   |\n      |\n      |\n=========```",
-                        "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n      |\n      |\n=========```",
-                        "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n /    |\n      |\n=========```",
-                        "```\n  +---+\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n=========
+                `${global.jogoDaVelha[from].tabuleiro[3]} ${global.jogoDaVelha[from].tabuleiro[4]} ${global.jogoDaVelha[from].tabuleiro[5]}\n` +
+                `${global.jogoDaVelha[from].tabuleiro[6]} ${global.jogoDaVelha[from].tabuleiro[7]} ${global.jogoDaVelha[from].tabuleiro[8]}`;
+
+            await reply(sock, from,
+                `⭕ *JOGO DA VELHA INICIADO!*\n\n` +
+                `👤 **Jogador 1:** @${sender.split('@')[0]} (❌)\n` +
+                `👤 **Jogador 2:** @${oponente.split('@')[0]} (⭕)\n\n` +
+                `🎲 **Tabuleiro:**\n${tabuleiro}\n\n` +
+                `🎯 **Vez de:** @${sender.split('@')[0]}\n\n` +
+                `💡 **Como jogar:** Digite o número de 1 a 9 para marcar sua posição`,
+                [sender, oponente]
+            );
+        }
+        break;
+
+        case "resetjogodavelha": {
+            // Verifica se modo gamer está ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const config = antiSpam.carregarConfigGrupo(from);
+            if (!config || !config.modogamer) {
+                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+
+            if (!global.jogoDaVelha || !global.jogoDaVelha[from]) {
+                await reply(sock, from, "❌ Não há jogo da velha ativo neste grupo.");
+                break;
+            }
+
+            // Verifica se é um dos jogadores ou admin
+            const ehAdmin = await isAdmin(sock, from, sender);
+            const ehDono = isDono(sender);
+            const ehJogador = global.jogoDaVelha[from].jogador1 === sender || global.jogoDaVelha[from].jogador2 === sender;
+
+            if (ehJogador || ehAdmin || ehDono) {
+                delete global.jogoDaVelha[from];
+                await reply(sock, from, "🔄 *JOGO DA VELHA RESETADO!*\n\nO jogo foi finalizado e pode ser iniciado novamente.");
+                await reagirMensagem(sock, message, "✅");
+            } else {
+                await reply(sock, from, "❌ Apenas os jogadores participantes ou admins podem resetar o jogo.");
+            }
+        }
+        break;
+
+        // ================== COMANDOS EXTRAS ==================
+
+        case "rankfumante": {
+            // Verifica se modo gamer está ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const config = antiSpam.carregarConfigGrupo(from);
+            if (!config || !config.modogamer) {
+                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
+                break;
+            }
+
+            try {
+                const groupMetadata = await sock.groupMetadata(from);
+                const participants = groupMetadata.participants.map(p => p.id);
+
+                const shuffled = [...participants].sort(() => Math.random() - 0.5);
+                let ranking = shuffled.slice(0, Math.min(10, participants.length)).map((participant, index) => {
+                    const percentage = Math.floor(Math.random() * 100) + 1;
+                    return `${index + 1}. @${participant.split('@')[0]} - ${percentage}% 🚬`;
+                }).join('\n');
+
+                await sock.sendMessage(from, {
+                    image: { url: "https://i.ibb.co/qYDN9Q7z/70c6ff9e2b8b8ae8a5b6f4a3e8c2e42a.jpg" },
+                    caption: `🚬 *RANKING DOS FUMANTES*\n\n${ranking}\n\n💨 Os viciados em nicotina! 🚭`,
+                    mentions: participants
+                });
+            } catch (err) {
+                await reply(sock, from, "❌ Erro ao gerar ranking.");
+            }
+        }
+        break;
+
+        case "rankpobre": {
+            // Verifica se modo gamer está ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const config = antiSpam.carregarConfigGrupo(from);
+            if (!config || !config.modogamer) {
+                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
+                break;
+            }
+
+            try {
+                const groupMetadata = await sock.groupMetadata(from);
+                const participants = groupMetadata.participants.map(p => p.id);
+
+                const shuffled = [...participants].sort(() => Math.random() - 0.5);
+                let ranking = shuffled.slice(0, Math.min(10, participants.length)).map((participant, index) => {
+                    const percentage = Math.floor(Math.random() * 100) + 1;
+                    return `${index + 1}. @${participant.split('@')[0]} - ${percentage}% 💸`;
+                }).join('\n');
+
+                await sock.sendMessage(from, {
+                    image: { url: "https://i.ibb.co/1G69wkJD/d32b5cfe067aa82bf2a5356c39499539.jpg" },
+                    caption: `💸 *RANKING DOS POBRES*\n\n${ranking}\n\n🪙 Os sem dinheiro! 💰`,
+                    mentions: participants
+                });
+            } catch (err) {
+                await reply(sock, from, "❌ Erro ao gerar ranking.");
+            }
+        }
+        break;
+
+        case "ranksad": {
+            // Verifica se modo gamer está ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const config = antiSpam.carregarConfigGrupo(from);
+            if (!config || !config.modogamer) {
+                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
+                break;
+            }
+
+            try {
+                const groupMetadata = await sock.groupMetadata(from);
+                const participants = groupMetadata.participants.map(p => p.id);
+
+                const shuffled = [...participants].sort(() => Math.random() - 0.5);
+                let ranking = shuffled.slice(0, Math.min(10, participants.length)).map((participant, index) => {
+                    const percentage = Math.floor(Math.random() * 100) + 1;
+                    return `${index + 1}. @${participant.split('@')[0]} - ${percentage}% 😭`;
+                }).join('\n');
+
+                await sock.sendMessage(from, {
+                    image: { url: "https://i.ibb.co/9mtKb5rC/92e9188040a0728af1a49c61dd0c9279.jpg" },
+                    caption: `😭 *RANKING DOS TRISTES*\n\n${ranking}\n\n💔 Os deprimidos! 😢`,
+                    mentions: participants
+                });
+            } catch (err) {
+                await reply(sock, from, "❌ Erro ao gerar ranking.");
+            }
+        }
+        break;
+
+        // ================== RODAR WORKFLOWS ==================
+
+        case "roletarussa": {
+            // Verifica se modo gamer está ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const config = antiSpam.carregarConfigGrupo(from);
+            if (!config || !config.modogamer) {
+                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
+
+            if (!mentioned || mentioned.length === 0) {
+                await reply(sock, from, `❌ Marque alguém para jogar roleta russa!\n\nExemplo: ${config.prefix}roletarussa @usuario`);
+                break;
+            }
+
+            const oponente = mentioned[0];
+            if (oponente === sender) {
+                await reply(sock, from, "❌ Você não pode jogar roleta russa contra si mesmo!");
+                break;
+            }
+
+            // Inicializa o jogo
+            global.roletaRussa = global.roletaRussa || {};
+            global.roletaRussa[from] = {
+                jogador1: sender,
+                jogador2: oponente,
+                vezDe: sender,
+                balaPosition: Math.floor(Math.random() * 6) + 1, // Posição da bala (1-6)
+                tiroAtual: 1,
+                ativo: true
+            };
+
+            await reply(sock, from,
+                `🔫 *ROLETA RUSSA INICIADA!*\n\n` +
+                `👤 **Jogadores:**\n` +
+                `🎯 @${sender.split('@')[0]}\n` +
+                `🎯 @${oponente.split('@')[0]}\n\n` +
+                `💀 **Regras:**\n` +
+                `• Há 1 bala em 6 câmaras\n` +
+                `• Digite \`.disparar\` para atirar\n` +
+                `• Quem pegar a bala... 💀\n\n` +
+                `🎲 **Vez de:** @${sender.split('@')[0]}\n` +
+                `🔫 **Tiro:** 1/6`,
+                [sender, oponente]
+            );
+        }
+        break;
+
+        case "disparar": {
+            // Verifica se modo gamer está ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const config = antiSpam.carregarConfigGrupo(from);
+            if (!config || !config.modogamer) {
+                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+
+            if (!global.roletaRussa || !global.roletaRussa[from]) {
+                await reply(sock, from, "❌ Não há jogo de roleta russa ativo neste grupo. Use `.roletarussa @usuario` para começar.");
+                break;
+            }
+
+            const jogo = global.roletaRussa[from];
+
+            // Verifica se é a vez do jogador
+            if (jogo.vezDe !== sender) {
+                const vezDeNome = jogo.vezDe === jogo.jogador1 ? jogo.jogador1.split('@')[0] : jogo.jogador2.split('@')[0];
+                await reply(sock, from, `❌ Não é sua vez! É a vez de @${vezDeNome}`, [jogo.vezDe]);
+                break;
+            }
+
+            // Verifica se pegou a bala
+            if (jogo.tiroAtual === jogo.balaPosition) {
+                // MORTE!
+                delete global.roletaRussa[from];
+                
+                await sock.sendMessage(from, {
+                    image: { url: "https://i.ibb.co/DgWJjj0K/58712ef364b6fdef5ae9bcbb48fc0fdb.gif" },
+                    caption: `💀 *BANG! VOCÊ MORREU!* 💀\n\n@${sender.split('@')[0]} pegou a bala! 🔫💥\n\n⚰️ Game Over! RIP...\n\n🏆 **Vencedor:** @${jogo.vezDe === jogo.jogador1 ? jogo.jogador2.split('@')[0] : jogo.jogador1.split('@')[0]}`,
+                    mentions: [jogo.jogador1, jogo.jogador2]
+                });
+                
+                await reagirMensagem(sock, message, "💀");
+                break;
+            }
+
+            // Seguro! Próximo jogador
+            jogo.tiroAtual++;
+            jogo.vezDe = jogo.vezDe === jogo.jogador1 ? jogo.jogador2 : jogo.jogador1;
+
+            const proximoJogador = jogo.vezDe.split('@')[0];
+
+            await reply(sock, from,
+                `🔫 *CLICK!* Você teve sorte!\n\n` +
+                `✅ @${sender.split('@')[0]} sobreviveu!\n\n` +
+                `🎲 **Vez de:** @${proximoJogador}\n` +
+                `🔫 **Tiro:** ${jogo.tiroAtual}/6\n\n` +
+                `💡 Digite \`.disparar\` para atirar`,
+                [jogo.jogador1, jogo.jogador2]
+            );
+
+            await reagirMensagem(sock, message, "😅");
+        }
+        break;
+
+        case "resetroleta": {
+            // Verifica se modo gamer está ativo
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const config = antiSpam.carregarConfigGrupo(from);
+            if (!config || !config.modogamer) {
+                await reply(sock, from, "❌ Modo Gamer está desativado neste grupo! Use `.modogamer on` para ativar.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+
+            if (!global.roletaRussa || !global.roletaRussa[from]) {
+                await reply(sock, from, "❌ Não há jogo de roleta russa ativo neste grupo.");
+                break;
+            }
+
+            // Verifica se é um dos jogadores ou admin
+            const ehAdmin = await isAdmin(sock, from, sender);
+            const ehDono = isDono(sender);
+            const ehJogador = global.roletaRussa[from].jogador1 === sender || global.roletaRussa[from].jogador2 === sender;
+
+            if (ehJogador || ehAdmin || ehDono) {
+                delete global.roletaRussa[from];
+                await reply(sock, from, "🔄 *ROLETA RUSSA RESETADA!*\n\nO jogo foi finalizado e pode ser iniciado novamente.");
+                await reagirMensagem(sock, message, "✅");
+            } else {
+                await reply(sock, from, "❌ Apenas os jogadores participantes ou admins podem resetar o jogo.");
+            }
+        }
+        break;
