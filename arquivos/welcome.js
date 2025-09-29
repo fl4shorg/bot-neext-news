@@ -172,7 +172,8 @@ class WelcomeSystem {
             let mensagemFinal = config.mensagem || `@${numeroLimpo} bem-vindo ao ${nomeGrupo}!`;
 
             // Substitui TODOS os placeholders (incluindo variações com e sem #)
-            mensagemFinal = mensagemFinal.replace(/#numerodele#?/g, `@${numeroLimpo}`);
+            // Para #numerodele#, não coloca @ porque já vai ser mencionado automaticamente
+            mensagemFinal = mensagemFinal.replace(/#numerodele#?/g, numeroLimpo);
             mensagemFinal = mensagemFinal.replace(/#nomedogrupo#?/g, nomeGrupo);
             mensagemFinal = mensagemFinal.replace(/#totalmembros#?/g, totalMembros.toString());
             
@@ -194,8 +195,8 @@ class WelcomeSystem {
                 console.log('⚠️ [WELCOME] Usando foto padrão (usuário sem foto)');
             }
 
-            // Verifica se deve mencionar (só se tiver @ na mensagem)
-            const mentions = mensagemFinal.includes(`@${numeroLimpo}`) ? [newMember] : [];
+            // Verifica se deve mencionar - se tem o número na mensagem (do placeholder ou @)
+            const mentions = (mensagemFinal.includes(numeroLimpo) || mensagemFinal.includes(`@${numeroLimpo}`)) ? [newMember] : [];
 
             // TENTA primeiro com welcome card da API
             let welcomeEnviado = false;
