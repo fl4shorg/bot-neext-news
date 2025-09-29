@@ -636,6 +636,48 @@ async function handleCommand(sock, message, command, args, from, quoted) {
             }
             break;
 
+        case "hidetag": {
+            // Só funciona em grupos
+            if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
+                await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
+                break;
+            }
+
+            const sender = message.key.participant || from;
+            const ehAdmin = await isAdmin(sock, from, sender);
+            const ehDono = isDono(sender);
+
+            if (!ehAdmin && !ehDono) {
+                await reply(sock, from, "❌ Apenas admins podem usar este comando.");
+                break;
+            }
+
+            const texto = args.join(" ").trim();
+            if (!texto) {
+                const config = obterConfiguracoes();
+                await reply(sock, from, `❌ Use: ${config.prefix}hidetag [mensagem]\n\nExemplo: ${config.prefix}hidetag Atenção galera! Reunião em 10 minutos!`);
+                break;
+            }
+
+            try {
+                const groupMetadata = await sock.groupMetadata(from);
+                const participants = groupMetadata.participants.map(p => p.id);
+                
+                await reagirMensagem(sock, message, "✅");
+                
+                // Envia mensagem marcando todos sem mostrar as menções
+                await sock.sendMessage(from, {
+                    text: texto,
+                    mentions: participants
+                });
+                
+            } catch (error) {
+                console.error("❌ Erro no hidetag:", error);
+                await reply(sock, from, "❌ Erro ao enviar mensagem com marcação oculta.");
+            }
+        }
+        break;
+
         case "recado":
             await sock.sendMessage(from, { text: "📌 Bot está ativo e conectado!" }, { quoted: message });
             break;
@@ -1000,7 +1042,10 @@ async function handleCommand(sock, message, command, args, from, quoted) {
         case "antisticker":
         case "antiflod":
         case "antifake":
-        case "x9": {
+        case "x9":
+        case "antiporno":
+        case "antilinkhard":
+        case "antipalavrao": {
             // Só funciona em grupos
             if (!from.endsWith('@g.us') && !from.endsWith('@lid')) {
                 await reply(sock, from, "❌ Este comando só pode ser usado em grupos.");
@@ -1026,7 +1071,10 @@ async function handleCommand(sock, message, command, args, from, quoted) {
                 'antisticker': '🏷️ ANTISTICKER',
                 'antiflod': '🌊 ANTIFLOD',
                 'antifake': '🇧🇷 ANTIFAKE',
-                'x9': '📊 X9 MONITOR'
+                'x9': '📊 X9 MONITOR',
+                'antiporno': '🔞 ANTIPORNO',
+                'antilinkhard': '🔗 ANTILINK HARD',
+                'antipalavrao': '🤬 ANTIPALAVRAO'
             };
 
             const featureName = featureNames[command];
@@ -1999,6 +2047,147 @@ Seu ID foi salvo com segurança em nosso sistema!`;
                 } else {
                     await reply(sock, from, "❌ Erro ao baixar música. Tente novamente mais tarde.");
                 }
+            }
+        }
+        break;
+
+        // Comandos do dono: antipv e anticall
+        case "antipv": {
+            const sender = message.key.participant || from;
+
+            // Verifica se é o dono
+            if (!isDono(sender)) {
+                await reply(sock, from, "❌ Apenas o dono pode configurar o ANTIPV!");
+                break;
+            }
+
+            const acao = args[0]?.toLowerCase();
+
+            // Carrega configuração atual global
+            const config = require('./settings/settings.json');
+            const estadoAtual = config.antipv || false;
+
+            if (acao === "on" || acao === "ativar" || acao === "1") {
+                if (estadoAtual) {
+                    await reagirMensagem(sock, message, "⚠️");
+                    await reply(sock, from, `⚠️ *🚫 ANTIPV JÁ ESTÁ ATIVO!*\n\n✅ PVs de não-donos já estão sendo bloqueados\n🛡️ Apenas você pode falar comigo no privado`);
+                } else {
+                    // Ativar antipv
+                    try {
+                        const fs = require('fs');
+                        const path = require('path');
+                        const settingsPath = path.join(__dirname, 'settings/settings.json');
+                        config.antipv = true;
+                        fs.writeFileSync(settingsPath, JSON.stringify(config, null, 2));
+                        
+                        await reagirMensagem(sock, message, "✅");
+                        await reply(sock, from, `✅ *🚫 ANTIPV ATIVADO*\n\n🛡️ Apenas você pode falar comigo no privado\n🚫 PVs de outros usuários serão ignorados\n⚔️ Proteção máxima ativada!`);
+                    } catch (error) {
+                        await reply(sock, from, `❌ Erro ao ativar ANTIPV`);
+                    }
+                }
+            }
+            else if (acao === "off" || acao === "desativar" || acao === "0") {
+                if (!estadoAtual) {
+                    await reagirMensagem(sock, message, "⚠️");
+                    await reply(sock, from, `⚠️ *🚫 ANTIPV JÁ ESTÁ DESATIVADO!*\n\n✅ Qualquer pessoa pode falar comigo no privado\n💬 PVs estão liberados para todos`);
+                } else {
+                    // Desativar antipv
+                    try {
+                        const fs = require('fs');
+                        const path = require('path');
+                        const settingsPath = path.join(__dirname, 'settings/settings.json');
+                        config.antipv = false;
+                        fs.writeFileSync(settingsPath, JSON.stringify(config, null, 2));
+                        
+                        await reagirMensagem(sock, message, "✅");
+                        await reply(sock, from, `✅ *💬 ANTIPV DESATIVADO*\n\n💬 Qualquer pessoa pode falar comigo no privado\n🔓 PVs liberados para todos os usuários\n📱 Conversas privadas habilitadas!`);
+                    } catch (error) {
+                        await reply(sock, from, `❌ Erro ao desativar ANTIPV`);
+                    }
+                }
+            } else {
+                const config = obterConfiguracoes();
+                const status = estadoAtual ? "✅ ATIVO" : "❌ DESATIVADO";
+                await reply(sock, from, 
+                    `🚫 *STATUS DO ANTIPV*\n\n` +
+                    `📊 Status atual: ${status}\n\n` +
+                    `📱 **Como usar:**\n` +
+                    `• ${config.prefix}antipv on - Ativar\n` +
+                    `• ${config.prefix}antipv off - Desativar\n\n` +
+                    `🛡️ **Quando ativo:** Apenas o dono pode usar PV\n` +
+                    `💬 **Quando inativo:** Qualquer pessoa pode usar PV`
+                );
+            }
+        }
+        break;
+
+        case "anticall": {
+            const sender = message.key.participant || from;
+
+            // Verifica se é o dono
+            if (!isDono(sender)) {
+                await reply(sock, from, "❌ Apenas o dono pode configurar o ANTICALL!");
+                break;
+            }
+
+            const acao = args[0]?.toLowerCase();
+
+            // Carrega configuração atual global
+            const config = require('./settings/settings.json');
+            const estadoAtual = config.anticall || false;
+
+            if (acao === "on" || acao === "ativar" || acao === "1") {
+                if (estadoAtual) {
+                    await reagirMensagem(sock, message, "⚠️");
+                    await reply(sock, from, `⚠️ *📞 ANTICALL JÁ ESTÁ ATIVO!*\n\n✅ Chamadas já estão sendo rejeitadas automaticamente\n🛡️ Bot protegido contra chamadas indesejadas`);
+                } else {
+                    // Ativar anticall
+                    try {
+                        const fs = require('fs');
+                        const path = require('path');
+                        const settingsPath = path.join(__dirname, 'settings/settings.json');
+                        config.anticall = true;
+                        fs.writeFileSync(settingsPath, JSON.stringify(config, null, 2));
+                        
+                        await reagirMensagem(sock, message, "✅");
+                        await reply(sock, from, `✅ *📞 ANTICALL ATIVADO*\n\n🛡️ Todas as chamadas serão rejeitadas automaticamente\n🚫 Bot protegido contra ligações\n⚔️ Defesa máxima ativada!`);
+                    } catch (error) {
+                        await reply(sock, from, `❌ Erro ao ativar ANTICALL`);
+                    }
+                }
+            }
+            else if (acao === "off" || acao === "desativar" || acao === "0") {
+                if (!estadoAtual) {
+                    await reagirMensagem(sock, message, "⚠️");
+                    await reply(sock, from, `⚠️ *📞 ANTICALL JÁ ESTÁ DESATIVADO!*\n\n✅ Chamadas estão sendo aceitas normalmente\n📞 Bot pode receber ligações`);
+                } else {
+                    // Desativar anticall
+                    try {
+                        const fs = require('fs');
+                        const path = require('path');
+                        const settingsPath = path.join(__dirname, 'settings/settings.json');
+                        config.anticall = false;
+                        fs.writeFileSync(settingsPath, JSON.stringify(config, null, 2));
+                        
+                        await reagirMensagem(sock, message, "✅");
+                        await reply(sock, from, `✅ *📞 ANTICALL DESATIVADO*\n\n📞 Chamadas estão sendo aceitas normalmente\n🔓 Bot pode receber ligações\n✨ Função de chamadas habilitada!`);
+                    } catch (error) {
+                        await reply(sock, from, `❌ Erro ao desativar ANTICALL`);
+                    }
+                }
+            } else {
+                const config = obterConfiguracoes();
+                const status = estadoAtual ? "✅ ATIVO" : "❌ DESATIVADO";
+                await reply(sock, from, 
+                    `📞 *STATUS DO ANTICALL*\n\n` +
+                    `📊 Status atual: ${status}\n\n` +
+                    `📱 **Como usar:**\n` +
+                    `• ${config.prefix}anticall on - Ativar\n` +
+                    `• ${config.prefix}anticall off - Desativar\n\n` +
+                    `🛡️ **Quando ativo:** Todas as chamadas são rejeitadas\n` +
+                    `📞 **Quando inativo:** Chamadas são aceitas normalmente`
+                );
             }
         }
         break;

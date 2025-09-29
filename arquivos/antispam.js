@@ -46,6 +46,11 @@ function carregarConfigGrupo(groupId) {
                 antifake: false,
                 x9: false,
                 modogamer: false,
+                antiporno: false,
+                antilinkhard: false,
+                antipalavrao: false,
+                antipv: false,
+                anticall: false,
                 listanegra: [],
                 floodConfig: {
                     maxMensagens: 5,
@@ -83,6 +88,134 @@ function detectarLinks(texto) {
     if (!texto) return false;
     const linkRegex = /((https?:\/\/)|(www\.))[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)|wa.me\/|whatsapp.com\/|t.me\/|chat.whatsapp.com\/|instagram.com\/|facebook.com\/|twitter.com\/|tiktok.com\/|youtube.com\/|discord.gg\//i;
     return linkRegex.test(texto);
+}
+
+// Detecta links difíceis de encontrar (antilinkhard)
+function detectarLinksHard(texto) {
+    if (!texto) return false;
+    // Remove espaços e caracteres especiais
+    const textoLimpo = texto.replace(/[\s\-_\.]/g, '');
+    
+    const linksHardRegex = [
+        // Links com separadores: w.w.w, h.t.t.p.s
+        /w\.w\.w|h\.t\.t\.p\.s|h\.t\.t\.p/i,
+        // Links com espaços: w w w . , h t t p s : / /
+        /w\s*w\s*w\s*\.|h\s*t\s*t\s*p\s*s?\s*:/i,
+        // Links com underscore: w_w_w_, http_s
+        /w_w_w_|h_t_t_p_s?/i,
+        // Links camuflados: ｗｗｗ (unicode), ＨＴＴＰs
+        /ｗｗｗ|ＨＴＴＰ/i,
+        // Números como letras: w4atsapp, 1nstagram
+        /w4atsapp|1nstagram|f4cebook|t1ktok/i,
+        // Links com hífen excessivo: w-w-w, h-t-t-p
+        /w-w-w|h-t-t-p/i,
+        // Links espelhados ou invertidos
+        /ptt\.|moc\.|gro\./i,
+        // Domínios disfarçados: bit.ly > b1t.ly, tinyurl > t1nyurl
+        /b1t\.ly|t1nyurl|sh0rt|l1nk|ur\.l/i,
+        // WhatsApp camuflado: 
+        /chat.*whats.*app|wa.*me|whats.*app.*chat/i
+    ];
+    
+    return linksHardRegex.some(regex => regex.test(textoLimpo));
+}
+
+// Detecta conteúdo pornográfico
+function detectarPorno(texto, message) {
+    if (!texto && !message) return false;
+    
+    // Lista de palavras relacionadas a pornografia
+    const palavrasPorno = [
+        // Palavras explícitas
+        'porno', 'pornografia', 'pornô', 'xxx', 'sexo', 'nude', 'nua', 'pelada',
+        'buceta', 'pau', 'pênis', 'vagina', 'peitos', 'seios', 'rola', 'piru',
+        'xota', 'xereca', 'ppk', 'penis', 'tesao', 'tesão', 'gozar', 'gozo',
+        'masturbação', 'masturbar', 'punheta', 'siririca', 'puta', 'putaria',
+        'safada', 'safado', 'gostosa', 'gostoso', 'bundão', 'bunduda',
+        // Sites pornôs conhecidos
+        'pornhub', 'xvideos', 'redtube', 'xhamster', 'youporn', 'tube8',
+        'spankbang', 'xnxx', 'brazzers', 'realitykings', 'bangbros',
+        // Termos relacionados
+        'hentai', 'ecchi', 'ahegao', 'futanari', 'yaoi', 'yuri',
+        'onlyfans', 'privacy', 'webcam', 'camgirl', 'stripper',
+        // Variações com números/símbolos
+        'p0rno', 'p0rn', 's3xo', 'x x x', 'p.o.r.n', 's.e.x.o'
+    ];
+    
+    // Verifica no texto
+    if (texto) {
+        const textoLimpo = texto.toLowerCase().replace(/[^a-zA-Z0-9\s]/g, '');
+        for (const palavra of palavrasPorno) {
+            if (textoLimpo.includes(palavra.toLowerCase())) {
+                return true;
+            }
+        }
+    }
+    
+    // Verifica em legendas de mídia
+    if (message) {
+        const caption = message.imageMessage?.caption || message.videoMessage?.caption || '';
+        if (caption) {
+            const captionLimpa = caption.toLowerCase().replace(/[^a-zA-Z0-9\s]/g, '');
+            for (const palavra of palavrasPorno) {
+                if (captionLimpa.includes(palavra.toLowerCase())) {
+                    return true;
+                }
+            }
+        }
+        
+        // Verifica se é mídia suspeita (imagem/vídeo sem caption em contexto suspeito)
+        if (message.imageMessage || message.videoMessage) {
+            // Por segurança, se não houver caption mas for mídia, pode ser verificado por moderador
+            return false; // Por enquanto não bloqueia automaticamente mídia sem caption
+        }
+    }
+    
+    return false;
+}
+
+// Detecta palavrões
+function detectarPalavrao(texto) {
+    if (!texto) return false;
+    
+    const palavroes = [
+        // Palavrões comuns
+        'filho da puta', 'fdp', 'porra', 'caralho', 'merda', 'cu', 'bosta',
+        'desgraça', 'desgraçado', 'puto', 'puta', 'cacete', 'cuzão', 'cuzao',
+        'otário', 'otario', 'babaca', 'imbecil', 'idiota', 'burro', 'estúpido',
+        'estupido', 'retardado', 'mongolóide', 'mongoloide', 'débil', 'debil',
+        'trouxa', 'lesado', 'lesão', 'lesao', 'vagabundo', 'vagabunda',
+        'safado', 'safada', 'corno', 'cornudo', 'chifrudo', 'cuckold',
+        // Palavrões com variações
+        'p0rra', 'c4ralho', 'm3rda', 'c@ralho', 'p0uta', 'put@',
+        'fdp', 'f.d.p', 'f d p', 'filhodaputa', 'filho-da-puta',
+        // Xingamentos racistas/preconceituosos
+        'macaco', 'negro', 'preto', 'mulata', 'crioulo', 'neguinho',
+        'favelado', 'favelada', 'nordestino', 'paraíba', 'baiano',
+        // Ofensas religiosas
+        'demônio', 'diabo', 'capeta', 'inferno', 'satanás', 'satanas',
+        // Palavrões regionais
+        'baitola', 'viado', 'bicha', 'boiola', 'fresco', 'maricas',
+        'piranha', 'galinha', 'vadia', 'rameira', 'prostituta'
+    ];
+    
+    const textoLimpo = texto.toLowerCase().replace(/[^a-zA-Z0-9\s]/g, ' ');
+    
+    for (const palavrao of palavroes) {
+        // Verifica palavra exata
+        if (textoLimpo.includes(palavrao.toLowerCase())) {
+            return true;
+        }
+        
+        // Verifica palavra com espaços
+        const palavraoComEspacos = palavrao.toLowerCase().split('').join('\\s*');
+        const regex = new RegExp(palavraoComEspacos, 'i');
+        if (regex.test(textoLimpo)) {
+            return true;
+        }
+    }
+    
+    return false;
 }
 
 // Verifica se é contact/contato
@@ -187,7 +320,7 @@ function toggleAntiFeature(groupId, feature, estado) {
     const config = carregarConfigGrupo(groupId);
     if (!config) return false;
     
-    const validFeatures = ['antilink', 'anticontato', 'antidocumento', 'antivideo', 'antiaudio', 'antisticker', 'antiflod', 'antifake', 'x9'];
+    const validFeatures = ['antilink', 'anticontato', 'antidocumento', 'antivideo', 'antiaudio', 'antisticker', 'antiflod', 'antifake', 'x9', 'antiporno', 'antilinkhard', 'antipalavrao', 'antipv', 'anticall'];
     
     if (!validFeatures.includes(feature)) return false;
     
@@ -219,6 +352,21 @@ function processarMensagem(message, groupId, userId) {
     // Verifica antilink
     if (config.antilink && detectarLinks(texto)) {
         violations.push('antilink');
+    }
+    
+    // Verifica antilinkhard
+    if (config.antilinkhard && detectarLinksHard(texto)) {
+        violations.push('antilinkhard');
+    }
+    
+    // Verifica antiporno
+    if (config.antiporno && detectarPorno(texto, message)) {
+        violations.push('antiporno');
+    }
+    
+    // Verifica antipalavrao
+    if (config.antipalavrao && detectarPalavrao(texto)) {
+        violations.push('antipalavrao');
     }
     
     // Verifica anticontato
@@ -277,6 +425,9 @@ module.exports = {
     
     // Detecções específicas
     detectarLinks,
+    detectarLinksHard,
+    detectarPorno,
+    detectarPalavrao,
     isContactMessage,
     isDocumentMessage,
     isVideoMessage,
