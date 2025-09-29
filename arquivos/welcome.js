@@ -29,30 +29,10 @@ class WelcomeSystem {
         return {};
     }
 
-    // NOVA: Remove textos fixos antigos das configurações
+    // REMOVIDO: Função que estava sobrescrevendo mensagens personalizadas
     migrarConfiguracoesAntigas() {
-        let alterado = false;
-        
-        for (const [groupId, config] of Object.entries(this.welcomeConfigs)) {
-            // Remove mensagens com textos fixos antigos
-            if (config.mensagem && (
-                config.mensagem.includes('BEM-VINDO(A)') ||
-                config.mensagem.includes('📱 *Grupo:*') ||
-                config.mensagem.includes('👥 *Total de Membros:*') ||
-                config.mensagem.includes('🎉 *BEM-VINDO')
-            )) {
-                console.log(`🔧 Removendo texto fixo antigo do grupo ${groupId}`);
-                // Define mensagem padrão simples com placeholders
-                config.mensagem = "#numerodele bem-vindo ao #nomedogrupo! #descricao";
-                config.descricao = config.descricao || "Aproveite o grupo!";
-                alterado = true;
-            }
-        }
-        
-        if (alterado) {
-            this.salvarConfiguracoes();
-            console.log('✅ Configurações migradas - textos fixos removidos!');
-        }
+        // Migração desativada - usuários devem ter controle total de suas mensagens
+        console.log('✅ Migração automática desativada - mensagens personalizadas serão mantidas');
     }
 
     salvarConfiguracoes() {
@@ -185,9 +165,6 @@ class WelcomeSystem {
             mensagemFinal = mensagemFinal.replace(/#totalmembros#?/g, totalMembros.toString());
             
             console.log(`🔍 [WELCOME DEBUG] Mensagem após substituição: ${mensagemFinal}`);
-            
-            // Remove #descricao se existir (não substitui, apenas remove)
-            mensagemFinal = mensagemFinal.replace(/#descricao#?/g, '').trim();
 
             console.log(`📝 [WELCOME] Mensagem final: "${mensagemFinal}"`);
 
